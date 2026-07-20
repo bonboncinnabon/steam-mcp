@@ -1,0 +1,37 @@
+docs/superpowers/specs/2026-07-20-steam-mcp-design.md
+  s_336c0404d47041::t_b209bd12d85db2 239-241,245
+  s_336c0404d47041::t_8bdeac3357d879 242-244
+test/unit/application/steam-analyze-library.test.ts
+  s_336c0404d47041::t_67ea5d914e4d38 1-2,4-5,7-10,28-110,368,384
+  s_336c0404d47041::t_bb9775aa712eda 6,111-185,191-196,198-295,297-348,356-367
+  s_336c0404d47041::t_8bdeac3357d879 349-355
+  s_336c0404d47041::t_ae332184a367d4 369-383
+  s_336c0404d47041::t_03875a6afb80fd 3,296
+  s_336c0404d47041::t_ef2537d1beef0f 11-27,186-190,197
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_2953b22ce5c1b0 101
+openspec/changes/build-steam-mcp-server/specs/steam-player-tools/spec.md
+  s_336c0404d47041::t_b209bd12d85db2 60-67
+openspec/changes/build-steam-mcp-server/design.md
+  s_336c0404d47041::t_b209bd12d85db2 239-245,248-256
+  s_336c0404d47041::t_8bdeac3357d879 246-247
+src/application/services/steam-analyze-library.ts
+  s_336c0404d47041::t_99dd851f1ec9e9 1-55,57-223,226-229,232-294,296-309,314-330
+  s_336c0404d47041::t_8bdeac3357d879 56,224-225,230-231,295,310-313
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "9b55198db040c8a6beec40376300ad26a1335503",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

@@ -5,6 +5,10 @@ import type { SteamId64 } from "./steam-id.js";
 
 export type DataVisibility = "public" | "private";
 
+export type PlayerDataCollection<T> =
+  | { readonly visibility: "public"; readonly items: readonly T[] }
+  | { readonly visibility: "private"; readonly items: readonly [] };
+
 export interface PlayerSummary {
   readonly steamId: SteamId64;
   readonly displayName: string;

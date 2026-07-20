@@ -30,6 +30,14 @@ const STEAM_ENDPOINTS = {
     host: "api.steampowered.com",
     path: "/ISteamUser/GetPlayerBans/v1/",
   },
+  getOwnedGames: {
+    host: "api.steampowered.com",
+    path: "/IPlayerService/GetOwnedGames/v0001/",
+  },
+  getRecentlyPlayedGames: {
+    host: "api.steampowered.com",
+    path: "/IPlayerService/GetRecentlyPlayedGames/v0001/",
+  },
 } as const satisfies Readonly<Record<string, EndpointDefinition>>;
 
 type SteamEndpoint = keyof typeof STEAM_ENDPOINTS;
@@ -39,6 +47,19 @@ interface SteamEndpointQueries {
   readonly resolveVanityUrl: Readonly<{ key: string; vanityurl: string }>;
   readonly getPlayerSummaries: Readonly<{ key: string; steamids: string }>;
   readonly getPlayerBans: Readonly<{ key: string; steamids: string }>;
+  readonly getOwnedGames: Readonly<{
+    key: string;
+    steamid: string;
+    include_appinfo: "1";
+    include_played_free_games: "1";
+    format: "json";
+  }>;
+  readonly getRecentlyPlayedGames: Readonly<{
+    key: string;
+    steamid: string;
+    count: string;
+    format: "json";
+  }>;
 }
 
 export interface SteamHttpRequest {

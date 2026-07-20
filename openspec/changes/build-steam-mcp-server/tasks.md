@@ -60,7 +60,7 @@
       `STEAM_AUTH_FAILED`, rate-limit, and unavailable mappings.
 - [x] 4.3 TDD supported player-summary, ban-summary, presence, and current-game
       adapters with privacy-aware normalization.
-- [ ] 4.4 TDD supported owned-games and recently-played adapters with
+- [x] 4.4 TDD supported owned-games and recently-played adapters with
       empty-versus-private behavior and bounded response handling.
 - [ ] 4.5 TDD supported player-achievement, game-schema, and global-achievement
       adapters with stable achievement identifiers and optional rarity

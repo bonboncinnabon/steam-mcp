@@ -3,6 +3,8 @@ import { readdir, readFile } from "node:fs/promises";
 import { z } from "zod";
 import { describe, expect, it, vi } from "vitest";
 
+import { parseSteamId64 } from "../../../src/domain/steam-id.js";
+import { createSteamLibraryAdapter } from "../../../src/steam/adapters/steam-library-adapter.js";
 import { executeSteamRequest } from "../../../src/steam/http/steam-http-client.js";
 import { buildSteamRequest } from "../../../src/steam/http/steam-request.js";
 import { parseSteamResponse } from "../../../src/steam/http/steam-response.js";
@@ -70,13 +72,23 @@ describe("scrubbed Steam HTTP fixtures", () => {
         import.meta.url,
       ),
     );
-    const schema = z.object({
-      response: z.object({
-        games: z.array(z.object({ appid: z.number() })).optional(),
+    const adapter = createSteamLibraryAdapter({
+      apiKey: "synthetic-api-key",
+      execute: vi.fn().mockResolvedValue({
+        status: 200,
+        headers: new Headers(),
+        body,
+        finalUrl:
+          "https://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/",
       }),
     });
 
-    expect(parseSteamResponse(body, schema)).toEqual({ response: {} });
+    await expect(
+      adapter.getOwnedGames(
+        parseSteamId64("76561198000000000"),
+        new AbortController().signal,
+      ),
+    ).resolves.toEqual({ visibility: "private", items: [] });
   });
 
   it("preserves an explicit empty player list", async () => {

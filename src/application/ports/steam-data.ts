@@ -6,6 +6,7 @@ import type {
   GameReviewSummary,
   GameSearchCandidate,
   OwnedGame,
+  PlayerDataCollection,
   PlayerAchievement,
   PlayerBanSummary,
   PlayerSummary,
@@ -30,11 +31,11 @@ export interface SteamDataPort {
   getOwnedGames(
     steamId: SteamId64,
     signal: AbortSignal,
-  ): Promise<readonly OwnedGame[]>;
+  ): Promise<PlayerDataCollection<OwnedGame>>;
   getRecentGames(
     steamId: SteamId64,
     signal: AbortSignal,
-  ): Promise<readonly OwnedGame[]>;
+  ): Promise<PlayerDataCollection<OwnedGame>>;
   getPlayerAchievements(
     steamId: SteamId64,
     appId: AppId,

@@ -1,0 +1,23 @@
+docs/superpowers/specs/2026-07-20-steam-mcp-design.md
+  s_336c0404d47041::t_92180cf24021b5 1-2,7-426
+  s_336c0404d47041::t_d5902a5b8ec5fc 438-440
+  s_336c0404d47041::t_e965936a48ab85 6
+  s_336c0404d47041::t_4a399111a06dbb 427-437,441-452
+  s_336c0404d47041::t_051ed4dbdd325f 3-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "500d64333f8c36b0a4d3f1a1dc461cfb2d062e7e",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": null
+    }
+  }
+}

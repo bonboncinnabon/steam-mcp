@@ -1,0 +1,30 @@
+openspec/changes/build-steam-mcp-server/design.md
+  s_336c0404d47041::t_d380e50324ae64 229-232
+docs/superpowers/specs/2026-07-20-steam-mcp-design.md
+  s_336c0404d47041::t_d380e50324ae64 284-286
+docs/upstream-sources.md
+  s_336c0404d47041::t_64fdc8d1bcf546 7-8,32-33,41-43,46-50,73-74,87-88,120-122,130-131,137-138
+  s_336c0404d47041::t_d380e50324ae64 1-6,9-18,20-21,24-25,34-36,44-45,51-52,56-72,75-86,89-119,123-129,135-136,139-150
+  s_336c0404d47041::t_136ccb86d49ee9 19,22-23,26-31,37-40,53-55
+  s_336c0404d47041::t_6d904e34df759b 132-134
+openspec/changes/build-steam-mcp-server/specs/steam-game-tools/spec.md
+  s_336c0404d47041::t_d380e50324ae64 48,50-51
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_d380e50324ae64 75
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "53b1143785a7f31b2da4f9e728a627bd3daf11e4",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

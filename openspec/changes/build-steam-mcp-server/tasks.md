@@ -95,7 +95,7 @@
       tenant-safe lookup and no link mutation.
 - [x] 6.2 TDD `steam_get_player` for normalized public profile facets, unknown
       players, private fields, and stable envelope rendering.
-- [ ] 6.3 TDD `steam_get_library` for filtering, sorting, opaque cursor
+- [x] 6.3 TDD `steam_get_library` for filtering, sorting, opaque cursor
       pagination, limits, deterministic continuation, empty libraries, and
       private libraries.
 - [ ] 6.4 TDD `steam_analyze_library` for documented playtime, backlog,

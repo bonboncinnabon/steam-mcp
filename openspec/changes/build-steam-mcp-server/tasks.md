@@ -118,10 +118,10 @@
 - [x] 7.1 TDD `steam_search_games` for blank-input rejection, ranked bounded
       candidates, exact identifiers, ambiguity evidence, and no silent
       single-result selection.
-- [ ] 7.2 TDD `steam_get_game` default facets, explicit facet enums,
-      fetch-only-selected behavior, and `NOT_FOUND` for an unresolved required
-      app.
-- [ ] 7.3 TDD `steam_get_game` partial-result composition so successful
+- [x] 7.2 TDD `steam_get_game` with required store details as the sole default,
+      explicit optional-facet enums, fetch-only-selected optional behavior, and
+      `NOT_FOUND` for an unresolved required app.
+- [x] 7.3 TDD `steam_get_game` partial-result composition so successful
       supported facets survive optional best-effort failures with precise
       warnings and source tiers.
 - [ ] 7.4 TDD deterministic recommendation rules for player-library facts, seed

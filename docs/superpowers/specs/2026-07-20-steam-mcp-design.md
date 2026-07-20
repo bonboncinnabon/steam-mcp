@@ -262,10 +262,14 @@ available.
 app candidates. It returns stable identifiers and enough evidence to
 disambiguate titles.
 
-`steam_get_game` : Return a consolidated game overview. Callers select bounded
-facets from store details, reviews, player count, Steam Deck compatibility,
-news, and global achievement information. Optional facet failure produces a
-partial result rather than discarding successful facets.
+`steam_get_game` : Return a consolidated game overview. Store details are the
+required app-identity anchor and the sole compact default. Callers may select
+bounded optional facets for reviews, current player count, Steam Deck
+compatibility, news, and global achievements. The global-achievement facet
+contains definitions and global unlock percentages. Only selected optional
+facets are fetched. Failure of an optional best-effort facet produces a partial
+result rather than discarding successful facets. Failure of a selected
+supported Steam Web API facet remains terminal.
 
 `steam_recommend_games` : Produce explainable recommendations from a linked or
 explicit player, seed games, and bounded constraints such as price, platform,

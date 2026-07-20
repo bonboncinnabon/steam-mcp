@@ -220,7 +220,14 @@ Each adapter declares one source tier:
 Best-effort adapters are separate from documented adapters, use conservative
 rates and short caches, and return `BEST_EFFORT_SOURCE_CHANGED` when validation
 detects drift. `steam_get_game` and other composite results retain successful
-facets and mark `meta.partial` when optional sources fail.
+facets and mark `meta.partial` when selected optional best-effort sources fail.
+Failures from selected supported Steam Web API facets remain terminal.
+
+`steam_get_game` always uses store details as its required app-identity anchor
+and compact default result. Its selectable optional facet enum is `reviews`,
+`current_players`, `deck_compatibility`, `news`, and `global_achievements`. Only
+selected optional facets are fetched. `global_achievements` composes both the
+supported achievement-definition schema and global unlock percentages.
 
 Outbound requests use HTTPS and an explicit Steam host allowlist. Redirect
 targets are revalidated on every hop. Model-controlled values cannot choose

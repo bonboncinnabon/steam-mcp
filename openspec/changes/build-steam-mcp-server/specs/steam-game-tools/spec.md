@@ -19,21 +19,22 @@ disambiguate similarly named titles.
 
 ### Requirement: Consolidated game-details tool
 
-The system SHALL expose `steam_get_game` with explicit bounded facet selection
-for store details, reviews, current player count, Steam Deck compatibility,
-news, and global achievement information.
+The system SHALL expose `steam_get_game` with required store details as the app
+identity anchor and explicit bounded selection for the optional reviews,
+current-player-count, Steam Deck compatibility, news, and global-achievement
+facets. The global-achievement facet includes both achievement definitions and
+global unlock percentages.
 
 #### Scenario: Default game overview
 
 - **WHEN** a caller requests a valid app ID without explicit facets
-- **THEN** the tool returns the documented compact default facets without
-  fetching every optional source
+- **THEN** the tool returns store details only and fetches no optional source
 
 #### Scenario: Selected facets
 
-- **WHEN** a caller selects an allowed set of detail facets
-- **THEN** the tool fetches only those facets and identifies their source tiers
-  in the result metadata
+- **WHEN** a caller selects an allowed set of optional detail facets
+- **THEN** the tool fetches required store details plus only those selected
+  optional facets and identifies their source tiers in the result metadata
 
 #### Scenario: Unknown facet
 
@@ -42,8 +43,9 @@ news, and global achievement information.
 
 ### Requirement: Partial game-detail results
 
-The game-details tool SHALL preserve successful facets when one or more optional
-sources fail and SHALL identify each unavailable facet.
+The game-details tool SHALL preserve successful facets when one or more selected
+optional best-effort sources fail and SHALL identify each unavailable facet.
+Failures from selected supported Steam Web API facets remain terminal.
 
 #### Scenario: Optional reviews unavailable
 
@@ -54,8 +56,14 @@ sources fail and SHALL identify each unavailable facet.
 
 #### Scenario: Required app identity unavailable
 
-- **WHEN** the requested app ID cannot be resolved to a Steam app
+- **WHEN** required store details cannot resolve the requested app ID
 - **THEN** the tool returns `NOT_FOUND` rather than a partial success
+
+#### Scenario: Selected supported facet fails
+
+- **WHEN** a selected supported Steam Web API facet fails
+- **THEN** the tool returns the supported-source failure rather than
+  misrepresenting it as an optional partial result
 
 ### Requirement: Explainable recommendation tool
 

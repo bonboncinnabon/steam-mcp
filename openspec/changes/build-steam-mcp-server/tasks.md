@@ -106,7 +106,7 @@
 - [x] 6.6 TDD `steam_get_achievements` for user-and-game resolution, opaque
       pagination, unlock state and time, optional rarity, no-achievement games,
       and privacy.
-- [ ] 6.7 TDD `steam_get_friends` for bounded pagination, optional presence
+- [x] 6.7 TDD `steam_get_friends` for bounded pagination, optional presence
       enrichment, fan-out limits, unavailable enrichment entries, and private
       lists.
 - [ ] 6.8 TDD `steam_get_wishlist` for bounded pagination, price and discount

@@ -2,9 +2,11 @@ import { describe, expect, it, vi } from "vitest";
 
 import { parseSteamId64 } from "../../../src/domain/steam-id.js";
 import {
-  createSteamFriendAdapter,
   enrichFriendProfiles,
   type SteamPlayerBatchFetcher,
+} from "../../../src/application/services/friend-profile-enrichment.js";
+import {
+  createSteamFriendAdapter,
   type SteamFriendHttpExecutor,
 } from "../../../src/steam/adapters/steam-friend-adapter.js";
 

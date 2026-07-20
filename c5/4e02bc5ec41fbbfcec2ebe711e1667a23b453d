@@ -1,0 +1,39 @@
+src/steam/adapters/steam-store-adapter.ts
+  s_336c0404d47041::t_77c65a54547504 3,49,133,172,186
+  s_336c0404d47041::t_d47d662652a44e 175-182,218,221-228
+  s_336c0404d47041::t_e4239205df0580 117-119,217
+  s_336c0404d47041::t_c23c0bd5a733d4 1-2,4,9,11-48,50-55,91-116,120-130,161-171,173-174,183-185,187-198,235
+  s_336c0404d47041::t_b6fe75e085407d 5-8,10,56-90,131-132,134-160,199-216,219-220,229-234
+test/unit/steam/steam-store-adapter.test.ts
+  s_336c0404d47041::t_aa046666456d59 1-2,4-78,183,324
+  s_336c0404d47041::t_f65935ca467e1e 184-207,233-306,322-323
+  s_336c0404d47041::t_2429009cfe7f5b 81-112,208-232,307-321
+  s_336c0404d47041::t_9996ea13939a9b 3,79-80,113-182
+src/domain/steam-data.ts
+  s_336c0404d47041::t_c23c0bd5a733d4 103-112,124-125
+docs/upstream-sources.md
+  s_336c0404d47041::t_e4239205df0580 124-126,129-130
+  s_336c0404d47041::t_16334e95c90390 115-123,127-128,131-135,156-158
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_16334e95c90390 82,84-86
+  s_336c0404d47041::t_056b2e073f64c5 81
+src/steam/http/steam-request.ts
+  s_336c0404d47041::t_b6fe75e085407d 75-78,129-134
+  s_336c0404d47041::t_c23c0bd5a733d4 71-74,125-128,135
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "c54e02bc5ec41fbbfcec2ebe711e1667a23b453d",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

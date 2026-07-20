@@ -1,0 +1,56 @@
+docs/superpowers/specs/2026-07-20-steam-mcp-design.md
+  s_336c0404d47041::t_1e31eb9719f56d 265-269
+  s_336c0404d47041::t_86fca069a4f03a 270-272
+test/unit/application/steam-get-game.test.ts
+  s_336c0404d47041::t_d393267c843416 1-4,7-51
+  s_336c0404d47041::t_a3726c2256d85d 104-178
+  s_336c0404d47041::t_d91c59ddff11fd 5,279-296,298-306,308-313,315-324,326-328,385-387
+  s_336c0404d47041::t_110c6f2541e190 179-185,187-204
+  s_336c0404d47041::t_8522241bd6937d 389-433
+  s_336c0404d47041::t_b763d9c494ef78 496-543
+  s_336c0404d47041::t_d6d312803e6a65 52-103
+  s_336c0404d47041::t_b8652212477cb3 6,329-384
+  s_336c0404d47041::t_115c4bc7229bd5 186,297
+  s_336c0404d47041::t_3cc4727c5a5d89 205-230
+  s_336c0404d47041::t_9d6012fe919e34 307,314,325
+  s_336c0404d47041::t_66ddd5633af799 231-278,388
+  s_336c0404d47041::t_5c3e84dc27e2d4 434-495
+  s_336c0404d47041::t_d036b52dff9ad9 544-568
+openspec/changes/build-steam-mcp-server/specs/steam-game-tools/spec.md
+  s_336c0404d47041::t_86fca069a4f03a 46-48,62-66
+  s_336c0404d47041::t_1e31eb9719f56d 22-26,31,35-37,59
+  s_336c0404d47041::t_36974168d18957 67
+src/application/services/steam-get-game.ts
+  s_336c0404d47041::t_a32cab35cf24fa 5-11,103-108,117-129,200,205,209-215
+  s_336c0404d47041::t_b381c889f7b3a4 3-4,12-27,33-82,89-101,184-187,201,206-208
+  s_336c0404d47041::t_18350a11f73edc 1-2,28,83-88,102
+  s_336c0404d47041::t_d28609fbc4338d 133-162
+  s_336c0404d47041::t_d5ff010083f825 29-32
+  s_336c0404d47041::t_59e099eb28e21b 132,163-178,180-183,190,192-198,202
+  s_336c0404d47041::t_1fb6ff064f81fa 130-131,179,188-189,191,199,203-204
+  s_336c0404d47041::t_39051072173551 109-116
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_f812b5d269afb0 121,124
+  s_336c0404d47041::t_1e31eb9719f56d 122-123
+openspec/changes/build-steam-mcp-server/design.md
+  s_336c0404d47041::t_86fca069a4f03a 223-224
+  s_336c0404d47041::t_1e31eb9719f56d 226-227
+  s_336c0404d47041::t_f1a80065d1f084 228-230
+  s_336c0404d47041::t_520d48510ae2ac 225
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "192bf0e44cebdb292e56b120c82e5b7bfbacf4c0",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

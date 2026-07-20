@@ -1,0 +1,40 @@
+src/application/services/steam-get-wishlist.ts
+  s_336c0404d47041::t_3885cba2b44616 7,10-15,25-40,42-46,54-55,104-105,107-108,139-143,146-151
+  s_336c0404d47041::t_92d9ec42a64c2b 16,76-95
+  s_336c0404d47041::t_c491cd16da8da1 1-2,8,17-24,41,131-138,145
+  s_336c0404d47041::t_1712c34beeb20f 116-129
+  s_336c0404d47041::t_88244537c3b1bb 3-6,67-75,96-103,106,130
+  s_336c0404d47041::t_e3b034dccc74f8 56-66
+  s_336c0404d47041::t_1e9e1c0c99bfc4 47-53
+  s_336c0404d47041::t_c71d29bb815574 9,109-115,144
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_d57e7494cbfbeb 112
+test/unit/application/steam-get-wishlist.test.ts
+  s_336c0404d47041::t_4a6060455212d1 8,404-437
+  s_336c0404d47041::t_f2625b0ca87cf1 124-181
+  s_336c0404d47041::t_390112adccd226 264-302,304-324,329-403,438
+  s_336c0404d47041::t_61100f3b430ea4 303,325-328
+  s_336c0404d47041::t_8296c6e9f9a486 237-263
+  s_336c0404d47041::t_375fbfc99e6499 1-3,5-7,9-69,439
+  s_336c0404d47041::t_e7f9d5e86a4172 96-123
+  s_336c0404d47041::t_63e63568ffdc9a 182-200
+  s_336c0404d47041::t_8f779f19a51288 201-209,236
+  s_336c0404d47041::t_b366580bd985ea 70-95
+  s_336c0404d47041::t_6b1e735d683997 4,210-235
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "ac5c3de7564731d69ed8fd986d0071b60af746ba",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

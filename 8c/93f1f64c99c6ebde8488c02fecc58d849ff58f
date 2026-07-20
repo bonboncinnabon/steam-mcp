@@ -1,0 +1,26 @@
+src/application/services/steam-get-recent-activity.ts
+  s_336c0404d47041::t_f1a4146d5c33ce 1-142
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_2244bf63f46179 104
+test/unit/application/steam-get-recent-activity.test.ts
+  s_336c0404d47041::t_b637001da2a5ac 1-4,6-62,239,255
+  s_336c0404d47041::t_4e2ce9aabfa1ab 5,63-209,217-238
+  s_336c0404d47041::t_58ee4147082e3e 240-254
+  s_336c0404d47041::t_838557b3b458df 210-216
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "8c93f1f64c99c6ebde8488c02fecc58d849ff58f",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

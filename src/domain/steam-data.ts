@@ -100,6 +100,16 @@ export interface GameSearchCandidate {
   readonly name: string;
   readonly releaseDate?: string;
   readonly imageUrl?: string;
+  readonly price?: Price;
+  readonly originalPrice?: Price;
+  readonly discountPercent?: number;
+  readonly platforms?: Readonly<{
+    windows: boolean;
+    mac: boolean;
+    linux: boolean;
+  }>;
+  readonly metascore?: number;
+  readonly controllerSupport?: string;
 }
 
 export interface StoreGameDetails {
@@ -111,6 +121,8 @@ export interface StoreGameDetails {
   readonly genres: readonly string[];
   readonly categories: readonly string[];
   readonly price?: Price;
+  readonly originalPrice?: Price;
+  readonly discountPercent?: number;
   readonly releaseDate?: string;
 }
 

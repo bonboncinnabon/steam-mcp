@@ -78,12 +78,12 @@
 - [x] 5.2 TDD the best-effort wishlist adapter, including money normalization,
       pagination inputs, contract drift, raw-body exclusion, and
       `BEST_EFFORT_SOURCE_CHANGED`.
-- [ ] 5.3 TDD best-effort store-search and store-detail adapters with ambiguous
-      matches, missing apps, localized money, tags, reviews, and bounded
+- [x] 5.3 TDD best-effort store-search and store-detail adapters with ambiguous
+      matches, missing apps, localized money, genres, categories, and bounded
       candidate sets.
-- [ ] 5.4 TDD optional Steam Deck, review, and other approved game-detail facet
-      adapters so each can fail independently and be disabled without affecting
-      supported facets.
+- [ ] 5.4 TDD optional Steam Deck, supported review, approved tag, and other
+      game-detail facet adapters so each can fail independently and be disabled
+      without affecting supported facets.
 - [ ] 5.5 Add opt-in live contract probes using a dedicated test credential,
       automatic fixture-safety checks, and bounded drift metrics; keep the
       probes excluded from default CI.

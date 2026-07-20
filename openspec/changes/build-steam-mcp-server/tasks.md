@@ -81,7 +81,7 @@
 - [x] 5.3 TDD best-effort store-search and store-detail adapters with ambiguous
       matches, missing apps, localized money, genres, categories, and bounded
       candidate sets.
-- [ ] 5.4 TDD optional Steam Deck, supported review, approved tag, and other
+- [x] 5.4 TDD optional Steam Deck, aggregate review, approved tag, and other
       game-detail facet adapters so each can fail independently and be disabled
       without affecting supported facets.
 - [ ] 5.5 Add opt-in live contract probes using a dedicated test credential,

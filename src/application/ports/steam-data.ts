@@ -6,6 +6,7 @@ import type {
   GameAchievementDefinition,
   GameReviewSummary,
   GameSearchCandidate,
+  GameTag,
   GlobalAchievementPercentage,
   OwnedGame,
   PlayerDataCollection,
@@ -78,6 +79,10 @@ export interface SteamDataPort {
     appId: AppId,
     signal: AbortSignal,
   ): Promise<DeckCompatibility | undefined>;
+  getGameTags(
+    appId: AppId,
+    signal: AbortSignal,
+  ): Promise<readonly GameTag[] | undefined>;
   getGameNews(
     appId: AppId,
     signal: AbortSignal,

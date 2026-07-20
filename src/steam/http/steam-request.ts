@@ -1,5 +1,8 @@
 import { URL } from "node:url";
 
+import type { AppId } from "../../domain/app-id.js";
+import { assertSteamStorefrontPolicy } from "../storefront-policy.js";
+
 export const STEAM_HOST_ALLOWLIST = [
   "api.steampowered.com",
   "store.steampowered.com",
@@ -76,6 +79,14 @@ const STEAM_ENDPOINTS = {
     host: "store.steampowered.com",
     path: "/api/appdetails",
   },
+  deckCompatibility: {
+    host: "store.steampowered.com",
+    path: "/saleaction/ajaxgetdeckappcompatibilityreport",
+  },
+  getStoreTags: {
+    host: "api.steampowered.com",
+    path: "/IStoreBrowseService/GetItems/v1/",
+  },
 } as const satisfies Readonly<Record<string, EndpointDefinition>>;
 
 type SteamEndpoint = keyof typeof STEAM_ENDPOINTS;
@@ -133,6 +144,8 @@ interface SteamEndpointQueries {
     l: string;
     filters: string;
   }>;
+  readonly deckCompatibility: Readonly<{ nAppID: string }>;
+  readonly getStoreTags: Readonly<{ input_json: string }>;
 }
 
 export interface SteamHttpRequest {
@@ -168,5 +181,39 @@ export function buildSteamRequest<E extends SteamEndpoint>(
     ...(definition.acceptedErrorStatuses === undefined
       ? {}
       : { acceptedErrorStatuses: definition.acceptedErrorStatuses }),
+  };
+}
+
+export function buildSteamAppReviewsRequest(appId: AppId): SteamHttpRequest {
+  const url = new URL(
+    `/appreviews/${String(appId)}`,
+    "https://store.steampowered.com",
+  );
+  url.searchParams.set("json", "1");
+  url.searchParams.set("language", "all");
+  url.searchParams.set("purchase_type", "all");
+  url.searchParams.set("num_per_page", "0");
+
+  return {
+    url: url.href,
+    method: "GET",
+    headers: { accept: "application/json" },
+    redirect: "manual",
+  };
+}
+
+export function buildSteamTagVocabularyRequest(
+  language: string,
+): SteamHttpRequest {
+  assertSteamStorefrontPolicy("US", language);
+  const url = new URL(
+    `/tagdata/populartags/${language}`,
+    "https://store.steampowered.com",
+  );
+  return {
+    url: url.href,
+    method: "GET",
+    headers: { accept: "application/json" },
+    redirect: "manual",
   };
 }

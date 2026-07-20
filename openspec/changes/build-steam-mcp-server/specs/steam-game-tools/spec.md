@@ -47,8 +47,8 @@ sources fail and SHALL identify each unavailable facet.
 
 #### Scenario: Optional reviews unavailable
 
-- **WHEN** store details succeed but the optional supported reviews source fails
-  validation
+- **WHEN** store details succeed but the optional best-effort reviews source
+  fails validation
 - **THEN** the tool returns the store details with `meta.partial` set to true
   and a warning identifying reviews as unavailable
 

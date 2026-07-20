@@ -283,7 +283,8 @@ facts. Derived results disclose their inputs and relevant heuristics.
 
 Best-effort sources are permitted for wishlist enrichment, store details and
 deal fields, Steam Deck information, search, and richer recommendation inputs.
-Aggregate reviews use Steam's documented store-review API. Each adapter must
+Aggregate reviews use Steam's documented response schema but a best-effort
+zero-content request that avoids retrieving review text. Each adapter must
 document why it exists, the observed contract, its fallback behavior, and the
 fixture or live probe that detects drift.
 

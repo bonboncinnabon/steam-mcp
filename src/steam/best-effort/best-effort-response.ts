@@ -15,15 +15,6 @@ export class BestEffortSourceChangedError extends Error {
   }
 }
 
-export class BestEffortSourceDisabledError extends Error {
-  readonly code: ErrorCode = "UPSTREAM_UNAVAILABLE";
-  readonly retryable = false;
-
-  constructor() {
-    super("An optional Steam source is disabled");
-  }
-}
-
 export function parseBestEffortResponse<T>(
   body: Uint8Array,
   schema: z.ZodType<T>,

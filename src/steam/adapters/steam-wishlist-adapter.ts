@@ -5,15 +5,13 @@ import type { CurrencyCode } from "../../domain/currency.js";
 import { parseAppId } from "../../domain/app-id.js";
 import type { PlayerDataPage, WishlistItem } from "../../domain/steam-data.js";
 import type { SteamId64 } from "../../domain/steam-id.js";
-import {
-  BestEffortSourceDisabledError,
-  parseBestEffortResponse,
-} from "../best-effort/best-effort-response.js";
+import { parseBestEffortResponse } from "../best-effort/best-effort-response.js";
 import type { SteamHttpResponse } from "../http/steam-http-client.js";
 import {
   buildSteamRequest,
   type SteamHttpRequest,
 } from "../http/steam-request.js";
+import { OptionalSourceDisabledError } from "../optional-source.js";
 
 const uint32Schema = z.number().int().nonnegative().max(4_294_967_295);
 const minorUnitsSchema = z
@@ -88,7 +86,7 @@ export function createSteamWishlistAdapter(
       signal: AbortSignal,
     ): Promise<PlayerDataPage<WishlistItem>> {
       if (!options.enabled) {
-        throw new BestEffortSourceDisabledError();
+        throw new OptionalSourceDisabledError();
       }
       assertPageRequest(page, options.maxPageSize);
       const response = await options.execute(

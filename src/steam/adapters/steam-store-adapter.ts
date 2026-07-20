@@ -8,7 +8,6 @@ import type {
 } from "../../domain/steam-data.js";
 import {
   BestEffortSourceChangedError,
-  BestEffortSourceDisabledError,
   parseBestEffortResponse,
 } from "../best-effort/best-effort-response.js";
 import type { SteamHttpResponse } from "../http/steam-http-client.js";
@@ -16,6 +15,8 @@ import {
   buildSteamRequest,
   type SteamHttpRequest,
 } from "../http/steam-request.js";
+import { OptionalSourceDisabledError } from "../optional-source.js";
+import { assertSteamStorefrontPolicy } from "../storefront-policy.js";
 
 const moneySchema = z.object({
   currency: z.string().regex(/^[A-Z]{3}$/),
@@ -102,7 +103,7 @@ interface SteamStoreAdapterOptions {
 }
 
 export function createSteamStoreAdapter(options: SteamStoreAdapterOptions) {
-  assertStorefrontPolicy(options.countryCode, options.language);
+  assertSteamStorefrontPolicy(options.countryCode, options.language);
 
   return {
     async searchGames(
@@ -110,7 +111,7 @@ export function createSteamStoreAdapter(options: SteamStoreAdapterOptions) {
       signal: AbortSignal,
     ): Promise<readonly GameSearchCandidate[]> {
       if (!options.searchEnabled) {
-        throw new BestEffortSourceDisabledError();
+        throw new OptionalSourceDisabledError();
       }
       const normalizedQuery = query.trim();
       if (normalizedQuery.length === 0 || normalizedQuery.length > 100) {
@@ -134,7 +135,7 @@ export function createSteamStoreAdapter(options: SteamStoreAdapterOptions) {
       signal: AbortSignal,
     ): Promise<StoreGameDetails | undefined> {
       if (!options.detailsEnabled) {
-        throw new BestEffortSourceDisabledError();
+        throw new OptionalSourceDisabledError();
       }
       const response = await options.execute(
         buildSteamRequest("storeGameDetails", {
@@ -190,12 +191,6 @@ function normalizeSearchCandidate(
       ? {}
       : { controllerSupport: item.controller_support }),
   };
-}
-
-function assertStorefrontPolicy(countryCode: string, language: string): void {
-  if (!/^[A-Z]{2}$/.test(countryCode) || !/^[a-z]+$/.test(language)) {
-    throw new RangeError("Invalid Steam storefront policy");
-  }
 }
 
 function normalizeStoreGame(

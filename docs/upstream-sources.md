@@ -133,17 +133,25 @@ stored.
 - **Drift risks:** undocumented message schema, vocabulary localization, tag
   weight semantics, and renamed or removed tag IDs.
 
-## Supported optional source
+### Aggregate reviews
 
-Aggregate Steam reviews are not best-effort. Valve documents
-[`GET /appreviews/{appid}`](https://partner.steamgames.com/doc/store/getreviews)
-and its JSON query parameters. The server may request only the aggregate summary
-using fixed `json=1`, `language=all`, `purchase_type=all`, and `num_per_page=0`.
-It validates `success` and `query_summary`, costs one call, uses a five-minute
-public cache, and has the independent optional-facet switch
-`STEAM_GAME_REVIEWS_ENABLED`. Failure remains partial to consolidated game
-details, but schema drift uses the supported-upstream error policy rather than
-`BEST_EFFORT_SOURCE_CHANGED`.
+- **Status:** approved as an independently optional best-effort facet. Valve
+  documents
+  [`GET /appreviews/{appid}`](https://partner.steamgames.com/doc/store/getreviews)
+  and the aggregate `query_summary`, but does not document `num_per_page=0`.
+- **Request:** fixed `json=1`, `language=all`, `purchase_type=all`, and
+  `num_per_page=0`. This returns only the aggregate summary and avoids fetching
+  or retaining an individual user's review.
+- **Observed contract:** `{ success: 1, query_summary }` with zero returned
+  review records and internally consistent aggregate counts.
+- **Data classification:** public aggregate catalog sentiment; no review text or
+  reviewer identity is retained.
+- **Cost:** one call per app.
+- **Cache:** five-minute public cache keyed by app ID.
+- **Disable switch:** `STEAM_BEST_EFFORT_GAME_REVIEWS_ENABLED`.
+- **Drift risks:** the aggregate fields are documented, but the zero-record page
+  size is a narrow compatibility assumption. Schema or invocation drift returns
+  `BEST_EFFORT_SOURCE_CHANGED` without falling back to fetching review content.
 
 ## Rejected initial candidates
 

@@ -65,7 +65,7 @@
 - [x] 4.5 TDD supported player-achievement, game-schema, and global-achievement
       adapters with stable achievement identifiers and optional rarity
       enrichment.
-- [ ] 4.6 TDD the supported friend-list adapter and bounded batched profile
+- [x] 4.6 TDD the supported friend-list adapter and bounded batched profile
       enrichment without unbounded fan-out.
 - [ ] 4.7 TDD supported current-player-count and news adapters used by
       consolidated game details.

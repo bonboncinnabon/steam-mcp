@@ -54,7 +54,7 @@ export interface SteamDataPort {
   getFriends(
     steamId: SteamId64,
     signal: AbortSignal,
-  ): Promise<readonly FriendRelationship[]>;
+  ): Promise<PlayerDataCollection<FriendRelationship>>;
   getWishlist(
     steamId: SteamId64,
     signal: AbortSignal,

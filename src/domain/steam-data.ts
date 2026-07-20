@@ -64,6 +64,16 @@ export interface FriendRelationship {
   readonly friendsSince?: IsoTimestamp;
 }
 
+export type FriendProfileEnrichment =
+  | { readonly status: "available"; readonly profile: PlayerSummary }
+  | { readonly status: "unavailable" }
+  | { readonly status: "fan_out_limited" };
+
+export interface EnrichedFriendRelationship {
+  readonly relationship: FriendRelationship;
+  readonly enrichment: FriendProfileEnrichment;
+}
+
 export interface Price {
   readonly minorUnits: number;
   readonly currency?: CurrencyCode;

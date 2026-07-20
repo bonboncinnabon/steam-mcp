@@ -11,6 +11,7 @@ type SteamHost = (typeof STEAM_HOST_ALLOWLIST)[number];
 interface EndpointDefinition {
   readonly host: SteamHost;
   readonly path: `/${string}`;
+  readonly acceptedErrorStatuses?: readonly number[];
 }
 
 const STEAM_ENDPOINTS = {
@@ -50,6 +51,11 @@ const STEAM_ENDPOINTS = {
     host: "api.steampowered.com",
     path: "/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v2/",
   },
+  getFriendList: {
+    host: "api.steampowered.com",
+    path: "/ISteamUser/GetFriendList/v1/",
+    acceptedErrorStatuses: [401],
+  },
 } as const satisfies Readonly<Record<string, EndpointDefinition>>;
 
 type SteamEndpoint = keyof typeof STEAM_ENDPOINTS;
@@ -84,6 +90,11 @@ interface SteamEndpointQueries {
     l: "english";
   }>;
   readonly getGlobalAchievementPercentages: Readonly<{ gameid: string }>;
+  readonly getFriendList: Readonly<{
+    key: string;
+    steamid: string;
+    relationship: "friend";
+  }>;
 }
 
 export interface SteamHttpRequest {
@@ -91,6 +102,7 @@ export interface SteamHttpRequest {
   readonly method: "GET";
   readonly headers: Readonly<{ accept: "application/json" }>;
   readonly redirect: "manual";
+  readonly acceptedErrorStatuses?: readonly number[];
 }
 
 export function buildSteamRequest<E extends SteamEndpoint>(
@@ -115,5 +127,8 @@ export function buildSteamRequest<E extends SteamEndpoint>(
     method: "GET",
     headers: { accept: "application/json" },
     redirect: "manual",
+    ...(definition.acceptedErrorStatuses === undefined
+      ? {}
+      : { acceptedErrorStatuses: definition.acceptedErrorStatuses }),
   };
 }

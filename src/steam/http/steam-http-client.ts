@@ -79,7 +79,10 @@ export async function executeSteamRequest(
         );
         continue;
       }
-      if (response.status < 400) {
+      if (
+        response.status < 400 ||
+        request.acceptedErrorStatuses?.includes(response.status) === true
+      ) {
         return response;
       }
 

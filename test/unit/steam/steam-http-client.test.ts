@@ -335,6 +335,53 @@ describe("executeSteamRequest", () => {
     expect(fetchImpl).toHaveBeenCalledOnce();
   });
 
+  it("passes through a private-list 401 only for the friend-list endpoint", async () => {
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response(null, { status: 401 }));
+
+    await expect(
+      executeSteamRequest(
+        buildSteamRequest("getFriendList", {
+          key: "synthetic-api-key",
+          steamid: "76561198000000000",
+          relationship: "friend",
+        }),
+        {
+          fetchImpl,
+          deadlineMs: 1_000,
+          maxResponseBytes: 1_024,
+          maxRetryAttempts: 2,
+        },
+      ),
+    ).resolves.toMatchObject({ status: 401 });
+    expect(fetchImpl).toHaveBeenCalledOnce();
+  });
+
+  it("keeps a friend-list 403 classified as invalid credentials", async () => {
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response(null, { status: 403 }));
+
+    await expect(
+      executeSteamRequest(
+        buildSteamRequest("getFriendList", {
+          key: "synthetic-api-key",
+          steamid: "76561198000000000",
+          relationship: "friend",
+        }),
+        {
+          fetchImpl,
+          deadlineMs: 1_000,
+          maxResponseBytes: 1_024,
+        },
+      ),
+    ).rejects.toMatchObject({
+      code: "STEAM_AUTH_FAILED",
+      retryable: false,
+    });
+  });
+
   it("honors bounded rate-limit retry guidance", async () => {
     const fetchImpl = vi
       .fn<typeof fetch>()

@@ -1,0 +1,70 @@
+src/steam/storefront-policy.ts
+  s_336c0404d47041::t_d2ac33b304b5be 1-8
+src/steam/adapters/steam-review-adapter.ts
+  s_336c0404d47041::t_c8357de09e5a40 11,55-57
+  s_336c0404d47041::t_327ce571d5b2f5 1-4,6-10,12-20,37-54,58-61,66-68,70-73
+  s_336c0404d47041::t_68ddbd812938c0 5,21-36,62-65,69
+src/steam/adapters/steam-store-adapter.ts
+  s_336c0404d47041::t_c8357de09e5a40 18,114,138
+  s_336c0404d47041::t_d2ac33b304b5be 19,106
+test/unit/steam/steam-deck-adapter.test.ts
+  s_336c0404d47041::t_bd4a6b1eddaedd 43-131
+  s_336c0404d47041::t_0ff9998b7bdb86 1-42,132
+docs/superpowers/specs/2026-07-20-steam-mcp-design.md
+  s_336c0404d47041::t_29624a582b836a 286-287
+test/unit/steam/steam-review-adapter.test.ts
+  s_336c0404d47041::t_52c43250d141b6 48-60
+  s_336c0404d47041::t_861e4a92eb1144 61-79
+  s_336c0404d47041::t_8f246394321f53 149-160,162-169
+  s_336c0404d47041::t_a8e49ffbbd1a6f 80-148,161
+  s_336c0404d47041::t_8b7bb7c0c64f02 1-47,170
+src/steam/adapters/steam-deck-adapter.ts
+  s_336c0404d47041::t_4b43a0790df5dd 1-84
+test/unit/steam/steam-tag-adapter.test.ts
+  s_336c0404d47041::t_41c5199422785e 1-44,46-54,61-78,322
+  s_336c0404d47041::t_541ab674734950 79-90,92-106
+  s_336c0404d47041::t_ee14b1ef802fee 107-116,118-157,159-180,182-256,258-305,307-321
+  s_336c0404d47041::t_8f246394321f53 45,55-60,91,117,158,181,257,306
+src/steam/adapters/steam-tag-adapter.ts
+  s_336c0404d47041::t_38d2a8fa1691c6 47-52
+  s_336c0404d47041::t_a53d7c57550d17 120-121
+  s_336c0404d47041::t_d2ac33b304b5be 1-46,53-119,122-166
+docs/upstream-sources.md
+  s_336c0404d47041::t_29624a582b836a 136-138,141-154
+  s_336c0404d47041::t_8f246394321f53 139-140
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_8f5ba02033aca1 84
+src/steam/http/steam-request.ts
+  s_336c0404d47041::t_d2ac33b304b5be 4,86-89,148,196-203,205-212,218-219
+  s_336c0404d47041::t_4b43a0790df5dd 82-85,147
+  s_336c0404d47041::t_327ce571d5b2f5 3,5,186-195,204,213-217
+openspec/changes/build-steam-mcp-server/specs/steam-game-tools/spec.md
+  s_336c0404d47041::t_8f246394321f53 50-51
+src/steam/optional-source.ts
+  s_336c0404d47041::t_c8357de09e5a40 1-10
+openspec/changes/build-steam-mcp-server/design.md
+  s_336c0404d47041::t_29624a582b836a 229-233
+src/steam/adapters/steam-wishlist-adapter.ts
+  s_336c0404d47041::t_8f246394321f53 8
+  s_336c0404d47041::t_c8357de09e5a40 14,89
+src/application/ports/steam-data.ts
+  s_336c0404d47041::t_d2ac33b304b5be 9,82-85
+src/domain/steam-data.ts
+  s_336c0404d47041::t_d2ac33b304b5be 146-151
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "5a0fddd014072e072026de5012d3a8cb592b2486",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

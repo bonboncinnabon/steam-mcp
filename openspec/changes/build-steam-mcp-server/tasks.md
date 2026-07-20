@@ -109,7 +109,7 @@
 - [x] 6.7 TDD `steam_get_friends` for bounded pagination, optional presence
       enrichment, fan-out limits, unavailable enrichment entries, and private
       lists.
-- [ ] 6.8 TDD `steam_get_wishlist` for bounded pagination, price and discount
+- [x] 6.8 TDD `steam_get_wishlist` for bounded pagination, price and discount
       fields, source-tier metadata, unavailable apps, privacy behavior, and
       best-effort drift.
 

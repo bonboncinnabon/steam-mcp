@@ -115,7 +115,7 @@
 
 ## 7. Game Application Services
 
-- [ ] 7.1 TDD `steam_search_games` for blank-input rejection, ranked bounded
+- [x] 7.1 TDD `steam_search_games` for blank-input rejection, ranked bounded
       candidates, exact identifiers, ambiguity evidence, and no silent
       single-result selection.
 - [ ] 7.2 TDD `steam_get_game` default facets, explicit facet enums,

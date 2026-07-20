@@ -93,7 +93,7 @@
 - [x] 6.1 TDD the common identity-resolution order of explicit user, hosted
       linked identity, local `STEAM_USER`, then `IDENTITY_NOT_LINKED`, including
       tenant-safe lookup and no link mutation.
-- [ ] 6.2 TDD `steam_get_player` for normalized public profile facets, unknown
+- [x] 6.2 TDD `steam_get_player` for normalized public profile facets, unknown
       players, private fields, and stable envelope rendering.
 - [ ] 6.3 TDD `steam_get_library` for filtering, sorting, opaque cursor
       pagination, limits, deterministic continuation, empty libraries, and

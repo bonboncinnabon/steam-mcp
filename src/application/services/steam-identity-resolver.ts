@@ -9,7 +9,7 @@ interface SteamIdentityResolverDependencies {
   readonly steamIdentities: Pick<SteamDataPort, "resolveVanityName">;
 }
 
-interface ResolveSteamIdentityInput {
+export interface ResolveSteamIdentityInput {
   readonly explicitUser?: string;
   readonly subject?: string;
   readonly localDefault?: string;
@@ -18,6 +18,13 @@ interface ResolveSteamIdentityInput {
 export interface ResolvedSteamIdentity {
   readonly steamId: SteamId64;
   readonly source: "explicit" | "linked" | "local_default";
+}
+
+export interface SteamIdentityResolver {
+  resolve(
+    input: ResolveSteamIdentityInput,
+    signal: AbortSignal,
+  ): Promise<ResolvedSteamIdentity>;
 }
 
 export class SteamIdentityResolutionError extends Error {
@@ -33,7 +40,7 @@ export class SteamIdentityResolutionError extends Error {
 
 export function createSteamIdentityResolver(
   dependencies: SteamIdentityResolverDependencies,
-) {
+): SteamIdentityResolver {
   return {
     async resolve(
       input: ResolveSteamIdentityInput,

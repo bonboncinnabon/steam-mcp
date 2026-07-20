@@ -2,6 +2,10 @@ import { z } from "zod";
 import { describe, expect, it } from "vitest";
 
 import {
+  BestEffortSourceChangedError,
+  parseBestEffortResponse,
+} from "../../../src/steam/best-effort/best-effort-response.js";
+import {
   parseSteamResponse,
   SteamResponseValidationError,
 } from "../../../src/steam/http/steam-response.js";
@@ -77,5 +81,27 @@ describe("parseSteamResponse", () => {
       .transform(({ appid }) => ({ appId: Number(appid) }));
 
     expect(parseSteamResponse(body, schema)).toEqual({ appId: 620 });
+  });
+});
+
+describe("parseBestEffortResponse", () => {
+  it("maps upstream contract validation to the best-effort drift code", () => {
+    expect(() =>
+      parseBestEffortResponse(
+        new TextEncoder().encode('{"name":42}'),
+        z.object({ name: z.string() }),
+      ),
+    ).toThrow(BestEffortSourceChangedError);
+  });
+
+  it("does not hide an unexpected programmer error", () => {
+    const programmerError = new Error("Synthetic schema bug");
+    const schema = z.unknown().transform(() => {
+      throw programmerError;
+    });
+
+    expect(() =>
+      parseBestEffortResponse(new TextEncoder().encode("{}"), schema),
+    ).toThrow(programmerError);
   });
 });

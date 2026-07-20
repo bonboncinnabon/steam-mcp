@@ -75,7 +75,7 @@
 - [x] 5.1 Document and approve each initial Steam-operated best-effort endpoint,
       its host, expected contract, data classification, call cost, cache policy,
       and independent disable switch.
-- [ ] 5.2 TDD the best-effort wishlist adapter, including money normalization,
+- [x] 5.2 TDD the best-effort wishlist adapter, including money normalization,
       pagination inputs, contract drift, raw-body exclusion, and
       `BEST_EFFORT_SOURCE_CHANGED`.
 - [ ] 5.3 TDD best-effort store-search and store-detail adapters with ambiguous

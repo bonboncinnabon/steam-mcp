@@ -9,6 +9,7 @@ import type {
   GlobalAchievementPercentage,
   OwnedGame,
   PlayerDataCollection,
+  PlayerDataPage,
   PlayerAchievement,
   PlayerBanSummary,
   PlayerSummary,
@@ -57,8 +58,9 @@ export interface SteamDataPort {
   ): Promise<PlayerDataCollection<FriendRelationship>>;
   getWishlist(
     steamId: SteamId64,
+    page: WishlistPageRequest,
     signal: AbortSignal,
-  ): Promise<readonly WishlistItem[]>;
+  ): Promise<PlayerDataPage<WishlistItem>>;
   searchGames(
     query: string,
     signal: AbortSignal,
@@ -80,4 +82,9 @@ export interface SteamDataPort {
     appId: AppId,
     signal: AbortSignal,
   ): Promise<readonly GameNewsItem[]>;
+}
+
+export interface WishlistPageRequest {
+  readonly startIndex: number;
+  readonly pageSize: number;
 }

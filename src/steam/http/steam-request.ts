@@ -64,6 +64,10 @@ const STEAM_ENDPOINTS = {
     host: "api.steampowered.com",
     path: "/ISteamNews/GetNewsForApp/v2/",
   },
+  getWishlist: {
+    host: "api.steampowered.com",
+    path: "/IWishlistService/GetWishlistSortedFiltered/v1/",
+  },
 } as const satisfies Readonly<Record<string, EndpointDefinition>>;
 
 type SteamEndpoint = keyof typeof STEAM_ENDPOINTS;
@@ -109,6 +113,7 @@ interface SteamEndpointQueries {
     count: string;
     maxlength: "1";
   }>;
+  readonly getWishlist: Readonly<{ input_json: string }>;
 }
 
 export interface SteamHttpRequest {

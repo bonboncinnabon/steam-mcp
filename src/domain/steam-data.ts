@@ -9,6 +9,14 @@ export type PlayerDataCollection<T> =
   | { readonly visibility: "public"; readonly items: readonly T[] }
   | { readonly visibility: "private"; readonly items: readonly [] };
 
+export type PlayerDataPage<T> =
+  | {
+      readonly visibility: "public";
+      readonly items: readonly T[];
+      readonly totalCount: number;
+    }
+  | { readonly visibility: "private"; readonly items: readonly [] };
+
 export interface PlayerSummary {
   readonly steamId: SteamId64;
   readonly displayName: string;
@@ -81,7 +89,7 @@ export interface Price {
 
 export interface WishlistItem {
   readonly appId: AppId;
-  readonly name: string;
+  readonly name?: string;
   readonly available: boolean;
   readonly price?: Price;
   readonly discountPercent?: number;

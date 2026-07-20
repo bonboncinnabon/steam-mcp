@@ -281,8 +281,9 @@ breaking unrelated tool facets.
 `derived` : A result computed by this service from supported or best-effort
 facts. Derived results disclose their inputs and relevant heuristics.
 
-Best-effort sources are permitted for wishlist, reviews, deals, tags, Steam Deck
-information, search, and richer recommendation inputs. Each adapter must
+Best-effort sources are permitted for wishlist enrichment, store details and
+deal fields, Steam Deck information, search, and richer recommendation inputs.
+Aggregate reviews use Steam's documented store-review API. Each adapter must
 document why it exists, the observed contract, its fallback behavior, and the
 fixture or live probe that detects drift.
 

@@ -72,7 +72,7 @@
 
 ## 5. Best-Effort and Derived Steam Sources
 
-- [ ] 5.1 Document and approve each initial Steam-operated best-effort endpoint,
+- [x] 5.1 Document and approve each initial Steam-operated best-effort endpoint,
       its host, expected contract, data classification, call cost, cache policy,
       and independent disable switch.
 - [ ] 5.2 TDD the best-effort wishlist adapter, including money normalization,

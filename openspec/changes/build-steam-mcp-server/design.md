@@ -226,9 +226,10 @@ Outbound requests use HTTPS and an explicit Steam host allowlist. Redirect
 targets are revalidated on every hop. Model-controlled values cannot choose
 hosts, methods, credentials, or arbitrary headers.
 
-**Rationale:** Wishlist, reviews, search, tags, Deck information, and richer
-recommendations require useful but undocumented Steam endpoints. Isolation
-preserves usefulness without pretending these sources are stable.
+**Rationale:** Wishlist enrichment, search, store details, and Deck information
+require useful but incompletely documented Steam endpoints. Aggregate reviews
+use Steam's documented store-review API. Isolation preserves usefulness without
+pretending the remaining best-effort sources are stable.
 
 **Alternatives considered:** Excluding all undocumented endpoints makes the
 product materially weaker; mixing them into one generic client hides their risk

@@ -45,10 +45,10 @@ news, and global achievement information.
 The game-details tool SHALL preserve successful facets when one or more optional
 sources fail and SHALL identify each unavailable facet.
 
-#### Scenario: Best-effort reviews unavailable
+#### Scenario: Optional reviews unavailable
 
-- **WHEN** documented store details succeed but the best-effort reviews source
-  fails validation
+- **WHEN** store details succeed but the optional supported reviews source fails
+  validation
 - **THEN** the tool returns the store details with `meta.partial` set to true
   and a warning identifying reviews as unavailable
 

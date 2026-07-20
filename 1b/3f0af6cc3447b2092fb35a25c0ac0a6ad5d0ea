@@ -1,0 +1,47 @@
+src/steam/adapters/steam-library-adapter.ts
+  s_336c0404d47041::t_609eca02422aeb 43-44,46-50
+  s_336c0404d47041::t_bffb33e6fb8d51 19,21,25-26,28,37-38,82,105-106
+  s_336c0404d47041::t_cd3b1164f56900 17-18,20,22-24,31,45
+  s_336c0404d47041::t_5cdf4ed132c2c8 29-30,32-36
+  s_336c0404d47041::t_bc7da0b4d54ec0 1-16,27,39-40,55-81,107-108,110-111,130-131
+  s_336c0404d47041::t_ba2ae53c3038ea 41-42,51-54,83-104,109,112-129
+src/application/ports/steam-data.ts
+  s_336c0404d47041::t_bc7da0b4d54ec0 9,34,38
+src/steam/http/steam-request.ts
+  s_336c0404d47041::t_ba2ae53c3038ea 37-40,55-60
+  s_336c0404d47041::t_bc7da0b4d54ec0 33-36,50-54,61-62
+test/contract/steam/steam-http-fixtures.test.ts
+  s_336c0404d47041::t_e91c7e813cc9b6 6-7,75-82,86-91
+src/domain/steam-data.ts
+  s_336c0404d47041::t_bc7da0b4d54ec0 11
+  s_336c0404d47041::t_addc1550eb84b9 8-10
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_198dd4a387be64 63
+test/unit/steam/steam-library-adapter.test.ts
+  s_336c0404d47041::t_70baed362659df 174-195,197-200
+  s_336c0404d47041::t_26beb3a067b9cd 60-80
+  s_336c0404d47041::t_425ceb1cdbedc6 196,227,258
+  s_336c0404d47041::t_2322aa920d74d3 202-226,228-231
+  s_336c0404d47041::t_403fa90dc157e5 81-103
+  s_336c0404d47041::t_1a168f8f28767b 40,135
+  s_336c0404d47041::t_fa7f3e9fff7940 104-134,136-153
+  s_336c0404d47041::t_b60df057fb9a45 232-257,259-262
+  s_336c0404d47041::t_e82103e58158f3 154-173,201
+  s_336c0404d47041::t_b15df95a0f8612 1-39,41-59,263
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "1b3f0af6cc3447b2092fb35a25c0ac0a6ad5d0ea",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

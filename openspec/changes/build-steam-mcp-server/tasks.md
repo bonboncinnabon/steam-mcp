@@ -90,7 +90,7 @@
 
 ## 6. Identity Resolution and Player Application Services
 
-- [ ] 6.1 TDD the common identity-resolution order of explicit user, hosted
+- [x] 6.1 TDD the common identity-resolution order of explicit user, hosted
       linked identity, local `STEAM_USER`, then `IDENTITY_NOT_LINKED`, including
       tenant-safe lookup and no link mutation.
 - [ ] 6.2 TDD `steam_get_player` for normalized public profile facets, unknown

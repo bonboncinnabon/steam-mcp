@@ -101,7 +101,7 @@
 - [x] 6.4 TDD `steam_analyze_library` for documented playtime, backlog,
       abandoned-game, and genre heuristics, including threshold explanations and
       insufficient-data behavior.
-- [ ] 6.5 TDD `steam_get_recent_activity` for bounded recent games, current
+- [x] 6.5 TDD `steam_get_recent_activity` for bounded recent games, current
       activity, successful empty results, privacy, and partial optional facets.
 - [ ] 6.6 TDD `steam_get_achievements` for user-and-game resolution, opaque
       pagination, unlock state and time, optional rarity, no-achievement games,

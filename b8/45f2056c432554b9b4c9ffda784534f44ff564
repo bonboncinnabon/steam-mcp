@@ -1,0 +1,34 @@
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_6c938e4700db7d 98
+test/unit/application/steam-get-library.test.ts
+  s_336c0404d47041::t_4ef5cb3cb338e6 5,326-331,339-351
+  s_336c0404d47041::t_b0b2b3de9ab33f 50,181-184,332-338
+  s_336c0404d47041::t_27f1677bc4f4d7 53-64,66-74
+  s_336c0404d47041::t_f9d87c69175537 75-180,185-208
+  s_336c0404d47041::t_05c6dea8d70dfc 1-4,6-49,51-52,409
+  s_336c0404d47041::t_981989d21dc3c1 65
+  s_336c0404d47041::t_ea1176bffd3eac 209-325,352
+  s_336c0404d47041::t_0643c82fb3decf 353-367
+  s_336c0404d47041::t_307276772390c1 368-408
+src/application/services/steam-get-library.ts
+  s_336c0404d47041::t_d2026c74a021f1 15,97-108
+  s_336c0404d47041::t_073673e69939b8 1-14,16-80,88-96,109-146,152-248
+  s_336c0404d47041::t_e954c965eb9972 81-87
+  s_336c0404d47041::t_b0b2b3de9ab33f 147-151
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "b845f2056c432554b9b4c9ffda784534f44ff564",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

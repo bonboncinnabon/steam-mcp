@@ -12,5 +12,9 @@ Before adding or refreshing a fixture:
 3. Keep only fields required by the contract under test.
 4. Review the staged fixture for key-like strings before committing it.
 
+The default contract suite automatically rejects credential fields,
+authorization or cookie headers, SteamID64 values, URLs, and email addresses.
+Live probe responses are never written to this directory automatically.
+
 `malformed-response.txt` intentionally contains invalid JSON and therefore uses
 a text extension so formatters do not attempt to parse it.

@@ -39,11 +39,16 @@ pnpm test:coverage
 Live Steam probes are opt-in and are never part of the default test command:
 
 ```sh
-STEAM_API_KEY=<resolved-by-the-shell> pnpm test:live
+STEAM_LIVE_TESTS=1 \
+STEAM_LIVE_TEST_API_KEY=<resolved-by-the-shell> \
+STEAM_LIVE_TEST_STEAM_ID=<dedicated-test-account-steamid64> \
+pnpm test:live
 ```
 
-Never paste the resolved key into evidence, fixtures, command output, or source
-control.
+Use a dedicated Steam test account and credential, never a personal account or
+the normal local `STEAM_API_KEY`. The probes retain no raw responses and emit
+only fixed probe/outcome counters. Never paste the resolved key into evidence,
+fixtures, command output, or source control.
 
 ## Evidence template
 

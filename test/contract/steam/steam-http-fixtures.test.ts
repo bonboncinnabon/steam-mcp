@@ -8,6 +8,7 @@ import { createSteamLibraryAdapter } from "../../../src/steam/adapters/steam-lib
 import { executeSteamRequest } from "../../../src/steam/http/steam-http-client.js";
 import { buildSteamRequest } from "../../../src/steam/http/steam-request.js";
 import { parseSteamResponse } from "../../../src/steam/http/steam-response.js";
+import { findFixtureSafetyViolations } from "../../support/fixture-safety.js";
 
 const storeDetailsSchema = z.record(
   z.string(),
@@ -36,9 +37,7 @@ describe("scrubbed Steam HTTP fixtures", () => {
         new URL(fixtureName, fixtureDirectory),
         "utf8",
       );
-      expect(fixture).not.toMatch(
-        /(?:7656119\d{10}|[?&]key=|authorization|set-cookie|https?:\/\/)/i,
-      );
+      expect(findFixtureSafetyViolations(fixture)).toEqual([]);
     }
   });
 

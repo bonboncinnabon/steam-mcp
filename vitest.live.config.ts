@@ -1,11 +1,14 @@
-import { mergeConfig } from "vitest/config";
+import { defineConfig } from "vitest/config";
 
-import baseConfig from "./vitest.config.js";
-
-export default mergeConfig(baseConfig, {
+export default defineConfig({
   test: {
+    exclude: ["node_modules/**", "dist/**"],
     include: ["test/live/**/*.test.ts"],
     passWithNoTests: true,
+    sequence: {
+      concurrent: false,
+      shuffle: false,
+    },
     testTimeout: 15_000,
   },
 });

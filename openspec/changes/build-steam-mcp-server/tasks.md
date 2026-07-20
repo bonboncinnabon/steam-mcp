@@ -84,7 +84,7 @@
 - [x] 5.4 TDD optional Steam Deck, aggregate review, approved tag, and other
       game-detail facet adapters so each can fail independently and be disabled
       without affecting supported facets.
-- [ ] 5.5 Add opt-in live contract probes using a dedicated test credential,
+- [x] 5.5 Add opt-in live contract probes using a dedicated test credential,
       automatic fixture-safety checks, and bounded drift metrics; keep the
       probes excluded from default CI.
 

@@ -2,9 +2,10 @@ import { z } from "zod";
 
 import type { SteamDataPort } from "../ports/steam-data.js";
 import {
-  parsePaginationCursor,
-  type PaginationCursor,
-} from "../../domain/pagination-cursor.js";
+  decodeOpaqueCursor,
+  encodeOpaqueCursor,
+} from "../pagination/opaque-cursor.js";
+import type { PaginationCursor } from "../../domain/pagination-cursor.js";
 import { failure, success } from "../../domain/result.js";
 import type { OwnedGame } from "../../domain/steam-data.js";
 import { parseSteamId64, type SteamId64 } from "../../domain/steam-id.js";
@@ -81,7 +82,9 @@ export function createSteamGetLibraryService(
       let cursor: LibraryCursorPayload | undefined;
       try {
         cursor =
-          input.cursor === undefined ? undefined : decodeCursor(input.cursor);
+          input.cursor === undefined
+            ? undefined
+            : decodeOpaqueCursor(input.cursor, libraryCursorSchema);
       } catch {
         return failure("INVALID_INPUT", "Invalid library cursor", false);
       }
@@ -154,7 +157,7 @@ export function createSteamGetLibraryService(
       const nextOffset = offset + page.length;
       const nextCursor =
         nextOffset < games.length
-          ? encodeCursor({
+          ? encodeOpaqueCursor({
               version: 1,
               ...expectedCursorContext,
               offset: nextOffset,
@@ -213,25 +216,6 @@ function comparePrimary(
   const rightValue =
     sortBy === "recent" ? (right.lastPlayedAt ?? "") : (right.name ?? "");
   return leftValue < rightValue ? -1 : leftValue > rightValue ? 1 : 0;
-}
-
-function encodeCursor(payload: LibraryCursorPayload): PaginationCursor {
-  return parsePaginationCursor(
-    Buffer.from(JSON.stringify(payload), "utf8").toString("base64url"),
-  );
-}
-
-function decodeCursor(cursor: string): LibraryCursorPayload {
-  const parsedCursor = parsePaginationCursor(cursor);
-  try {
-    const bytes = Buffer.from(parsedCursor, "base64url");
-    if (bytes.toString("base64url") !== parsedCursor) {
-      throw new TypeError("Invalid library cursor");
-    }
-    return libraryCursorSchema.parse(JSON.parse(bytes.toString("utf8")));
-  } catch {
-    throw new TypeError("Invalid library cursor");
-  }
 }
 
 function matchesCursorContext(

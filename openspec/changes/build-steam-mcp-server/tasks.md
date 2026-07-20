@@ -103,7 +103,7 @@
       insufficient-data behavior.
 - [x] 6.5 TDD `steam_get_recent_activity` for bounded recent games, current
       activity, successful empty results, privacy, and partial optional facets.
-- [ ] 6.6 TDD `steam_get_achievements` for user-and-game resolution, opaque
+- [x] 6.6 TDD `steam_get_achievements` for user-and-game resolution, opaque
       pagination, unlock state and time, optional rarity, no-achievement games,
       and privacy.
 - [ ] 6.7 TDD `steam_get_friends` for bounded pagination, optional presence

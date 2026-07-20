@@ -1,0 +1,21 @@
+docs/superpowers/specs/2026-07-20-steam-mcp-design.md
+  s_336c0404d47041::t_92180cf24021b5 1-3,5-426
+  s_336c0404d47041::t_4a399111a06dbb 4,427-437,441-452
+  s_336c0404d47041::t_d5902a5b8ec5fc 438-440
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "815a65caa07aff92cc53f3738dab0fc61867d1ba",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

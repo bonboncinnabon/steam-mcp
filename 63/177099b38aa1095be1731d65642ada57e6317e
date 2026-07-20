@@ -1,0 +1,41 @@
+src/steam/http/steam-http-client.ts
+  s_336c0404d47041::t_26baaf7648a720 82-85
+test/unit/steam/steam-http-client.test.ts
+  s_336c0404d47041::t_9c52d596fb6b94 338-384
+src/steam/http/steam-request.ts
+  s_336c0404d47041::t_26baaf7648a720 14,54-58,93-97,105,130-132
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_7d72fc003ed5ac 68
+src/application/ports/steam-data.ts
+  s_336c0404d47041::t_26baaf7648a720 57
+test/unit/steam/steam-friend-adapter.test.ts
+  s_336c0404d47041::t_dc157a6a3e3ff7 34,67,89,109,116,164,185
+  s_336c0404d47041::t_a9907a0e85a08e 220-245,247-262
+  s_336c0404d47041::t_f9e8f5613f5b13 105,120-123,138,145
+  s_336c0404d47041::t_a9265f58c6e711 1-5,8-33,35-60,263
+  s_336c0404d47041::t_e23a7698af41e4 6-7,102-104,106-108,110-115,117-119,124-137,139-144,146-160
+  s_336c0404d47041::t_8ab01c5ae67b59 61-66,68-88,90-101,161
+  s_336c0404d47041::t_e6c96b6122746b 246
+  s_336c0404d47041::t_64fa4073b75af4 162-163,165-184,186-219
+src/domain/steam-data.ts
+  s_336c0404d47041::t_c9d872545de32e 67-76
+src/steam/adapters/steam-friend-adapter.ts
+  s_336c0404d47041::t_c9d872545de32e 5,8,40-44,78-125
+  s_336c0404d47041::t_26baaf7648a720 1-4,6-7,9-39,45-77,126
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "63177099b38aa1095be1731d65642ada57e6317e",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

@@ -22,6 +22,14 @@ const STEAM_ENDPOINTS = {
     host: "api.steampowered.com",
     path: "/ISteamUser/ResolveVanityURL/v0001/",
   },
+  getPlayerSummaries: {
+    host: "api.steampowered.com",
+    path: "/ISteamUser/GetPlayerSummaries/v0002/",
+  },
+  getPlayerBans: {
+    host: "api.steampowered.com",
+    path: "/ISteamUser/GetPlayerBans/v1/",
+  },
 } as const satisfies Readonly<Record<string, EndpointDefinition>>;
 
 type SteamEndpoint = keyof typeof STEAM_ENDPOINTS;
@@ -29,6 +37,8 @@ type SteamEndpoint = keyof typeof STEAM_ENDPOINTS;
 interface SteamEndpointQueries {
   readonly storeDetails: Readonly<{ appids: string }>;
   readonly resolveVanityUrl: Readonly<{ key: string; vanityurl: string }>;
+  readonly getPlayerSummaries: Readonly<{ key: string; steamids: string }>;
+  readonly getPlayerBans: Readonly<{ key: string; steamids: string }>;
 }
 
 export interface SteamHttpRequest {

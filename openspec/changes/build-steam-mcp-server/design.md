@@ -236,6 +236,24 @@ pretending these compatibility assumptions are stable.
 product materially weaker; mixing them into one generic client hides their risk
 and makes drift harder to diagnose.
 
+#### Library-analysis policy
+
+Library analysis is deterministic and discloses these version-one thresholds:
+
+- backlog means exactly zero recorded playtime;
+- an abandoned-game signal requires 1 through 119 recorded minutes and a known
+  last-played time at least 180 days old;
+- playtime distribution uses unplayed, under 2 hours, 2 to under 10 hours, 10 to
+  under 50 hours, and at least 50 hours;
+- genre evidence considers at most the 20 most-played games with positive
+  playtime and requires at least three successfully enriched games. Each genre
+  receives the full playtime of every evidence game carrying that genre, so the
+  result is a ranking signal rather than a partition of total playtime.
+
+Missing last-played timestamps never create an abandoned-game claim. Failed or
+insufficient store enrichment marks genre evidence unavailable or partial rather
+than inventing genres.
+
 ### 7. Enforce policy before issuing upstream work
 
 The hosted request path is:

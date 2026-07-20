@@ -57,6 +57,14 @@ available library facts.
 - **THEN** the tool omits or marks that observation unavailable rather than
   inventing a conclusion
 
+#### Scenario: Version-one analysis thresholds
+
+- **WHEN** the tool derives backlog, abandoned-game, playtime-distribution, or
+  frequently played genre signals
+- **THEN** it applies and returns the documented version-one thresholds from the
+  design, bounds genre enrichment to twenty games, and never treats missing
+  last-played or genre evidence as a positive signal
+
 ### Requirement: Recent activity tool
 
 The system SHALL expose `steam_get_recent_activity` to return bounded recently

@@ -236,6 +236,13 @@ abandoned-game signals, frequently played genres, and other explicitly
 documented heuristics. The response explains each heuristic and distinguishes
 facts from derived observations.
 
+The version-one heuristics define backlog as zero recorded minutes and an
+abandoned-game signal as 1–119 minutes with a known last-played timestamp at
+least 180 days old. Distribution buckets are unplayed, under 2 hours, 2–10
+hours, 10–50 hours, and 50+ hours. Genre evidence uses at most the 20
+most-played games, requires at least three successful store-detail enrichments,
+and marks missing evidence unavailable rather than guessing.
+
 `steam_get_recent_activity` : Return recently played games and public current
 activity for a user.
 

@@ -98,7 +98,7 @@
 - [x] 6.3 TDD `steam_get_library` for filtering, sorting, opaque cursor
       pagination, limits, deterministic continuation, empty libraries, and
       private libraries.
-- [ ] 6.4 TDD `steam_analyze_library` for documented playtime, backlog,
+- [x] 6.4 TDD `steam_analyze_library` for documented playtime, backlog,
       abandoned-game, and genre heuristics, including threshold explanations and
       insufficient-data behavior.
 - [ ] 6.5 TDD `steam_get_recent_activity` for bounded recent games, current

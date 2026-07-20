@@ -38,6 +38,18 @@ const STEAM_ENDPOINTS = {
     host: "api.steampowered.com",
     path: "/IPlayerService/GetRecentlyPlayedGames/v0001/",
   },
+  getPlayerAchievements: {
+    host: "api.steampowered.com",
+    path: "/ISteamUserStats/GetPlayerAchievements/v1/",
+  },
+  getAchievementSchema: {
+    host: "api.steampowered.com",
+    path: "/ISteamUserStats/GetSchemaForGame/v2/",
+  },
+  getGlobalAchievementPercentages: {
+    host: "api.steampowered.com",
+    path: "/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v2/",
+  },
 } as const satisfies Readonly<Record<string, EndpointDefinition>>;
 
 type SteamEndpoint = keyof typeof STEAM_ENDPOINTS;
@@ -60,6 +72,18 @@ interface SteamEndpointQueries {
     count: string;
     format: "json";
   }>;
+  readonly getPlayerAchievements: Readonly<{
+    key: string;
+    steamid: string;
+    appid: string;
+    l: "english";
+  }>;
+  readonly getAchievementSchema: Readonly<{
+    key: string;
+    appid: string;
+    l: "english";
+  }>;
+  readonly getGlobalAchievementPercentages: Readonly<{ gameid: string }>;
 }
 
 export interface SteamHttpRequest {

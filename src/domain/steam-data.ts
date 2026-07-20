@@ -45,6 +45,20 @@ export interface PlayerAchievement {
   readonly globalPercent?: number;
 }
 
+export interface GameAchievementDefinition {
+  readonly apiName: string;
+  readonly displayName?: string;
+  readonly description?: string;
+  readonly hidden: boolean;
+  readonly iconUrl?: string;
+  readonly lockedIconUrl?: string;
+}
+
+export interface GlobalAchievementPercentage {
+  readonly apiName: string;
+  readonly globalPercent: number;
+}
+
 export interface FriendRelationship {
   readonly steamId: SteamId64;
   readonly friendsSince?: IsoTimestamp;

@@ -62,7 +62,7 @@
       adapters with privacy-aware normalization.
 - [x] 4.4 TDD supported owned-games and recently-played adapters with
       empty-versus-private behavior and bounded response handling.
-- [ ] 4.5 TDD supported player-achievement, game-schema, and global-achievement
+- [x] 4.5 TDD supported player-achievement, game-schema, and global-achievement
       adapters with stable achievement identifiers and optional rarity
       enrichment.
 - [ ] 4.6 TDD the supported friend-list adapter and bounded batched profile

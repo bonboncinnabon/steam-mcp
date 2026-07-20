@@ -3,8 +3,10 @@ import type {
   DeckCompatibility,
   FriendRelationship,
   GameNewsItem,
+  GameAchievementDefinition,
   GameReviewSummary,
   GameSearchCandidate,
+  GlobalAchievementPercentage,
   OwnedGame,
   PlayerDataCollection,
   PlayerAchievement,
@@ -40,7 +42,15 @@ export interface SteamDataPort {
     steamId: SteamId64,
     appId: AppId,
     signal: AbortSignal,
-  ): Promise<readonly PlayerAchievement[]>;
+  ): Promise<PlayerDataCollection<PlayerAchievement>>;
+  getGameAchievementSchema(
+    appId: AppId,
+    signal: AbortSignal,
+  ): Promise<readonly GameAchievementDefinition[]>;
+  getGlobalAchievementPercentages(
+    appId: AppId,
+    signal: AbortSignal,
+  ): Promise<readonly GlobalAchievementPercentage[]>;
   getFriends(
     steamId: SteamId64,
     signal: AbortSignal,

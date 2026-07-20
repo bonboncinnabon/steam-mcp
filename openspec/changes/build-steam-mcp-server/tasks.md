@@ -67,7 +67,7 @@
       enrichment.
 - [x] 4.6 TDD the supported friend-list adapter and bounded batched profile
       enrichment without unbounded fan-out.
-- [ ] 4.7 TDD supported current-player-count and news adapters used by
+- [x] 4.7 TDD supported current-player-count and news adapters used by
       consolidated game details.
 
 ## 5. Best-Effort and Derived Steam Sources

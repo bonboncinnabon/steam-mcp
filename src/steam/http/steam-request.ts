@@ -56,6 +56,14 @@ const STEAM_ENDPOINTS = {
     path: "/ISteamUser/GetFriendList/v1/",
     acceptedErrorStatuses: [401],
   },
+  getCurrentPlayers: {
+    host: "api.steampowered.com",
+    path: "/ISteamUserStats/GetNumberOfCurrentPlayers/v1/",
+  },
+  getGameNews: {
+    host: "api.steampowered.com",
+    path: "/ISteamNews/GetNewsForApp/v2/",
+  },
 } as const satisfies Readonly<Record<string, EndpointDefinition>>;
 
 type SteamEndpoint = keyof typeof STEAM_ENDPOINTS;
@@ -94,6 +102,12 @@ interface SteamEndpointQueries {
     key: string;
     steamid: string;
     relationship: "friend";
+  }>;
+  readonly getCurrentPlayers: Readonly<{ appid: string }>;
+  readonly getGameNews: Readonly<{
+    appid: string;
+    count: string;
+    maxlength: "1";
   }>;
 }
 

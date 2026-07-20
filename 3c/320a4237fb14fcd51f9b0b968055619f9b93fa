@@ -1,0 +1,31 @@
+test/unit/application/steam-search-games.test.ts
+  s_336c0404d47041::t_d5ba62d8ac4eb2 85-152
+  s_336c0404d47041::t_37b3a41648089b 64-83
+  s_336c0404d47041::t_ed87337cea4a3f 1-3,6-24,63,154
+  s_336c0404d47041::t_3e60825cbbd47d 84,153
+  s_336c0404d47041::t_02487c904ebd33 4-5,25-62
+src/application/services/steam-search-games.ts
+  s_336c0404d47041::t_929112dbe02c64 53-56
+  s_336c0404d47041::t_0b199020c7e232 2-3,15-19,32,57-60
+  s_336c0404d47041::t_66ab1a1a53912c 23-30
+  s_336c0404d47041::t_13b1b3f313b99d 1,4-14,20-22,31,33,51-52,61-63
+  s_336c0404d47041::t_6bfc1cf752d7b1 34-50
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_8e422d9b7d5857 118
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "3c320a4237fb14fcd51f9b0b968055619f9b93fa",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

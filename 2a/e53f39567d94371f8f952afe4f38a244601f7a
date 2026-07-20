@@ -1,0 +1,52 @@
+src/steam/adapters/steam-achievement-adapter.ts
+  s_336c0404d47041::t_f84a06cce6a0fe 30,119-122
+  s_336c0404d47041::t_d883db52d7a4c4 123-128
+  s_336c0404d47041::t_09a3e2d6effc4a 1-5,8-16,21-22,32-33,47-48,91-118,138-139,141-151,202-203,209
+  s_336c0404d47041::t_b9354218f249dd 23-29,31,38
+  s_336c0404d47041::t_363bfc388a4c7a 7,73-81,87-90,182-199
+  s_336c0404d47041::t_e232af784e7c04 17-20,34-37,39-46,129-137,204-208
+  s_336c0404d47041::t_538edbe24aa89e 82-86
+  s_336c0404d47041::t_9a2e5d3bb6c610 6,49-72,152-181,200-201
+  s_336c0404d47041::t_774773b26dbfa0 140
+  s_336c0404d47041::t_1dd1ed461c30fe 210-244
+test/unit/steam/steam-achievement-adapter.test.ts
+  s_336c0404d47041::t_14772b0ad483ad 95-148
+  s_336c0404d47041::t_07022465f597a7 424
+  s_336c0404d47041::t_c20f3fcd6206ab 65-94
+  s_336c0404d47041::t_de4ca47f52a66a 185-214
+  s_336c0404d47041::t_2b7df7bfa3e459 215-250
+  s_336c0404d47041::t_c647ca92fee920 326-358
+  s_336c0404d47041::t_9b2b477421f982 359-423,425-467
+  s_336c0404d47041::t_9cef4d463418a4 251-283,325
+  s_336c0404d47041::t_a27b5341222792 7,284-324
+  s_336c0404d47041::t_f84a06cce6a0fe 22-26
+  s_336c0404d47041::t_5195684ace0280 149-184
+  s_336c0404d47041::t_d78b417621fb59 1-6,8-21,27-64,468
+src/application/ports/steam-data.ts
+  s_336c0404d47041::t_9a2e5d3bb6c610 6,9,46-53
+  s_336c0404d47041::t_09a3e2d6effc4a 45
+src/domain/steam-data.ts
+  s_336c0404d47041::t_9a2e5d3bb6c610 48-61
+src/steam/http/steam-request.ts
+  s_336c0404d47041::t_9a2e5d3bb6c610 45-48,78-82,85
+  s_336c0404d47041::t_09a3e2d6effc4a 41-44,75-77,83-84
+  s_336c0404d47041::t_363bfc388a4c7a 49-52,86
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_baf24c0e82c913 65
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.14",
+  "base_commit_sha": "2ae53f39567d94371f8f952afe4f38a244601f7a",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

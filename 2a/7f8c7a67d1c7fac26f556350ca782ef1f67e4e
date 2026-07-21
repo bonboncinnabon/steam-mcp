@@ -1,0 +1,45 @@
+vitest.high-risk.config.ts
+  s_336c0404d47041::t_ff1b9e7db62f1e 1-21,23-30
+  s_336c0404d47041::t_a939aad7786557 22
+src/infrastructure/safe-observability.ts
+  s_336c0404d47041::t_ae9a1e8678f5b8 165,171-176,180-184,187-192,205-213,215,219-221,223
+  s_336c0404d47041::t_94433d4444c2a2 166-170
+  s_336c0404d47041::t_4b205a45b9a2f5 127-133,178-179,185-186
+test/unit/infrastructure/safe-observability.test.ts
+  s_336c0404d47041::t_342bde4de5e4cd 129-157
+  s_336c0404d47041::t_5c85f1b7eb3119 73-75
+  s_336c0404d47041::t_93bc72b522b50e 65-72,76-88,199-234,284-346,348
+  s_336c0404d47041::t_85dd77184fc9dc 89-128
+  s_336c0404d47041::t_72272c154862f7 347
+  s_336c0404d47041::t_c65b504b3a1e8e 349
+test/unit/infrastructure/http-request-boundary.test.ts
+  s_336c0404d47041::t_93bc72b522b50e 28,57
+test/unit/transports/hosted-lifecycle.test.ts
+  s_336c0404d47041::t_b2a003e5042764 192-193,195
+  s_336c0404d47041::t_27a8fa1a9c7940 194,196-259
+package.json
+  s_336c0404d47041::t_ff1b9e7db62f1e 31
+tsconfig.json
+  s_336c0404d47041::t_34fe3f810f129f 32
+src/transports/hosted-lifecycle.ts
+  s_336c0404d47041::t_76c39f8e75a807 50,52-54,57
+  s_336c0404d47041::t_b2a003e5042764 37-38,46-48
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_74f4196e1f980a 198
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "2a7f8c7a67d1c7fac26f556350ca782ef1f67e4e",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

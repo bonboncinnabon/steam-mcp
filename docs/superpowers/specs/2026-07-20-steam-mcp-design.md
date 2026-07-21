@@ -10,9 +10,9 @@
 
 Build a reliable, read-only Steam MCP server for personal use and public
 distribution. The hosted product must require no local installation or Steam API
-key from ordinary users. It must support both account-aware requests such as
-“show my library” and explicit public-profile requests using a SteamID64, vanity
-name, or profile URL.
+key from ordinary users. Hosted subject-oriented requests use an explicit
+SteamID64, vanity name, or profile URL; local callers may configure a
+`STEAM_USER` default.
 
 The implementation must follow current MCP, OpenAI, and Anthropic conventions,
 use strict test-driven development, and keep security, privacy, operational
@@ -20,9 +20,9 @@ reliability, and model-facing tool quality as first-class concerns.
 
 ## 2. Product Position
 
-The product is a zero-install, account-aware Steam MCP that also works for
-arbitrary public Steam research. It is not a Steam client controller, Steamworks
-publisher tool, trading system, or generic Steam API proxy.
+The product is a zero-install Steam data MCP for arbitrary public Steam
+research. It is not a Steam client controller, Steamworks publisher tool,
+trading system, or generic Steam API proxy.
 
 The closest surveyed general-purpose competitor is `Sarg338/steam-mcp`, which
 provides broad local, read-only Steam coverage using a user-supplied key. Other
@@ -31,7 +31,7 @@ development, narrow library access, or commercial API documentation. The
 differentiating combination is:
 
 - A hosted Streamable HTTP endpoint protected by standards-compliant MCP OAuth.
-- Optional linked Steam identity for natural “me” and “my” semantics.
+- Explicit hosted public-profile lookup with a local-only identity default.
 - Explicit lookup of any public Steam profile.
 - A small task-oriented tool surface instead of a raw endpoint catalog.
 - Structured, bounded, model-friendly results.
@@ -39,7 +39,7 @@ differentiating combination is:
 - An open-source local/self-hosted fallback.
 
 OAuth alone is not treated as a durable advantage. The product must combine
-low-friction access with strong composite behaviors, identity-aware defaults,
+low-friction access with strong composite behaviors, predictable identity input,
 predictable contracts, and substantially better reliability evidence.
 
 ## 3. Scope
@@ -51,13 +51,13 @@ predictable contracts, and substantially better reliability evidence.
 - Hosted Streamable HTTP transport.
 - Local `stdio` transport.
 - OAuth 2.1 authorization for the hosted MCP endpoint.
-- Optional Steam identity linking through Steam OpenID.
+- Explicit public Steam user input for hosted subject-oriented tools.
 - A service-owned Steam Web API key for hosted calls.
 - A user-supplied `STEAM_API_KEY` for local and self-hosted calls.
 - Documented Steam Web API endpoints and isolated best-effort Steam-operated
   public endpoints.
-- Per-user quotas, upstream rate protection, caching, observability, and privacy
-  controls.
+- Per-user quotas, upstream rate protection, concurrency, observability, and
+  privacy controls.
 
 ### 3.2 Out of scope for v1
 
@@ -71,6 +71,8 @@ predictable contracts, and substantially better reliability evidence.
 - A generic `call_steam_api` escape hatch.
 - Automatically generating MCP tools from OpenAPI or Steam interface catalogs.
 - Scraping non-Steam sites.
+- Steam identity linking, MCP-managed accounts, or account mutation/deletion.
+- Response caching and request coalescing before measurements justify them.
 
 ## 4. Engineering Principles
 
@@ -80,7 +82,7 @@ The implementation must follow these constraints:
 - Preserve clear dependency direction toward the domain.
 - Keep modules small, cohesive, and independently testable.
 - Centralize behavioral values such as timeouts, retry limits, page limits,
-  quotas, and cache policies.
+  quotas and concurrency policies.
 - Define explicit contracts at every boundary.
 - Prefer typed adapters over speculative abstractions.
 - Keep secrets and personal data out of logs, fixtures, errors, and
@@ -104,7 +106,7 @@ MCP clients
                                                 Domain services
                                                   |         |
                                                   v         v
-                                            Steam gateway  Identity/quota/cache ports
+                                            Steam gateway  Identity/quota ports
                                                   |
                                                   v
                                            Allowlisted Steam hosts
@@ -128,9 +130,8 @@ Services depend on domain contracts and ports, not transport implementations.
 annotations, bounded defaults, and mapping between MCP results and application
 services.
 
-`identity` : Resolves the authenticated account, optional linked SteamID64,
-explicit user references, and local `STEAM_USER` defaults. It enforces tenant
-isolation.
+`identity` : Resolves explicit user references and local `STEAM_USER` defaults.
+OAuth subjects are never interpreted as Steam identities.
 
 `transports/http` : Stateless Streamable HTTP endpoint, OAuth resource-server
 enforcement, Origin and Host validation, health endpoints, graceful shutdown,
@@ -139,11 +140,10 @@ and request correlation.
 `transports/stdio` : Local adapter that reads credentials from the process
 environment and writes only MCP protocol messages to stdout. Logs go to stderr.
 
-`storage` : Ports and hosted implementations for identities, consent state,
-quotas, caches, and security audit records. Hosted deployment uses PostgreSQL
-for durable account metadata and Redis-compatible storage for quotas and
-short-lived caches. Local mode uses bounded in-memory implementations and stores
-no account data.
+`quota` : A bounded in-memory implementation protects the initial
+single-instance deployment. A distributed atomic implementation is a
+prerequisite for multi-instance or broad public rollout, not an account
+database.
 
 `observability` : Redacted structured logging, metrics, traces, health
 reporting, and request correlation. It must not record tool arguments or Steam
@@ -171,20 +171,17 @@ service.
 
 ### 6.2 Steam identity
 
-Steam OpenID proves a Steam identity but does not replace MCP OAuth or grant
-general delegated Steam Web API access. A hosted account may link one SteamID64
-through a browser-based Steam OpenID flow. The link is optional.
+MCP OAuth authorizes access to the resource server; it does not identify a Steam
+account. The server stores no Steam identity link.
 
 Subject-oriented tools resolve their `user` input in this order:
 
 1. Explicit SteamID64, vanity name, or Steam profile URL supplied to the tool.
-2. Hosted account’s linked SteamID64.
-3. Local process `STEAM_USER` value.
-4. Return `IDENTITY_NOT_LINKED` with corrective guidance.
+2. Local process `STEAM_USER` value in local mode only.
+3. Return `IDENTITY_NOT_LINKED` with corrective guidance.
 
-An explicit user reference never mutates the linked default. Linked identity
-records are scoped to the authenticated account, and tests must prove
-cross-account isolation.
+Hosted subject-oriented calls therefore require `user`. The authorization
+subject is used only for authorization and bounded quota attribution.
 
 ### 6.3 Steam API credentials
 
@@ -206,8 +203,8 @@ unnecessary prose.
 
 ### 7.1 Common conventions
 
-- `user` is optional for subject-oriented tools and follows the identity
-  resolution order above.
+- `user` is optional in the shared schema for local `STEAM_USER` fallback, but
+  hosted subject-oriented calls must supply it.
 - User identifiers accept SteamID64, vanity name, or an allowlisted Steam
   Community profile URL.
 - Collections use opaque cursor pagination and bounded `limit` values.
@@ -333,7 +330,7 @@ failures are not retried. Retryable network, 429, and selected 5xx failures
 receive bounded exponential backoff with jitter and respect upstream retry
 guidance.
 
-## 10. Quotas, Caching, and Concurrency
+## 10. Quotas and Concurrency
 
 The hosted service protects Valve’s documented daily limit and unpublished
 per-endpoint constraints through:
@@ -341,11 +338,6 @@ per-endpoint constraints through:
 - A global daily call budget with a safety reserve.
 - Per-user rolling and daily quotas.
 - Per-host and per-operation concurrency limits.
-- Request coalescing for identical safe reads.
-- Short-lived caching for public game/store data.
-- No caching of secrets.
-- No persistent caching of user libraries, friends, achievements, activity, or
-  wishlist data by default.
 - Backpressure before quota exhaustion.
 
 Behavioral values live in typed centralized policy objects and can be overridden
@@ -354,19 +346,12 @@ rather than silently falling back.
 
 ## 11. Privacy and Security
 
-The hosted service retains only:
-
-- The authorization-server subject identifier.
-- Optional linked SteamID64.
-- Consent, link, and revocation state.
-- Per-user quota counters.
-- Short-lived non-sensitive public-data caches.
-- Redacted security and operational telemetry.
-
-It does not persist Steam libraries, friends, achievements, activity, wishlists,
-API responses, MCP prompts, or tool arguments by default. Privacy documentation
-states what is processed, stored, retained, and deleted. Users can unlink Steam
-identity and delete their hosted account metadata.
+The hosted MCP creates no account record and does not durably retain OAuth
+subjects, Steam identities, Steam libraries, friends, achievements, activity,
+wishlists, API responses, MCP prompts, or tool arguments. Quota state is limited
+to opaque subject-derived keys and bounded counters for their rollover window.
+The external authorization provider owns login, consent, revocation, and account
+deletion.
 
 Required controls include:
 
@@ -447,9 +432,9 @@ horizontal statelessness.
 - Every public tool has contract tests for success, invalid input,
   privacy/unavailable data, rate limiting, and upstream failure.
 - Overall line and branch coverage must remain at least 90 percent.
-- Authorization, identity isolation, secret redaction, quota accounting, and
-  host enforcement require 100 percent branch coverage plus targeted mutation or
-  fault-injection testing.
+- Authorization, OAuth-subject/Steam-identity separation, secret redaction,
+  quota accounting, and host enforcement require 100 percent branch coverage
+  plus targeted mutation or fault-injection testing.
 - Type checking, linting, formatting, unit tests, contract tests, and dependency
   audits run in CI.
 - Broader integration, live, cross-client, load, and deployment checks run
@@ -466,13 +451,13 @@ The repository must include:
 - A complete tool reference with inputs, outputs, examples, limits, source
   tiers, and privacy behavior.
 - A supported versus best-effort upstream source matrix.
-- OAuth and Steam identity-linking documentation.
+- OAuth and explicit Steam identity-input documentation.
 - Security policy and threat model.
-- Privacy policy and data deletion behavior.
+- Privacy policy and no-retention boundary.
 - Test strategy and commands for every test tier.
 - Contributor guidance enforcing TDD and module boundaries.
 - An operational runbook for Steam outages, quota pressure, key rotation,
-  auth-provider failure, migration, rollback, and incident response.
+  auth-provider failure, rollback, and incident response.
 - Semantic-versioning and changelog policies for MCP contracts.
 
 Code documentation explains public contracts and non-obvious constraints. It
@@ -481,19 +466,18 @@ affect future contributors are recorded as short decision records.
 
 ## 14. Deployment and Operations
 
-The hosted HTTP service is stateless outside PostgreSQL and Redis-compatible
-ports and can scale horizontally. It exposes separate liveness and readiness
-checks that do not call Steam. Startup validates configuration, schema versions,
-OAuth metadata, and required storage connectivity.
+The hosted HTTP service is stateless. The initial bounded in-memory quota
+adapter limits deployment to one instance; horizontal scaling requires a tested
+distributed atomic quota adapter. Liveness and readiness checks do not call
+Steam. Startup validates configuration and OAuth metadata.
 
 Deployments must support:
 
 - Graceful connection draining and cancellation.
-- Backward-compatible database migrations.
 - Versioned container images and reproducible builds.
 - Staged rollout and fast rollback.
-- Metrics for request volume, tool latency, upstream status, cache behavior,
-  quota consumption, partial results, and error codes.
+- Metrics for request volume, tool latency, upstream status, quota consumption,
+  partial results, and error codes.
 - Alerts before global Steam quota exhaustion and on best-effort contract drift.
 
 The initial public rollout is quota-limited. Increasing access requires observed

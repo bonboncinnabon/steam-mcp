@@ -13,7 +13,6 @@ describe("BASELINE_SERVICE_POLICY", () => {
       globalDailyQuota: 80_000,
       globalSafetyReserve: 20_000,
       perUserDailyQuota: 500,
-      cacheTtlSeconds: 300,
       maxHostConcurrency: 8,
       maxOperationConcurrency: 4,
       maxToolFanOut: 20,
@@ -57,11 +56,7 @@ describe("createServicePolicy", () => {
   });
 
   it("rejects negative or fractional values for non-negative limits", () => {
-    const fields = [
-      "maxRetryAttempts",
-      "globalSafetyReserve",
-      "cacheTtlSeconds",
-    ] as const;
+    const fields = ["maxRetryAttempts", "globalSafetyReserve"] as const;
     const invalidValues = [-1, 0.5];
 
     const rejected = fields.flatMap((field) =>
@@ -113,7 +108,6 @@ describe("createServicePolicy", () => {
       { maxRetryAttempts: 6 },
       { globalDailyQuota: 100_001 },
       { perUserDailyQuota: 10_001 },
-      { cacheTtlSeconds: 86_401 },
       { maxHostConcurrency: 65 },
       { maxHostConcurrency: 64, maxOperationConcurrency: 33 },
       { maxToolFanOut: 101 },

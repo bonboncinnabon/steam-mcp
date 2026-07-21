@@ -166,7 +166,7 @@ describe("steam_get_library application service", () => {
     const steamId = parseSteamId64("76561198000000016");
     const service = createSteamGetLibraryService({
       identityResolver: {
-        resolve: vi.fn().mockResolvedValue({ steamId, source: "linked" }),
+        resolve: vi.fn().mockResolvedValue({ steamId, source: "explicit" }),
       },
       steamData: {
         getOwnedGames: vi.fn().mockResolvedValue({
@@ -179,7 +179,7 @@ describe("steam_get_library application service", () => {
 
     await expect(
       service.execute(
-        { subject: "private", limit: 20 },
+        { explicitUser: "private", limit: 20 },
         new AbortController().signal,
       ),
     ).resolves.toMatchObject({
@@ -334,7 +334,7 @@ describe("steam_get_library application service", () => {
           .mockRejectedValue(
             new SteamIdentityResolutionError(
               "IDENTITY_NOT_LINKED",
-              "Provide a Steam user or link a default Steam identity",
+              "Provide a Steam user, or configure STEAM_USER for local use",
             ),
           ),
       },

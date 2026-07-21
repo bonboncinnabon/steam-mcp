@@ -8,7 +8,7 @@ import {
 
 const PUBLIC_ERROR_MESSAGES: Readonly<Record<ErrorCode, string>> = {
   INVALID_INPUT: "The Steam tool input is invalid.",
-  IDENTITY_NOT_LINKED: "No default Steam identity is linked.",
+  IDENTITY_NOT_LINKED: "Provide a Steam user for this request.",
   PROFILE_PRIVATE: "The requested Steam profile data is private.",
   NOT_FOUND: "The requested Steam data was not found.",
   STEAM_AUTH_FAILED:

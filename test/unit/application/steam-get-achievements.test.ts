@@ -296,7 +296,7 @@ describe("steam_get_achievements application service", () => {
     const getGlobalAchievementPercentages = vi.fn();
     const service = createSteamGetAchievementsService({
       identityResolver: {
-        resolve: vi.fn().mockResolvedValue({ steamId, source: "linked" }),
+        resolve: vi.fn().mockResolvedValue({ steamId, source: "explicit" }),
       },
       steamData: {
         getPlayerAchievements: vi.fn().mockResolvedValue({
@@ -311,7 +311,7 @@ describe("steam_get_achievements application service", () => {
 
     await expect(
       service.execute(
-        { subject: "private-user", appId: 620, limit: 20 },
+        { explicitUser: "private-user", appId: 620, limit: 20 },
         new AbortController().signal,
       ),
     ).resolves.toMatchObject({
@@ -578,7 +578,7 @@ describe("steam_get_achievements application service", () => {
           .mockRejectedValue(
             new SteamIdentityResolutionError(
               "IDENTITY_NOT_LINKED",
-              "Provide a Steam user or link a default Steam identity",
+              "Provide a Steam user, or configure STEAM_USER for local use",
             ),
           ),
       },

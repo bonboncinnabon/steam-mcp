@@ -106,7 +106,7 @@ describe("steam_get_player application service", () => {
           .mockRejectedValue(
             new SteamIdentityResolutionError(
               "IDENTITY_NOT_LINKED",
-              "Provide a Steam user or link a default Steam identity",
+              "Provide a Steam user, or configure STEAM_USER for local use",
             ),
           ),
       },
@@ -119,7 +119,7 @@ describe("steam_get_player application service", () => {
       ok: false,
       error: {
         code: "IDENTITY_NOT_LINKED",
-        message: "Provide a Steam user or link a default Steam identity",
+        message: "Provide a Steam user, or configure STEAM_USER for local use",
         retryable: false,
       },
     });
@@ -142,7 +142,7 @@ describe("steam_get_player application service", () => {
     };
     const service = createSteamGetPlayerService({
       identityResolver: {
-        resolve: vi.fn().mockResolvedValue({ steamId, source: "linked" }),
+        resolve: vi.fn().mockResolvedValue({ steamId, source: "explicit" }),
       },
       steamData: {
         getPlayers: vi.fn().mockResolvedValue([profile]),
@@ -151,7 +151,7 @@ describe("steam_get_player application service", () => {
     });
 
     const result = await service.execute(
-      { subject: "private-subject" },
+      { explicitUser: "private-subject" },
       new AbortController().signal,
     );
 

@@ -1,23 +1,20 @@
-import type { LinkedIdentityPort } from "../ports/identity.js";
 import type { SteamDataPort } from "../ports/steam-data.js";
 import type { SteamId64 } from "../../domain/steam-id.js";
 import type { ErrorCode } from "../../domain/result.js";
 import { parseSteamUserReference } from "../../identity/steam-user-reference.js";
 
 interface SteamIdentityResolverDependencies {
-  readonly linkedIdentities: Pick<LinkedIdentityPort, "getLinkedSteamId">;
   readonly steamIdentities: Pick<SteamDataPort, "resolveVanityName">;
 }
 
 export interface ResolveSteamIdentityInput {
   readonly explicitUser?: string;
-  readonly subject?: string;
   readonly localDefault?: string;
 }
 
 export interface ResolvedSteamIdentity {
   readonly steamId: SteamId64;
-  readonly source: "explicit" | "linked" | "local_default";
+  readonly source: "explicit" | "local_default";
 }
 
 export interface SteamIdentityResolver {
@@ -63,14 +60,6 @@ export function createSteamIdentityResolver(
           "The requested Steam user was not found",
         );
       }
-      if (input.subject !== undefined) {
-        const steamId = await dependencies.linkedIdentities.getLinkedSteamId(
-          input.subject,
-        );
-        if (steamId !== undefined) {
-          return { steamId, source: "linked" };
-        }
-      }
       if (input.localDefault !== undefined) {
         const reference = parseSteamUserReference(input.localDefault);
         if (reference.kind === "steam_id") {
@@ -93,7 +82,7 @@ export function createSteamIdentityResolver(
       }
       throw new SteamIdentityResolutionError(
         "IDENTITY_NOT_LINKED",
-        "Provide a Steam user or link a default Steam identity",
+        "Provide a Steam user, or configure STEAM_USER for local use",
       );
     },
   };

@@ -43,7 +43,9 @@ send redacted diagnostics to stderr.
 ### Requirement: Local and hosted contract parity
 
 Local and hosted transports SHALL use the same domain services, tool schemas,
-result envelopes, error codes, identity-input rules, and source-tier behavior.
+result envelopes, error codes, and source-tier behavior. Transport-specific
+defaulting is limited to local `STEAM_USER`; hosted callers supply explicit
+users to subject-oriented tools.
 
 #### Scenario: Equivalent explicit-user call
 
@@ -53,7 +55,7 @@ result envelopes, error codes, identity-input rules, and source-tier behavior.
 
 ### Requirement: Local data minimization
 
-Local mode SHALL NOT require hosted PostgreSQL, Redis, OAuth, account
+Local mode SHALL NOT require hosted authorization, quota dependencies, account
 persistence, or unused placeholder infrastructure. Any process-local state added
 for a consumed port SHALL be bounded and SHALL NOT persist Steam payloads to
 disk.

@@ -115,4 +115,26 @@ describe("MCP tool adapter", () => {
       ),
     });
   });
+
+  it("guides missing identity callers without suggesting account linking", async () => {
+    const handler = createMcpToolHandler({
+      execute: vi.fn().mockRejectedValue({
+        code: "IDENTITY_NOT_LINKED",
+        retryable: false,
+      }),
+      renderSuccess: () => "unused",
+    });
+
+    await expect(
+      handler({}, { signal: new AbortController().signal }),
+    ).resolves.toMatchObject({
+      content: [{ text: "Provide a Steam user for this request." }],
+      structuredContent: {
+        error: {
+          code: "IDENTITY_NOT_LINKED",
+          message: "Provide a Steam user for this request.",
+        },
+      },
+    });
+  });
 });

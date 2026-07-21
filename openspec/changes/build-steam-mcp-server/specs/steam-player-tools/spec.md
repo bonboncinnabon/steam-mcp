@@ -106,12 +106,10 @@ ISO currency, and discount data when the best-effort Steam source is available.
 ### Requirement: Player-tool identity behavior
 
 Every subject-oriented player tool SHALL use the common identity-resolution
-order and SHALL NOT mutate the account’s linked identity when an explicit user
-is supplied.
+order and SHALL NOT read or mutate hosted account identity state.
 
 #### Scenario: Explicit public-profile research
 
-- **WHEN** an authenticated user invokes any player tool with an explicit
-  different public profile
-- **THEN** the tool uses that profile for the call and preserves the
-  authenticated user’s linked default
+- **WHEN** an authenticated user invokes any player tool with an explicit public
+  profile
+- **THEN** the tool uses that profile for the call without account persistence

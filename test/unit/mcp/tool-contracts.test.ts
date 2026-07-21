@@ -46,6 +46,15 @@ describe("Steam MCP tool contracts", () => {
     expect(() => schema.parse({ user: "not a valid reference" })).toThrow();
   });
 
+  it("documents the local-only identity default without suggesting account linking", () => {
+    const description =
+      STEAM_TOOL_CONTRACTS.steam_get_player.inputSchema.shape.user.unwrap()
+        .description;
+
+    expect(description).toContain("STEAM_USER in local mode");
+    expect(description).not.toContain("linked");
+  });
+
   it("applies bounded library defaults and rejects unknown fields", () => {
     const schema = STEAM_TOOL_CONTRACTS.steam_get_library.inputSchema;
     const cursor = encodeOpaqueCursor({ version: 1, offset: 20 });

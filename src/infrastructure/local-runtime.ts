@@ -88,10 +88,6 @@ export function createLocalMcpServer(
     ...deck,
   };
   const identityResolver = createSteamIdentityResolver({
-    linkedIdentities: {
-      /* v8 ignore next -- local MCP inputs never carry hosted subjects. */
-      getLinkedSteamId: () => Promise.resolve(undefined),
-    },
     steamIdentities: steamData,
   });
   const services = {

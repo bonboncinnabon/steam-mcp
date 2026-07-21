@@ -75,11 +75,12 @@ responses, prompts, tool arguments, or personal identifiers.
 
 - Unit tests cover pure domain rules and application services.
 - Contract tests cover MCP schemas and scrubbed Steam adapter responses.
-- Integration tests cover process, PostgreSQL, Redis-compatible, OAuth, and
-  transport boundaries.
+- Integration tests cover process, OAuth, quota, concurrency, and transport
+  boundaries.
 - Live tests probe approved Steam contracts with a dedicated credential.
-- Mutation and fault-injection tests target authorization, identity isolation,
-  redaction, quota accounting, and host enforcement.
+- Mutation and fault-injection tests target authorization,
+  OAuth-subject/Steam-identity separation, redaction, quota accounting, and host
+  enforcement.
 - Release tests cover supported clients, load, shutdown, rollout, and rollback.
 
 Coverage is a release floor, not proof of correctness. Overall line and branch

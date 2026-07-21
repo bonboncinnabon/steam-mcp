@@ -113,7 +113,8 @@ call Steam.
 
 #### Scenario: Required hosted dependency unavailable
 
-- **WHEN** a required hosted storage or authorization dependency is unavailable
+- **WHEN** a required authorization or configured quota dependency is
+  unavailable
 - **THEN** the readiness endpoint reports not ready while liveness remains based
   on process health
 

@@ -16,7 +16,7 @@ be accepted through MCP tool arguments.
 #### Scenario: Credential-bearing upstream failure
 
 - **WHEN** Steam returns an error for a request containing a credential
-- **THEN** the tool error, logs, traces, cache keys, and metrics exclude the
+- **THEN** the tool error, logs, traces, quota keys, and metrics exclude the
   credential and credential-bearing URL
 
 ### Requirement: Allowlisted HTTPS upstreams
@@ -103,7 +103,10 @@ with jitter and applicable upstream retry guidance.
 ### Requirement: Atomic quota reservation
 
 Hosted mode MUST reserve global and per-user quota atomically before starting
-uncached upstream work and MUST preserve a configurable global safety reserve.
+upstream work and MUST preserve a configurable global safety reserve. A
+single-instance deployment MAY use bounded process-local counters, but
+horizontal scaling or broad public rollout requires a distributed atomic quota
+adapter.
 
 #### Scenario: User quota exhausted
 
@@ -133,24 +136,6 @@ page, execution-time, and output-size limits.
 - **WHEN** a tool reaches its configured execution deadline
 - **THEN** the system cancels outstanding upstream work and returns a sanitized
   retryable error or partial result according to the tool contract
-
-### Requirement: Safe caching and request coalescing
-
-The system SHALL cache only explicitly eligible non-sensitive public game or
-store data and SHALL coalesce identical eligible in-flight reads.
-
-#### Scenario: Identical concurrent public requests
-
-- **WHEN** multiple callers request the same eligible public data while the
-  first request is in flight
-- **THEN** the system performs one upstream request and shares the validated
-  result without sharing tenant-specific state
-
-#### Scenario: User payload offered to cache
-
-- **WHEN** a library, friend, achievement, activity, wishlist, credential,
-  prompt, or tool-argument payload reaches the cache policy
-- **THEN** the policy rejects durable caching of that payload by default
 
 ### Requirement: Best-effort drift detection
 

@@ -15,8 +15,6 @@ export interface LocalConfig {
 export interface HostedConfig {
   readonly mode: "hosted";
   readonly steamApiKey: string;
-  readonly databaseUrl: string;
-  readonly redisUrl: string;
   readonly oauthIssuer: string;
   readonly resourceUri: string;
   readonly policy: ServicePolicy;
@@ -30,7 +28,6 @@ const POLICY_ENVIRONMENT_FIELDS = [
   ["GLOBAL_DAILY_QUOTA", "globalDailyQuota"],
   ["GLOBAL_SAFETY_RESERVE", "globalSafetyReserve"],
   ["PER_USER_DAILY_QUOTA", "perUserDailyQuota"],
-  ["CACHE_TTL_SECONDS", "cacheTtlSeconds"],
   ["MAX_HOST_CONCURRENCY", "maxHostConcurrency"],
   ["MAX_OPERATION_CONCURRENCY", "maxOperationConcurrency"],
   ["MAX_TOOL_FAN_OUT", "maxToolFanOut"],
@@ -66,25 +63,6 @@ function requiredHttpsUrl(environment: Environment, name: string): string {
   }
 
   throw new Error(`${name} must be an HTTPS URL`);
-}
-
-function requiredUrlWithProtocol(
-  environment: Environment,
-  name: string,
-  protocols: readonly string[],
-  label: string,
-): string {
-  const value = required(environment, name);
-
-  try {
-    if (protocols.includes(new URL(value).protocol)) {
-      return value;
-    }
-  } catch {
-    // Normalize below so URL parser errors cannot echo configuration values.
-  }
-
-  throw new Error(`${name} must be a ${label} URL`);
 }
 
 function parseNumericConfiguration(name: string, value: string): number {
@@ -133,18 +111,6 @@ export function parseHostedConfig(environment: Environment): HostedConfig {
   return {
     mode: "hosted",
     steamApiKey: required(environment, "STEAM_API_KEY"),
-    databaseUrl: requiredUrlWithProtocol(
-      environment,
-      "DATABASE_URL",
-      ["postgres:", "postgresql:"],
-      "PostgreSQL",
-    ),
-    redisUrl: requiredUrlWithProtocol(
-      environment,
-      "REDIS_URL",
-      ["redis:", "rediss:"],
-      "Redis-compatible",
-    ),
     oauthIssuer: requiredHttpsUrl(environment, "OAUTH_ISSUER"),
     resourceUri: requiredHttpsUrl(environment, "MCP_RESOURCE_URI"),
     policy: parseServicePolicy(environment),

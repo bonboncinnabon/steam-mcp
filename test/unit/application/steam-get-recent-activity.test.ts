@@ -66,7 +66,7 @@ describe("steam_get_recent_activity application service", () => {
     const steamId = parseSteamId64("76561198000000001");
     const service = createSteamGetRecentActivityService({
       identityResolver: {
-        resolve: vi.fn().mockResolvedValue({ steamId, source: "linked" }),
+        resolve: vi.fn().mockResolvedValue({ steamId, source: "explicit" }),
       },
       steamData: {
         getRecentGames: vi.fn().mockResolvedValue({
@@ -87,7 +87,7 @@ describe("steam_get_recent_activity application service", () => {
 
     await expect(
       service.execute(
-        { subject: "offline", limit: 20 },
+        { explicitUser: "offline", limit: 20 },
         new AbortController().signal,
       ),
     ).resolves.toMatchObject({
@@ -212,7 +212,7 @@ describe("steam_get_recent_activity application service", () => {
           .mockRejectedValue(
             new SteamIdentityResolutionError(
               "IDENTITY_NOT_LINKED",
-              "Provide a Steam user or link a default Steam identity",
+              "Provide a Steam user, or configure STEAM_USER for local use",
             ),
           ),
       },

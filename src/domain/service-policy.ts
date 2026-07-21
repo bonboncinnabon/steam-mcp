@@ -4,7 +4,6 @@ export interface ServicePolicy {
   readonly globalDailyQuota: number;
   readonly globalSafetyReserve: number;
   readonly perUserDailyQuota: number;
-  readonly cacheTtlSeconds: number;
   readonly maxHostConcurrency: number;
   readonly maxOperationConcurrency: number;
   readonly maxToolFanOut: number;
@@ -20,7 +19,6 @@ export const BASELINE_SERVICE_POLICY: ServicePolicy = Object.freeze({
   globalDailyQuota: 80_000,
   globalSafetyReserve: 20_000,
   perUserDailyQuota: 500,
-  cacheTtlSeconds: 300,
   maxHostConcurrency: 8,
   maxOperationConcurrency: 4,
   maxToolFanOut: 20,
@@ -46,7 +44,6 @@ const POSITIVE_POLICY_FIELDS = [
 const NON_NEGATIVE_POLICY_FIELDS = [
   "maxRetryAttempts",
   "globalSafetyReserve",
-  "cacheTtlSeconds",
 ] as const satisfies readonly (keyof ServicePolicy)[];
 
 const POLICY_MAXIMA = [
@@ -54,7 +51,6 @@ const POLICY_MAXIMA = [
   ["maxRetryAttempts", 5],
   ["globalDailyQuota", 100_000],
   ["perUserDailyQuota", 10_000],
-  ["cacheTtlSeconds", 86_400],
   ["maxHostConcurrency", 64],
   ["maxOperationConcurrency", 32],
   ["maxToolFanOut", 100],

@@ -80,7 +80,6 @@ export function createSteamGetWishlistService(
             ...(input.explicitUser === undefined
               ? {}
               : { explicitUser: input.explicitUser }),
-            ...(input.subject === undefined ? {} : { subject: input.subject }),
             ...(input.localDefault === undefined
               ? {}
               : { localDefault: input.localDefault }),

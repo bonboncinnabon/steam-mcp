@@ -72,7 +72,7 @@ describe("steam_get_wishlist application service", () => {
     const steamId = parseSteamId64("76561198000000001");
     const service = createSteamGetWishlistService({
       identityResolver: {
-        resolve: vi.fn().mockResolvedValue({ steamId, source: "linked" }),
+        resolve: vi.fn().mockResolvedValue({ steamId, source: "explicit" }),
       },
       steamData: {
         getWishlist: vi.fn().mockResolvedValue({
@@ -85,7 +85,7 @@ describe("steam_get_wishlist application service", () => {
 
     await expect(
       service.execute(
-        { subject: "private-user", limit: 20 },
+        { explicitUser: "private-user", limit: 20 },
         new AbortController().signal,
       ),
     ).resolves.toMatchObject({
@@ -218,7 +218,7 @@ describe("steam_get_wishlist application service", () => {
           .mockRejectedValue(
             new SteamIdentityResolutionError(
               "IDENTITY_NOT_LINKED",
-              "Provide a Steam user or link a default Steam identity",
+              "Provide a Steam user, or configure STEAM_USER for local use",
             ),
           ),
       },

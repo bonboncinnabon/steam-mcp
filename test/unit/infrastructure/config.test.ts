@@ -46,30 +46,25 @@ describe("parseLocalConfig", () => {
 });
 
 describe("parseHostedConfig", () => {
-  it("reads required hosted configuration", () => {
+  it("starts hosted mode without account or distributed quota storage", () => {
     expect(
       parseHostedConfig({
         STEAM_API_KEY: "synthetic-hosted-value",
-        DATABASE_URL: "postgresql://database.example/steam_mcp",
-        REDIS_URL: "redis://cache.example:6379",
         OAUTH_ISSUER: "https://identity.example",
         MCP_RESOURCE_URI: "https://steam.example/mcp",
       }),
-    ).toMatchObject({
+    ).toEqual({
       mode: "hosted",
       steamApiKey: "synthetic-hosted-value",
-      databaseUrl: "postgresql://database.example/steam_mcp",
-      redisUrl: "redis://cache.example:6379",
       oauthIssuer: "https://identity.example",
       resourceUri: "https://steam.example/mcp",
+      policy: BASELINE_SERVICE_POLICY,
     });
   });
 
   it("reports each missing required field without echoing values", () => {
     const environment = {
       STEAM_API_KEY: "synthetic-hosted-value",
-      DATABASE_URL: "postgresql://database.example/steam_mcp",
-      REDIS_URL: "redis://cache.example:6379",
       OAUTH_ISSUER: "https://identity.example",
       MCP_RESOURCE_URI: "https://steam.example/mcp",
     };
@@ -95,8 +90,6 @@ describe("parseHostedConfig", () => {
     expect(() =>
       parseHostedConfig({
         STEAM_API_KEY: "   ",
-        DATABASE_URL: "postgresql://database.example/steam_mcp",
-        REDIS_URL: "redis://cache.example:6379",
         OAUTH_ISSUER: "https://identity.example",
         MCP_RESOURCE_URI: "https://steam.example/mcp",
       }),
@@ -106,8 +99,6 @@ describe("parseHostedConfig", () => {
   it("requires HTTPS for public hosted URLs", () => {
     const environment = {
       STEAM_API_KEY: "synthetic-hosted-value",
-      DATABASE_URL: "postgresql://database.example/steam_mcp",
-      REDIS_URL: "redis://cache.example:6379",
       OAUTH_ISSUER: "https://identity.example",
       MCP_RESOURCE_URI: "https://steam.example/mcp",
     };
@@ -134,48 +125,15 @@ describe("parseHostedConfig", () => {
     expect(() =>
       parseHostedConfig({
         STEAM_API_KEY: "synthetic-hosted-value",
-        DATABASE_URL: "postgresql://database.example/steam_mcp",
-        REDIS_URL: "redis://cache.example:6379",
         OAUTH_ISSUER: "malformed-sentinel-value",
         MCP_RESOURCE_URI: "https://steam.example/mcp",
       }),
     ).toThrow("OAUTH_ISSUER must be an HTTPS URL");
   });
 
-  it("requires supported hosted storage URL schemes", () => {
-    const environment = {
-      STEAM_API_KEY: "synthetic-hosted-value",
-      DATABASE_URL: "postgresql://database.example/steam_mcp",
-      REDIS_URL: "redis://cache.example:6379",
-      OAUTH_ISSUER: "https://identity.example",
-      MCP_RESOURCE_URI: "https://steam.example/mcp",
-    };
-    const invalidStorage = [
-      ["DATABASE_URL", "https://database.example", "PostgreSQL"],
-      ["REDIS_URL", "https://cache.example", "Redis-compatible"],
-    ] as const;
-
-    const messages = invalidStorage.map(([field, value]) => {
-      try {
-        parseHostedConfig({ ...environment, [field]: value });
-        return "no error";
-      } catch (error) {
-        return error instanceof Error ? error.message : "unknown error";
-      }
-    });
-
-    expect(messages).toEqual(
-      invalidStorage.map(
-        ([field, , label]) => `${field} must be a ${label} URL`,
-      ),
-    );
-  });
-
   it("uses the baseline service policy when overrides are absent", () => {
     const config = parseHostedConfig({
       STEAM_API_KEY: "synthetic-hosted-value",
-      DATABASE_URL: "postgresql://database.example/steam_mcp",
-      REDIS_URL: "redis://cache.example:6379",
       OAUTH_ISSUER: "https://identity.example",
       MCP_RESOURCE_URI: "https://steam.example/mcp",
     });
@@ -186,8 +144,6 @@ describe("parseHostedConfig", () => {
   it("parses every supported numeric policy override", () => {
     const config = parseHostedConfig({
       STEAM_API_KEY: "synthetic-hosted-value",
-      DATABASE_URL: "postgresql://database.example/steam_mcp",
-      REDIS_URL: "redis://cache.example:6379",
       OAUTH_ISSUER: "https://identity.example",
       MCP_RESOURCE_URI: "https://steam.example/mcp",
       UPSTREAM_TIMEOUT_MS: "7000",
@@ -195,7 +151,6 @@ describe("parseHostedConfig", () => {
       GLOBAL_DAILY_QUOTA: "90000",
       GLOBAL_SAFETY_RESERVE: "10000",
       PER_USER_DAILY_QUOTA: "600",
-      CACHE_TTL_SECONDS: "600",
       MAX_HOST_CONCURRENCY: "10",
       MAX_OPERATION_CONCURRENCY: "5",
       MAX_TOOL_FAN_OUT: "25",
@@ -211,7 +166,6 @@ describe("parseHostedConfig", () => {
       globalDailyQuota: 90_000,
       globalSafetyReserve: 10_000,
       perUserDailyQuota: 600,
-      cacheTtlSeconds: 600,
       maxHostConcurrency: 10,
       maxOperationConcurrency: 5,
       maxToolFanOut: 25,
@@ -226,8 +180,6 @@ describe("parseHostedConfig", () => {
     expect(() =>
       parseHostedConfig({
         STEAM_API_KEY: "synthetic-hosted-value",
-        DATABASE_URL: "postgresql://database.example/steam_mcp",
-        REDIS_URL: "redis://cache.example:6379",
         OAUTH_ISSUER: "https://identity.example",
         MCP_RESOURCE_URI: "https://steam.example/mcp",
         MAX_RETRY_ATTEMPTS: "malformed-sentinel-value",
@@ -240,8 +192,6 @@ describe("parseHostedConfig", () => {
       parseHostedConfig({
         STEAM_API_KEY: "synthetic-hosted-value",
         STEAM_USER: "unsafe-process-default",
-        DATABASE_URL: "postgresql://database.example/steam_mcp",
-        REDIS_URL: "redis://cache.example:6379",
         OAUTH_ISSUER: "https://identity.example",
         MCP_RESOURCE_URI: "https://steam.example/mcp",
       }),

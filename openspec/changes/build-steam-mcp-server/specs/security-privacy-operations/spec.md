@@ -2,9 +2,10 @@
 
 ### Requirement: Minimal hosted data retention
 
-The hosted system SHALL durably retain only the authorization subject
-identifier, optional linked SteamID64, consent and revocation state, required
-quota counters, and redacted security or operational records.
+The hosted MCP server SHALL create no user account record and SHALL NOT durably
+retain OAuth subjects, Steam identities, Steam responses, prompts, or tool
+arguments. Quota storage is limited to opaque subject-derived keys, bounded
+counters, and rollover metadata.
 
 #### Scenario: Hosted player-tool completion
 
@@ -13,23 +14,18 @@ quota counters, and redacted security or operational records.
 - **THEN** the system does not durably store the Steam response, prompt, or tool
   arguments by default
 
-### Requirement: Account unlinking and deletion
+#### Scenario: OAuth account lifecycle
 
-An authenticated user SHALL be able to unlink Steam identity and request
-deletion of hosted account metadata according to the published retention policy.
-
-#### Scenario: Account metadata deletion
-
-- **WHEN** a valid authenticated deletion request completes
-- **THEN** the system removes the account’s linked identity, consent state, and
-  deletable metadata and records only the minimum redacted evidence required by
-  the published policy
+- **WHEN** an authenticated user logs out, revokes access, or deletes their
+  authorization-provider account
+- **THEN** the MCP server exposes no account mutation tool and relies on token
+  validation plus the provider's lifecycle controls
 
 ### Requirement: Secret and personal-data redaction
 
 The system MUST exclude Steam API keys, OAuth tokens, credential-bearing URLs,
 raw upstream bodies, prompts, tool arguments, and unapproved personal payloads
-from logs, traces, metrics, fixtures, errors, and cache keys.
+from logs, traces, metrics, fixtures, errors, and quota keys.
 
 #### Scenario: Error contains a secret
 
@@ -69,8 +65,8 @@ bounds, and incompatible combinations before accepting work.
 ### Requirement: Graceful hosted shutdown
 
 The hosted system SHALL stop accepting new work, drain active requests within a
-configured deadline, cancel remaining upstream calls, and close transport and
-storage clients.
+configured deadline, cancel remaining upstream calls, and close transport plus
+configured quota clients.
 
 #### Scenario: Shutdown with active tool calls
 
@@ -80,14 +76,14 @@ storage clients.
 
 ### Requirement: Backward-compatible deployment and rollback
 
-Hosted database changes SHALL remain compatible with at least the immediately
-previous application version, and deployments SHALL use versioned artifacts with
-staged rollout and rollback.
+Hosted deployments SHALL use versioned artifacts with staged rollout and
+rollback.
 
-#### Scenario: Application rollback after migration
+#### Scenario: Application rollback
 
-- **WHEN** a new version is rolled back after its compatible migration has run
-- **THEN** the previous version starts successfully against the migrated schema
+- **WHEN** a new version fails its rollout gates
+- **THEN** operations can restore the previous versioned artifact without a data
+  migration
 
 #### Scenario: Best-effort adapter incident
 
@@ -127,16 +123,15 @@ injection.
 
 #### Scenario: High-risk module verification
 
-- **WHEN** authorization, identity isolation, secret redaction, quota
-  accounting, or host enforcement changes
+- **WHEN** authorization, OAuth-subject/Steam-identity separation, secret
+  redaction, quota accounting, or host enforcement changes
 - **THEN** CI requires 100 percent branch coverage for the affected high-risk
   behavior plus its configured mutation or fault-injection checks
 
 ### Requirement: Layered release verification
 
-A hosted release SHALL require protocol, OAuth, tenant-isolation, quota, cache,
-concurrency, shutdown, cross-client, and rollback evidence in addition to unit
-and contract tests.
+A hosted release SHALL require protocol, OAuth, quota, concurrency, shutdown,
+cross-client, and rollback evidence in addition to unit and contract tests.
 
 #### Scenario: Release candidate missing cross-client evidence
 

@@ -1,8 +1,8 @@
 ## 1. Project Foundation and Quality Gates
 
 - [x] 1.1 Initialize the strict TypeScript workspace for supported Node.js LTS
-      releases with separate source, test, fixture, migration, and
-      executable-package boundaries.
+      releases with separate source, test, fixture, and executable-package
+      boundaries.
 - [x] 1.2 Add locked production and development dependencies for the stable MCP
       TypeScript SDK, runtime schemas, testing, linting, formatting, coverage,
       mutation testing, and dependency auditing.
@@ -25,14 +25,14 @@
       taxonomy, partial-result warnings, source tiers, and structured-to-text
       rendering contract.
 - [x] 2.3 TDD centralized typed policies for timeouts, retries, quotas, safety
-      reserve, cache duration, concurrency, fan-out, pagination, execution
-      deadlines, and output size.
+      reserve, concurrency, fan-out, pagination, execution deadlines, and output
+      size.
 - [x] 2.4 TDD hosted and local configuration parsing, secret-safe diagnostics,
       required values, numeric bounds, incompatible combinations, and deployment
       HTTPS requirements.
 - [x] 2.5 Define the inward-facing application ports for Steam data, identity,
-      authorization context, quota, cache, coalescing, persistence, clock,
-      cancellation, and observability.
+      authorization context, quota, concurrency, clock, cancellation, and
+      observability.
 
 ## 3. Shared Steam HTTP Boundary
 
@@ -73,8 +73,8 @@
 ## 5. Best-Effort and Derived Steam Sources
 
 - [x] 5.1 Document and approve each initial Steam-operated best-effort endpoint,
-      its host, expected contract, data classification, call cost, cache policy,
-      and independent disable switch.
+      its host, expected contract, data classification, call cost, and
+      independent disable switch.
 - [x] 5.2 TDD the best-effort wishlist adapter, including money normalization,
       pagination inputs, contract drift, raw-body exclusion, and
       `BEST_EFFORT_SOURCE_CHANGED`.
@@ -90,9 +90,9 @@
 
 ## 6. Identity Resolution and Player Application Services
 
-- [x] 6.1 TDD the common identity-resolution order of explicit user, hosted
-      linked identity, local `STEAM_USER`, then `IDENTITY_NOT_LINKED`, including
-      tenant-safe lookup and no link mutation.
+- [x] 6.1 TDD the common identity-resolution order of explicit user, local
+      `STEAM_USER`, then `IDENTITY_NOT_LINKED`, including proof that hosted
+      authorization identity is never treated as Steam identity.
 - [x] 6.2 TDD `steam_get_player` for normalized public profile facets, unknown
       players, private fields, and stable envelope rendering.
 - [x] 6.3 TDD `steam_get_library` for filtering, sorting, opaque cursor
@@ -143,31 +143,23 @@
 - [x] 8.5 Add MCP SDK and Inspector conformance tests for local initialization,
       tool listing, representative executions, cancellation, structured errors,
       and stderr diagnostic isolation.
+- [x] 8.6 TDD removal of obsolete hosted-link and account-persistence seams,
+      simplify hosted configuration to require no database, and update public
+      identity guidance while retaining the stable v1 error code.
 
-## 9. Hosted Persistence, Quotas, and Coordination
+## 9. Hosted Quotas and Concurrency
 
-- [ ] 9.1 Define PostgreSQL schemas and backward-compatible migrations for
-      authorization subjects, optional linked SteamID64, consent, revocation,
-      deletion state, and minimal audit metadata.
-- [ ] 9.2 TDD the PostgreSQL account and Steam-link repository against migration
-      fixtures, including tenant scoping, replacement, unlinking, deletion, and
-      previous-version schema compatibility.
-- [ ] 9.3 TDD atomic Redis-compatible global and per-user quota reservation,
-      daily rollover, configured call costs, safety reserve, races across
-      instances, and dependency failures.
-- [ ] 9.4 TDD per-host and per-operation concurrency acquisition, bounded
+- [ ] 9.1 TDD atomic global and per-user quota reservation, daily rollover,
+      configured call costs, safety reserve, same-instance races, and failures.
+      Keep the adapter storage-independent and document that multi-instance or
+      broad public rollout requires a distributed atomic implementation.
+- [ ] 9.2 TDD per-host and per-operation concurrency acquisition, bounded
       queueing, cancellation, deadlines, release-on-error, and backpressure.
-- [ ] 9.5 TDD cache eligibility so only explicitly classified non-sensitive
-      public game/store data can be cached and secrets or user payloads cannot
-      enter keys or values.
-- [ ] 9.6 TDD tenant-independent request coalescing for eligible reads,
-      including concurrent success, failure, cancellation, waiter cleanup, and
-      no cross-tenant state sharing.
-- [ ] 9.7 Add bounded local-memory implementations of quota, cache, coalescing,
-      and identity-default ports and prove they require no hosted dependencies
-      or disk persistence.
+- [ ] 9.3 Add high-risk race and fault-injection coverage for quota and
+      concurrency cleanup, including proof that process-local state is bounded
+      and never persisted to disk.
 
-## 10. Hosted Authorization and Steam Linking
+## 10. Hosted Authorization
 
 - [ ] 10.1 Record an ADR and compatibility evaluation for the external
       OAuth/OIDC provider against Protected Resource Metadata, PKCE, Resource
@@ -180,17 +172,11 @@
       scope, token status, key rotation, malformed tokens, and authorization
       dependency failures.
 - [ ] 10.4 Add high-risk mutation or fault-injection tests proving rejected
-      tokens perform no tool, quota, persistence, or Steam work and MCP tokens
-      are never passed upstream.
-- [ ] 10.5 TDD Steam OpenID link initiation and callback verification, including
-      authenticated state binding, replay and CSRF rejection, claimed-ID
-      extraction, account replacement, and safe redirects.
-- [ ] 10.6 TDD authenticated unlink and account-deletion workflows, minimum
-      retained evidence, idempotency, and denial of cross-account reads or
-      mutations without existence disclosure.
-- [ ] 10.7 Add 100 percent branch coverage and targeted mutation or
-      fault-injection checks for authorization, identity isolation, link
-      lifecycle, and credential separation.
+      tokens perform no tool, quota, or Steam work and MCP tokens are never
+      passed upstream.
+- [ ] 10.5 Add 100 percent branch coverage and targeted mutation or
+      fault-injection checks for authorization, OAuth-subject/Steam-identity
+      separation, and credential separation.
 
 ## 11. Hosted Streamable HTTP and Operations
 
@@ -201,13 +187,14 @@
       MCP parsing, including missing, malformed, proxy-forwarded, and disallowed
       values.
 - [ ] 11.3 TDD liveness and readiness endpoints so neither calls Steam and
-      readiness reflects required storage and authorization dependencies.
+      readiness reflects required authorization and configured quota
+      dependencies.
 - [ ] 11.4 TDD graceful shutdown that marks readiness false, stops new work,
-      drains to a deadline, cancels remaining upstream requests, and closes
-      HTTP, PostgreSQL, and Redis clients.
+      drains to a deadline, cancels remaining upstream requests, and closes HTTP
+      and configured quota clients.
 - [ ] 11.5 TDD redacted structured events, bounded metrics, privacy-preserving
-      account correlation, drift signals, and secret scrubbing across nested
-      errors and credential-bearing URLs.
+      drift signals, and secret scrubbing across nested errors and
+      credential-bearing URLs.
 - [ ] 11.6 Add high-risk mutation or fault-injection tests with 100 percent
       branch coverage for host enforcement, redaction, quota accounting, and
       shutdown cleanup.
@@ -220,15 +207,15 @@
 - [ ] 12.2 Document local client setup for Codex, Claude, OpenAI-compatible
       clients, and MCP Inspector using `STEAM_API_KEY` and optional
       `STEAM_USER`, without example secrets.
-- [ ] 12.3 Document hosted connection, OAuth discovery, Steam identity linking,
-      arbitrary public-profile lookup, unlinking, deletion, quotas, privacy
-      limits, and troubleshooting.
+- [ ] 12.3 Document hosted connection, OAuth discovery, required explicit Steam
+      users for subject-oriented tools, arbitrary public-profile lookup, OAuth
+      provider account ownership, quotas, privacy limits, and troubleshooting.
 - [ ] 12.4 Document architecture, dependency direction, all eight tool
       contracts, schemas, pagination, errors, source tiers, best-effort
       degradation, security model, data retention, and threat boundaries.
 - [ ] 12.5 Document strict TDD contribution rules, fixture scrubbing, live-probe
       safety, test commands, coverage gates, compatibility policy, versioning,
-      changelog, operations, migration, rollout, and rollback.
+      changelog, operations, rollout, and rollback.
 - [ ] 12.6 Verify local, self-hosted, and hosted documentation from clean
       supported environments without undocumented maintainer steps.
 
@@ -237,12 +224,12 @@
 - [ ] 13.1 Run fresh full verification for formatting, linting, strict types,
       unit and contract tests, dependency audit, coverage thresholds, and all
       configured mutation or fault-injection gates.
-- [ ] 13.2 Run PostgreSQL and Redis integration suites for concurrent quotas,
-      cache and coalescing isolation, cancellation, migration compatibility,
-      account deletion, and dependency recovery.
+- [ ] 13.2 Run hosted quota and concurrency integration suites for races,
+      cancellation, rollover, safety reserve, bounded memory, and configured
+      dependency recovery.
 - [ ] 13.3 Run opt-in Steam live probes with the dedicated credential, review
       best-effort drift, measure observed call costs, and set documented initial
-      quota and cache policies while preserving the safety reserve.
+      quota policies while preserving the safety reserve.
 - [ ] 13.4 Verify MCP Inspector, Codex, Claude, and OpenAI remote-client
       initialization, OAuth discovery, authorization, tool listing,
       representative calls, structured results, errors, and cancellation in

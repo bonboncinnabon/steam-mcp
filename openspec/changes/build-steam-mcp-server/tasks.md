@@ -186,7 +186,7 @@
 - [x] 11.2 TDD configured Origin and Host enforcement before authorization or
       MCP parsing, including missing, malformed, proxy-forwarded, and disallowed
       values.
-- [ ] 11.3 TDD liveness and readiness endpoints so neither calls Steam and
+- [x] 11.3 TDD liveness and readiness endpoints so neither calls Steam and
       readiness reflects required authorization and configured quota
       dependencies.
 - [ ] 11.4 TDD graceful shutdown that marks readiness false, stops new work,

@@ -221,7 +221,7 @@
 
 ## 13. Release Verification and Rollout
 
-- [ ] 13.1 Run fresh full verification for formatting, linting, strict types,
+- [x] 13.1 Run fresh full verification for formatting, linting, strict types,
       unit and contract tests, dependency audit, coverage thresholds, and all
       configured mutation or fault-injection gates.
 - [ ] 13.2 Run hosted quota and concurrency integration suites for races,

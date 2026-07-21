@@ -3,7 +3,9 @@ import { createHash } from "node:crypto";
 import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import process from "node:process";
+import { clearTimeout, setTimeout } from "node:timers";
+import { fileURLToPath, URL } from "node:url";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const packageManager = process.platform === "win32" ? "pnpm.cmd" : "pnpm";

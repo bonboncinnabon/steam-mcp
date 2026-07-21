@@ -1,7 +1,8 @@
 import { createHash } from "node:crypto";
 import { access, mkdir, readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import process from "node:process";
+import { fileURLToPath, URL } from "node:url";
 import { spawn } from "node:child_process";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));

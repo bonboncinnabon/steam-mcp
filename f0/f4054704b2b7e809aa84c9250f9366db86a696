@@ -1,0 +1,54 @@
+test/unit/infrastructure/in-memory-concurrency.test.ts
+  s_336c0404d47041::t_7d61908d3cf1e1 108-134,169
+  s_336c0404d47041::t_9df46b77f7228b 39-46,50-52,54,56-57
+  s_336c0404d47041::t_4de454ace2d6ca 170-186,188-192,194
+  s_336c0404d47041::t_7d1c9af1494e52 21-38
+  s_336c0404d47041::t_baa7e3b26602cf 195-225,271
+  s_336c0404d47041::t_901c48639f068f 227-228,250-267,269
+  s_336c0404d47041::t_53ff76fbada5a9 4-7,9,12-19,53,55,72,78,187,193,226,268,270,291,315
+  s_336c0404d47041::t_4fce3e6df62603 1,79-106
+  s_336c0404d47041::t_d47bc5f746ca5a 229-249
+  s_336c0404d47041::t_7b71e79cbb23d4 272-290,292-314,316
+  s_336c0404d47041::t_8fa7fa335032fd 47-49
+  s_336c0404d47041::t_af1f81820f836c 2,11,20,58-71,73-77,107,317
+  s_336c0404d47041::t_f6dcf6a78cd1b5 3,8,10,135-168
+test/unit/domain/service-policy.test.ts
+  s_336c0404d47041::t_6d1ca8e5444b5b 18
+  s_336c0404d47041::t_9c46b964bfc9e6 40,115
+test/unit/infrastructure/config.test.ts
+  s_336c0404d47041::t_9c46b964bfc9e6 156,172
+src/infrastructure/config.ts
+  s_336c0404d47041::t_c75e9d1cb5a6cd 33
+src/application/ports/concurrency.ts
+  s_336c0404d47041::t_7e845fed546f14 12-26
+src/infrastructure/in-memory-concurrency.ts
+  s_336c0404d47041::t_5b1db7ad573413 1-11,30,32,44-45,91-92,126-128
+  s_336c0404d47041::t_53ff76fbada5a9 109-120,122,124
+  s_336c0404d47041::t_9f5bf9bc68f350 93,99-101
+  s_336c0404d47041::t_017a81f357c130 12-21,104-106
+  s_336c0404d47041::t_55ab70513f3ff7 94-98
+  s_336c0404d47041::t_344ec51a6a707f 33-43
+  s_336c0404d47041::t_75063f621837aa 25,27,69,108,121,123
+  s_336c0404d47041::t_1466c0c6407d84 22-24,26,28-29,31,46-50,52-61,63-68,70-90,102-103,107,125
+  s_336c0404d47041::t_8fa7fa335032fd 51,62
+src/domain/service-policy.ts
+  s_336c0404d47041::t_c75e9d1cb5a6cd 9,25,39,59
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_d6312b3d24ed9a 156
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "f0f4054704b2b7e809aa84c9250f9366db86a696",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

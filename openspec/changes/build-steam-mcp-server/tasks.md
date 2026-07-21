@@ -192,7 +192,7 @@
 - [x] 11.4 TDD graceful shutdown that marks readiness false, stops new work,
       drains to a deadline, cancels remaining upstream requests, and closes HTTP
       and configured quota clients.
-- [ ] 11.5 TDD redacted structured events, bounded metrics, privacy-preserving
+- [x] 11.5 TDD redacted structured events, bounded metrics, privacy-preserving
       drift signals, and secret scrubbing across nested errors and
       credential-bearing URLs.
 - [ ] 11.6 Add high-risk mutation or fault-injection tests with 100 percent

@@ -189,7 +189,7 @@
 - [x] 11.3 TDD liveness and readiness endpoints so neither calls Steam and
       readiness reflects required authorization and configured quota
       dependencies.
-- [ ] 11.4 TDD graceful shutdown that marks readiness false, stops new work,
+- [x] 11.4 TDD graceful shutdown that marks readiness false, stops new work,
       drains to a deadline, cancels remaining upstream requests, and closes HTTP
       and configured quota clients.
 - [ ] 11.5 TDD redacted structured events, bounded metrics, privacy-preserving

@@ -76,6 +76,19 @@ describe("createHealthHttpHandler", () => {
     expect(body).not.toContain("private provider detail");
   });
 
+  it("marks readiness false without probing dependencies again", async () => {
+    const authorization = dependency(true);
+    const quota = dependency(true);
+    const handler = createHealthHttpHandler({ authorization, quota });
+
+    handler.markNotReady();
+    const response = await handler.handle(new Request(`${baseUri}/readyz`));
+
+    expect(response?.status).toBe(503);
+    expect(authorization.isReady).not.toHaveBeenCalled();
+    expect(quota.isReady).not.toHaveBeenCalled();
+  });
+
   it.each(["/livez", "/readyz"])("allows only GET for %s", async (pathname) => {
     const authorization = dependency(true);
     const handler = createHealthHttpHandler({ authorization });

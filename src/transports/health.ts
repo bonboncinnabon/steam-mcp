@@ -9,6 +9,7 @@ export interface HealthHttpHandlerOptions {
 
 export interface HealthHttpHandler {
   handle(request: Request): Promise<Response | undefined>;
+  markNotReady(): void;
 }
 
 export interface HttpRequestHandler {
@@ -28,6 +29,8 @@ function healthResponse(status: number, value: "live" | "ready" | "not_ready") {
 export function createHealthHttpHandler(
   options: HealthHttpHandlerOptions,
 ): HealthHttpHandler {
+  let acceptingTraffic = true;
+
   return {
     async handle(request) {
       const pathname = new URL(request.url).pathname;
@@ -46,6 +49,10 @@ export function createHealthHttpHandler(
         return healthResponse(200, "live");
       }
 
+      if (!acceptingTraffic) {
+        return healthResponse(503, "not_ready");
+      }
+
       try {
         const checks = [options.authorization.isReady(request.signal)];
         if (options.quota !== undefined) {
@@ -58,6 +65,9 @@ export function createHealthHttpHandler(
       } catch {
         return healthResponse(503, "not_ready");
       }
+    },
+    markNotReady() {
+      acceptingTraffic = false;
     },
   };
 }

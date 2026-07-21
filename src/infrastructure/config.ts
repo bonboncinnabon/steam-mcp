@@ -30,6 +30,7 @@ const POLICY_ENVIRONMENT_FIELDS = [
   ["PER_USER_DAILY_QUOTA", "perUserDailyQuota"],
   ["MAX_HOST_CONCURRENCY", "maxHostConcurrency"],
   ["MAX_OPERATION_CONCURRENCY", "maxOperationConcurrency"],
+  ["MAX_CONCURRENCY_QUEUE_SIZE", "maxConcurrencyQueueSize"],
   ["MAX_TOOL_FAN_OUT", "maxToolFanOut"],
   ["DEFAULT_PAGE_SIZE", "defaultPageSize"],
   ["MAX_PAGE_SIZE", "maxPageSize"],

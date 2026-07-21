@@ -6,6 +6,7 @@ export interface ServicePolicy {
   readonly perUserDailyQuota: number;
   readonly maxHostConcurrency: number;
   readonly maxOperationConcurrency: number;
+  readonly maxConcurrencyQueueSize: number;
   readonly maxToolFanOut: number;
   readonly defaultPageSize: number;
   readonly maxPageSize: number;
@@ -21,6 +22,7 @@ export const BASELINE_SERVICE_POLICY: ServicePolicy = Object.freeze({
   perUserDailyQuota: 500,
   maxHostConcurrency: 8,
   maxOperationConcurrency: 4,
+  maxConcurrencyQueueSize: 64,
   maxToolFanOut: 20,
   defaultPageSize: 20,
   maxPageSize: 100,
@@ -34,6 +36,7 @@ const POSITIVE_POLICY_FIELDS = [
   "perUserDailyQuota",
   "maxHostConcurrency",
   "maxOperationConcurrency",
+  "maxConcurrencyQueueSize",
   "maxToolFanOut",
   "defaultPageSize",
   "maxPageSize",
@@ -53,6 +56,7 @@ const POLICY_MAXIMA = [
   ["perUserDailyQuota", 10_000],
   ["maxHostConcurrency", 64],
   ["maxOperationConcurrency", 32],
+  ["maxConcurrencyQueueSize", 1_024],
   ["maxToolFanOut", 100],
   ["maxPageSize", 200],
   ["executionDeadlineMs", 120_000],

@@ -153,7 +153,7 @@
       configured call costs, safety reserve, same-instance races, and failures.
       Keep the adapter storage-independent and document that multi-instance or
       broad public rollout requires a distributed atomic implementation.
-- [ ] 9.2 TDD per-host and per-operation concurrency acquisition, bounded
+- [x] 9.2 TDD per-host and per-operation concurrency acquisition, bounded
       queueing, cancellation, deadlines, release-on-error, and backpressure.
 - [ ] 9.3 Add high-risk race and fault-injection coverage for quota and
       concurrency cleanup, including proof that process-local state is bounded

@@ -1,0 +1,69 @@
+src/infrastructure/hosted-authorization-gate.ts
+  s_336c0404d47041::t_5d2a81c8c7f709 1-27,30-76,81-104
+  s_336c0404d47041::t_e6b670492a25c7 28-29,77-80
+test/unit/infrastructure/oauth-token-introspection.test.ts
+  s_336c0404d47041::t_052afff92a5805 1-14,21-35,40-48,52-68,72-74,76-77,87-97,102-125,146-156
+  s_336c0404d47041::t_e6b670492a25c7 36-39,69-71,81-86,98-100,126-133
+  s_336c0404d47041::t_54d5615acef07d 49,75,78-80,101,134-145
+  s_336c0404d47041::t_999c2edea90437 15,19-20
+  s_336c0404d47041::t_f126f7d9738835 16-18,50-51
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_54d47ebd91a9b6 168
+  s_336c0404d47041::t_ba3e1f3eff49f3 171
+  s_336c0404d47041::t_9f686aad22cb62 164
+  s_336c0404d47041::t_0bfff5c6485963 174,177
+src/infrastructure/oauth-token-introspection.ts
+  s_336c0404d47041::t_319ab50c40f5a6 1-67,71-90
+  s_336c0404d47041::t_e6b670492a25c7 68-70
+src/infrastructure/oauth-resource.ts
+  s_336c0404d47041::t_b3395ea5a1032c 1-13,15-117
+  s_336c0404d47041::t_e6b670492a25c7 14
+stryker.config.json
+  s_336c0404d47041::t_c33f908327cec7 5
+src/application/ports/authorization.ts
+  s_336c0404d47041::t_a27006a8630b73 9-12
+test/unit/infrastructure/hosted-authorization-gate.test.ts
+  s_336c0404d47041::t_d061adebbb2a0d 1-39,53-71,77-92,94-96,98-113,129-161
+  s_336c0404d47041::t_54d5615acef07d 40-52,72-76,114-128
+  s_336c0404d47041::t_f126f7d9738835 93,97
+test/unit/infrastructure/oauth-token-validator.test.ts
+  s_336c0404d47041::t_4974eddc8c7a1c 1-32,38,48-54,61-90,94-97,125,128-151,190-216,221-238
+  s_336c0404d47041::t_999c2edea90437 98-124
+  s_336c0404d47041::t_e6b670492a25c7 33-37,91-93,162-164,217-220
+  s_336c0404d47041::t_54d5615acef07d 152-161,165-189
+  s_336c0404d47041::t_f126f7d9738835 55-60,126-127
+  s_336c0404d47041::t_c10d5ea95a0e3d 39-47
+test/unit/infrastructure/oauth-resource.test.ts
+  s_336c0404d47041::t_f126f7d9738835 123-128,132-134
+  s_336c0404d47041::t_edfe3815ae89f0 1-26,33-61,74,79,84-92,96-107,112-122,129-131,146-147
+  s_336c0404d47041::t_e6b670492a25c7 75-78,93-95,108-111
+  s_336c0404d47041::t_999c2edea90437 27-32
+  s_336c0404d47041::t_54d5615acef07d 62-73,80-83,135-145
+src/infrastructure/oauth-token-validator.ts
+  s_336c0404d47041::t_a27006a8630b73 2-15,17-54,56-61,63-110
+  s_336c0404d47041::t_17820203512cfa 55,62
+  s_336c0404d47041::t_e6b670492a25c7 1,16
+docs/adr/0001-external-oauth-provider.md
+  s_336c0404d47041::t_9f686aad22cb62 1-13,18-53,62-69,77-101
+  s_336c0404d47041::t_8fcae62af0ebd8 14-17,54-61,70-76
+package.json
+  s_336c0404d47041::t_2d0af15b228df8 37
+pnpm-lock.yaml
+  s_336c0404d47041::t_a202ccc4ddf3ee 17-19
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "b5881cb08860e3e9484027e50301473dde1efb28",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

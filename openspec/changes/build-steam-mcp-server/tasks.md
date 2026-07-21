@@ -128,7 +128,7 @@
 
 ## 8. MCP Tool Registry and Local Transport
 
-- [ ] 8.1 TDD strict input and output schemas for all eight tools, including
+- [x] 8.1 TDD strict input and output schemas for all eight tools, including
       unknown-field rejection, bounds, annotations, descriptions, and stable
       structured content.
 - [ ] 8.2 TDD the shared MCP tool adapter that invokes application services,

@@ -6,3 +6,7 @@ export interface AuthorizationContext {
 export interface AuthorizationContextPort {
   getCurrent(): AuthorizationContext | undefined;
 }
+
+export interface AccessTokenStatusPort {
+  isActive(accessToken: string, signal?: AbortSignal): Promise<boolean>;
+}

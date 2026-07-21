@@ -161,20 +161,20 @@
 
 ## 10. Hosted Authorization
 
-- [ ] 10.1 Record an ADR and compatibility evaluation for the external
+- [x] 10.1 Record an ADR and compatibility evaluation for the external
       OAuth/OIDC provider against Protected Resource Metadata, PKCE, Resource
       Indicators, supported client-registration methods, revocation, and target
       MCP clients.
-- [ ] 10.2 TDD Protected Resource Metadata and `WWW-Authenticate` responses with
+- [x] 10.2 TDD Protected Resource Metadata and `WWW-Authenticate` responses with
       the canonical resource URI, authorization-server location, and supported
       scopes.
-- [ ] 10.3 TDD access-token validation for signature, issuer, audience, expiry,
+- [x] 10.3 TDD access-token validation for signature, issuer, audience, expiry,
       scope, token status, key rotation, malformed tokens, and authorization
       dependency failures.
-- [ ] 10.4 Add high-risk mutation or fault-injection tests proving rejected
+- [x] 10.4 Add high-risk mutation or fault-injection tests proving rejected
       tokens perform no tool, quota, or Steam work and MCP tokens are never
       passed upstream.
-- [ ] 10.5 Add 100 percent branch coverage and targeted mutation or
+- [x] 10.5 Add 100 percent branch coverage and targeted mutation or
       fault-injection checks for authorization, OAuth-subject/Steam-identity
       separation, and credential separation.
 

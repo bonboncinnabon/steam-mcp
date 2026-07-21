@@ -1,0 +1,37 @@
+src/infrastructure/http-request-boundary.ts
+  s_336c0404d47041::t_ea35f0201af486 3-4,6,101-106
+  s_336c0404d47041::t_f491ff5a4637ab 5
+  s_336c0404d47041::t_4d314050a48b20 1-2,7-100,107-120
+test/unit/infrastructure/http-request-boundary.test.ts
+  s_336c0404d47041::t_1b6acaf8ebaa31 23-28,31,72
+  s_336c0404d47041::t_f491ff5a4637ab 57-60,95-98
+  s_336c0404d47041::t_d67c8f223fdcf7 1-22,29-30,32-56,61-71,73-94,99-109
+src/transports/http.ts
+  s_336c0404d47041::t_fb4d0334451bc0 8-10,21,277,285-286,292-293
+  s_336c0404d47041::t_ea35f0201af486 287-291
+  s_336c0404d47041::t_3a31f85d0e6cea 7
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_958ee4754bea81 186
+test/unit/transports/http.test.ts
+  s_336c0404d47041::t_fb4d0334451bc0 11-14,22,24-41
+  s_336c0404d47041::t_10b1f7e1eb4f38 191,194-196,198-201,203-205,207-228,230-253
+  s_336c0404d47041::t_1b6acaf8ebaa31 192-193,197,202,206,229
+  s_336c0404d47041::t_f491ff5a4637ab 23
+  s_336c0404d47041::t_36aaf5da9426f1 42
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "db2d759a07fe499c2aaa3f35e0641fca4a066cb7",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

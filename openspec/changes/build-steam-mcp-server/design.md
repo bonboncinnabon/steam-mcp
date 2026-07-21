@@ -260,9 +260,11 @@ limits, concurrency, global reserve, and user quotas. Invalid configuration
 fails startup.
 
 The initial single-instance deployment uses bounded process-local atomic quota
-accounting keyed by a non-logged OAuth subject. A distributed atomic quota
-adapter is required before horizontal scaling or broad public rollout. Neither
-mode stores account or Steam payload state.
+accounting keyed by an opaque digest of the non-logged OAuth subject. A process
+restart resets those counters and can replenish that day's allowance. A
+distributed atomic quota adapter is therefore required before horizontal
+scaling, broad public rollout, or restart-safe enforcement. Neither mode stores
+account or Steam payload state.
 
 **Rationale:** Reserving quota before work protects Valve limits immediately.
 Keeping the port storage-independent avoids premature infrastructure, while the
@@ -382,9 +384,10 @@ useful level.
 - **[Cross-client behavior differs despite protocol compliance]** → Maintain a
   tested compatibility matrix and treat client smoke tests as release evidence
   rather than assuming SDK-level conformance is sufficient.
-- **[Process-local quotas do not coordinate across instances]** → Keep initial
-  deployment single-instance and require a tested distributed atomic quota
-  adapter before horizontal scaling or broad public rollout.
+- **[Process-local quotas reset on restart and do not coordinate across
+  instances]** → Keep initial deployment single-instance and cohort-limited;
+  require a tested distributed atomic quota adapter before horizontal scaling,
+  broad public rollout, or restart-safe enforcement.
 
 ## Migration Plan
 

@@ -149,7 +149,7 @@
 
 ## 9. Hosted Quotas and Concurrency
 
-- [ ] 9.1 TDD atomic global and per-user quota reservation, daily rollover,
+- [x] 9.1 TDD atomic global and per-user quota reservation, daily rollover,
       configured call costs, safety reserve, same-instance races, and failures.
       Keep the adapter storage-independent and document that multi-instance or
       broad public rollout requires a distributed atomic implementation.

@@ -131,7 +131,7 @@
 - [x] 8.1 TDD strict input and output schemas for all eight tools, including
       unknown-field rejection, bounds, annotations, descriptions, and stable
       structured content.
-- [ ] 8.2 TDD the shared MCP tool adapter that invokes application services,
+- [x] 8.2 TDD the shared MCP tool adapter that invokes application services,
       maps expected failures to `isError: true`, sanitizes unexpected
       exceptions, and derives concise text from structured results.
 - [ ] 8.3 TDD the single shared tool registry and verify exact tool-name,

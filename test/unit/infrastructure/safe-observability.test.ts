@@ -62,6 +62,99 @@ describe("redactTelemetryValue", () => {
     );
   });
 
+  it("normalizes uncommon diagnostic primitives and errors without causes", () => {
+    expect(redactTelemetryValue(42n, { secrets: [] })).toBe("42");
+    expect(redactTelemetryValue(undefined, { secrets: [] })).toBe(
+      "[UNDEFINED]",
+    );
+    expect(redactTelemetryValue(Symbol("private"), { secrets: [] })).toBe(
+      "[SYMBOL]",
+    );
+    expect(
+      redactTelemetryValue(new Error("safe fixed message"), { secrets: [] }),
+    ).toEqual({ name: "Error", message: "safe fixed message" });
+  });
+
+  it("bounds wide objects and preserves bounded arrays without a marker", () => {
+    const wide = Object.fromEntries(
+      Array.from({ length: 20 }, (_, index) => [String(index), index]),
+    );
+
+    expect(redactTelemetryValue([1, 2], { secrets: [] })).toEqual([1, 2]);
+    expect(redactTelemetryValue(wide, { secrets: [] })).toMatchObject({
+      truncated: "[TRUNCATED]",
+    });
+  });
+
+  it("does not invoke hostile getters or proxy traps", () => {
+    const getter = vi.fn(() => {
+      throw new Error("getter must not run");
+    });
+    const object = Object.defineProperty({}, "private", {
+      enumerable: true,
+      get: getter,
+    });
+    const proxy = new Proxy(
+      {},
+      {
+        ownKeys() {
+          throw new Error("private proxy detail");
+        },
+      },
+    );
+
+    expect(redactTelemetryValue(object, { secrets: [] })).toEqual({
+      private: "[ACCESSOR]",
+    });
+    expect(getter).not.toHaveBeenCalled();
+    expect(redactTelemetryValue(proxy, { secrets: [] })).toBe("[UNAVAILABLE]");
+  });
+
+  it("scrubs every nested AggregateError entry", () => {
+    const secret = "aggregate-private-token";
+    const aggregate = new AggregateError(
+      [new Error(`Bearer ${secret}`), { key: secret }],
+      `failed at https://example.test/path?token=${secret}`,
+    );
+
+    const serialized = JSON.stringify(
+      redactTelemetryValue(aggregate, { secrets: [secret] }),
+    );
+
+    expect(serialized).toContain("AggregateError");
+    expect(serialized).toContain("[REDACTED_URL]");
+    expect(serialized).not.toContain(secret);
+  });
+
+  it("handles missing, non-string, and accessor Error fields safely", () => {
+    const missingMessage = Object.create(Error.prototype) as Error;
+    const nonStringMessage = new Error("replaced");
+    Object.defineProperty(nonStringMessage, "message", { value: 42 });
+    const causeAccessor = new Error("safe");
+    Object.defineProperty(causeAccessor, "cause", { get: vi.fn() });
+    const errorsAccessor = new AggregateError([], "safe");
+    Object.defineProperty(errorsAccessor, "errors", { get: vi.fn() });
+
+    expect(redactTelemetryValue(missingMessage, { secrets: [] })).toEqual({
+      name: "Error",
+      message: "[UNAVAILABLE]",
+    });
+    expect(redactTelemetryValue(nonStringMessage, { secrets: [] })).toEqual({
+      name: "Error",
+      message: "[UNAVAILABLE]",
+    });
+    expect(redactTelemetryValue(causeAccessor, { secrets: [] })).toEqual({
+      name: "Error",
+      message: "safe",
+      cause: "[ACCESSOR]",
+    });
+    expect(redactTelemetryValue(errorsAccessor, { secrets: [] })).toEqual({
+      name: "AggregateError",
+      message: "safe",
+      errors: "[ACCESSOR]",
+    });
+  });
+
   it.each([
     [[""]],
     [Array.from({ length: 33 }, (_, index) => "s-" + String(index))],
@@ -99,6 +192,42 @@ describe("createSafeObservability", () => {
           status_class: "5xx",
         },
         value: { duration_ms: 0 },
+      },
+    ]);
+  });
+
+  it("omits invalid optional dimensions and clamps valid latency", () => {
+    const records: SafeTelemetryRecord[] = [];
+    const observability = createSafeObservability({
+      emit: (record) => records.push(record),
+      secrets: [],
+    });
+
+    observability.recordToolOutcome({
+      tool: "steam_get_game",
+      durationMs: 90_000.4,
+      errorCode: "private" as "INTERNAL_ERROR",
+      sourceTiers: ["private" as "supported"],
+      statusClass: "3xx" as "2xx",
+    });
+    observability.recordToolOutcome({
+      tool: "steam_get_player",
+      durationMs: 1.6,
+      sourceTiers: [],
+    });
+
+    expect(records).toEqual([
+      {
+        kind: "metric",
+        name: "tool_outcome",
+        labels: { tool: "steam_get_game" },
+        value: { duration_ms: 60_000 },
+      },
+      {
+        kind: "metric",
+        name: "tool_outcome",
+        labels: { tool: "steam_get_player" },
+        value: { duration_ms: 2 },
       },
     ]);
   });
@@ -149,6 +278,72 @@ describe("createSafeObservability", () => {
         name: "authorization_rejected",
         attributes: { reason: "invalid_token" },
       },
+    ]);
+  });
+
+  it.each([
+    [
+      { name: "quota_rejected", reason: "global_reserve" },
+      { name: "quota_rejected", attributes: { reason: "global_reserve" } },
+    ],
+    [
+      { name: "shutdown", phase: "deadline_exceeded" },
+      { name: "shutdown", attributes: { phase: "deadline_exceeded" } },
+    ],
+    [
+      {
+        name: "dependency_failure",
+        dependency: "steam",
+        failureKind: "timeout",
+      },
+      {
+        name: "dependency_failure",
+        attributes: { dependency: "steam", failure_kind: "timeout" },
+      },
+    ],
+  ])("emits bounded event %#", (event, expected) => {
+    const records: SafeTelemetryRecord[] = [];
+    const observability = createSafeObservability({
+      emit: (record) => records.push(record),
+      secrets: [],
+    });
+
+    observability.recordEvent(event as never);
+
+    expect(records).toEqual([{ kind: "event", ...expected }]);
+  });
+
+  it.each([
+    { name: "authorization_rejected", reason: 1 },
+    { name: "authorization_rejected", reason: "private" },
+    { name: "quota_rejected", reason: 1 },
+    { name: "quota_rejected", reason: "private" },
+    { name: "shutdown", phase: 1 },
+    { name: "shutdown", phase: "private" },
+    { name: "dependency_failure", dependency: 1, failureKind: "timeout" },
+    {
+      name: "dependency_failure",
+      dependency: "private",
+      failureKind: "timeout",
+    },
+    { name: "dependency_failure", dependency: "steam", failureKind: 1 },
+    {
+      name: "dependency_failure",
+      dependency: "steam",
+      failureKind: "private",
+    },
+    { name: "private", subject: "must-not-appear" },
+  ])("maps invalid runtime event %# to a fixed unknown event", (event) => {
+    const records: SafeTelemetryRecord[] = [];
+    const observability = createSafeObservability({
+      emit: (record) => records.push(record),
+      secrets: [],
+    });
+
+    observability.recordEvent(event as never);
+
+    expect(records).toEqual([
+      { kind: "event", name: "unknown_event", attributes: {} },
     ]);
   });
 

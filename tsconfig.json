@@ -29,6 +29,7 @@
     "test/**/*.ts",
     "vitest.config.ts",
     "vitest.conformance.config.ts",
+    "vitest.high-risk.config.ts",
     "vitest.live.config.ts"
   ]
 }

@@ -189,6 +189,74 @@ describe("createHostedRequestLifecycle", () => {
     expect(quotaClient.close).toHaveBeenCalledOnce();
   });
 
+  it("contains synchronous cleanup failures", async () => {
+    const failingClose = () => {
+      throw new Error("private synchronous error");
+    };
+    const closeHttp = vi.fn().mockResolvedValue(undefined);
+    const quotaClient = { close: vi.fn().mockResolvedValue(undefined) };
+    const lifecycle = createHostedRequestLifecycle({
+      handler: { handle: vi.fn() },
+      readiness: { markNotReady: vi.fn() },
+      drainTimeoutMs: 100,
+      stopHttpAcceptance: failingClose,
+      closeHttp,
+      quotaClient,
+    });
+
+    await expect(lifecycle.shutdown()).resolves.toBeUndefined();
+    expect(closeHttp).toHaveBeenCalledOnce();
+    expect(quotaClient.close).toHaveBeenCalledOnce();
+  });
+
+  it("waits for every active request before reporting a drain", async () => {
+    const first = deferred<Response>();
+    const second = deferred<Response>();
+    const handler = {
+      handle: vi
+        .fn()
+        .mockReturnValueOnce(first.promise)
+        .mockReturnValueOnce(second.promise),
+    };
+    const values = dependencies();
+    const lifecycle = createHostedRequestLifecycle({
+      handler,
+      drainTimeoutMs: 1_000,
+      ...values,
+    });
+    const firstRequest = lifecycle.handle(
+      new Request("https://steam.example/mcp"),
+    );
+    const secondRequest = lifecycle.handle(
+      new Request("https://steam.example/mcp"),
+    );
+
+    const shutdown = lifecycle.shutdown();
+    first.resolve(new Response("first"));
+    await firstRequest;
+    expect(values.closeHttp).not.toHaveBeenCalled();
+
+    second.resolve(new Response("second"));
+    await secondRequest;
+    await shutdown;
+    expect(values.closeHttp).toHaveBeenCalledOnce();
+  });
+
+  it("releases failed requests from the active drain count", async () => {
+    const lifecycle = createHostedRequestLifecycle({
+      handler: {
+        handle: vi.fn().mockRejectedValue(new Error("private handler error")),
+      },
+      drainTimeoutMs: 100,
+      ...dependencies(),
+    });
+
+    await expect(
+      lifecycle.handle(new Request("https://steam.example/mcp")),
+    ).rejects.toThrow("private handler error");
+    await expect(lifecycle.shutdown()).resolves.toBeUndefined();
+  });
+
   it("shares one shutdown across concurrent and repeated callers", async () => {
     const values = dependencies();
     const lifecycle = createHostedRequestLifecycle({

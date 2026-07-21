@@ -25,6 +25,7 @@ describe("createHttpRequestBoundary", () => {
     ["multiple", { host: "steam.example, attacker.example" }, "malformed_host"],
     ["path", { host: "steam.example/private" }, "malformed_host"],
     ["userinfo", { host: "user@steam.example" }, "malformed_host"],
+    ["unparseable", { host: "[" }, "malformed_host"],
   ])("rejects a %s Host without reflecting it", (_name, values, reason) => {
     const result = boundary.check(headers(values));
 
@@ -53,6 +54,7 @@ describe("createHttpRequestBoundary", () => {
     "https://attacker.example",
     "https://chatgpt.com/path",
     "https://chatgpt.com, https://attacker.example",
+    "not-an-origin",
   ])("rejects malformed or disallowed Origin %s", (origin) => {
     expect(boundary.check(headers({ host: "steam.example", origin }))).toEqual({
       allowed: false,

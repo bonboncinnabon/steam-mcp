@@ -124,6 +124,13 @@ function redactString(value: string, secrets: readonly string[]): string {
     : redacted;
 }
 
+function ownDescriptor(
+  descriptors: PropertyDescriptorMap,
+  key: string,
+): PropertyDescriptor | undefined {
+  return Object.hasOwn(descriptors, key) ? descriptors[key] : undefined;
+}
+
 function redactValue(
   value: unknown,
   secrets: readonly string[],
@@ -155,13 +162,34 @@ function redactValue(
   seen.add(value);
 
   if (value instanceof Error) {
-    return {
-      name: redactString(value.name, secrets),
-      message: redactString(value.message, secrets),
-      ...(value.cause === undefined
-        ? {}
-        : { cause: redactValue(value.cause, secrets, seen, depth + 1) }),
+    const descriptors = Object.getOwnPropertyDescriptors(value);
+    const messageDescriptor = ownDescriptor(descriptors, "message");
+    const message: unknown =
+      messageDescriptor === undefined
+        ? undefined
+        : (messageDescriptor.value as unknown);
+    const result: Record<string, unknown> = {
+      name: value instanceof AggregateError ? "AggregateError" : "Error",
+      message:
+        typeof message === "string"
+          ? redactString(message, secrets)
+          : "[UNAVAILABLE]",
     };
+    const cause = ownDescriptor(descriptors, "cause");
+    if (cause !== undefined) {
+      result["cause"] =
+        "value" in cause
+          ? redactValue(cause.value, secrets, seen, depth + 1)
+          : "[ACCESSOR]";
+    }
+    const errors = ownDescriptor(descriptors, "errors");
+    if (value instanceof AggregateError && errors !== undefined) {
+      result["errors"] =
+        "value" in errors
+          ? redactValue(errors.value, secrets, seen, depth + 1)
+          : "[ACCESSOR]";
+    }
+    return result;
   }
 
   if (Array.isArray(value)) {
@@ -174,15 +202,25 @@ function redactValue(
     return result;
   }
 
-  const entries = Object.entries(value).slice(0, MAX_COLLECTION_ENTRIES);
+  let descriptors: PropertyDescriptorMap;
+  try {
+    descriptors = Object.getOwnPropertyDescriptors(value);
+  } catch {
+    return "[UNAVAILABLE]";
+  }
+  const entries = Object.entries(descriptors).filter(
+    ([, descriptor]) => descriptor.enumerable === true,
+  );
   const result: Record<string, unknown> = {};
-  for (const [key, entry] of entries) {
+  for (const [key, descriptor] of entries.slice(0, MAX_COLLECTION_ENTRIES)) {
     const safeKey = redactString(key, secrets);
     result[safeKey] = SENSITIVE_KEY.test(key)
       ? "[REDACTED]"
-      : redactValue(entry, secrets, seen, depth + 1);
+      : "value" in descriptor
+        ? redactValue(descriptor.value, secrets, seen, depth + 1)
+        : "[ACCESSOR]";
   }
-  if (Object.keys(value).length > MAX_COLLECTION_ENTRIES) {
+  if (entries.length > MAX_COLLECTION_ENTRIES) {
     result["truncated"] = "[TRUNCATED]";
   }
   return result;

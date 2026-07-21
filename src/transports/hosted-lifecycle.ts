@@ -34,10 +34,8 @@ function unavailableResponse(): Response {
 function attempt(operation: () => Promise<void>): Promise<void> {
   try {
     return operation();
-  } catch (error) {
-    return Promise.reject(
-      error instanceof Error ? error : new Error("Resource cleanup failed"),
-    );
+  } catch {
+    return Promise.reject(new Error("Resource cleanup failed"));
   }
 }
 
@@ -45,15 +43,18 @@ async function settleCleanup(
   operations: readonly Promise<void>[],
   timeoutMs: number,
 ): Promise<void> {
-  let timer: NodeJS.Timeout | undefined;
+  let cancelDeadline: () => void = () => {
+    // Replaced synchronously while constructing the deadline promise.
+  };
   const deadline = new Promise<void>((resolve) => {
-    timer = setTimeout(resolve, timeoutMs);
+    const timer = setTimeout(resolve, timeoutMs);
     timer.unref();
+    cancelDeadline = () => {
+      clearTimeout(timer);
+    };
   });
   await Promise.race([Promise.allSettled(operations), deadline]);
-  if (timer !== undefined) {
-    clearTimeout(timer);
-  }
+  cancelDeadline();
 }
 
 export function createHostedRequestLifecycle(
@@ -89,12 +90,7 @@ export function createHostedRequestLifecycle(
     }
 
     return new Promise<boolean>((resolve) => {
-      let settled = false;
       const finish = (drained: boolean) => {
-        if (settled) {
-          return;
-        }
-        settled = true;
         clearTimeout(timer);
         drainedWaiters.delete(onDrained);
         resolve(drained);

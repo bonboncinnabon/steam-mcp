@@ -1,0 +1,25 @@
+scripts/verify-package.mjs
+  s_336c0404d47041::t_a6861ae84f2f08 6-8
+scripts/clean-dist.mjs
+  s_336c0404d47041::t_a6861ae84f2f08 3
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_1ae4f8fb1fe582 224
+scripts/package-release.mjs
+  s_336c0404d47041::t_a6861ae84f2f08 4-5
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "e15f6a713b6bc72aa6070b693e87fb62a0d89249",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

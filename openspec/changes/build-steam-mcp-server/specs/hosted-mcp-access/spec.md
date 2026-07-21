@@ -10,7 +10,7 @@ URI.
 
 - **WHEN** a client sends a valid MCP initialization request with an accepted
   access token
-- **THEN** the system completes protocol negotiation and exposes the ten
+- **THEN** the system completes protocol negotiation and exposes the eight
   approved tools
 
 #### Scenario: Unsupported legacy transport

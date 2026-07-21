@@ -42,8 +42,8 @@ Every successful tool result SHALL identify whether its facts came from
 
 #### Scenario: Mixed-source result
 
-- **WHEN** a composite tool uses documented Steam facts and a derived analysis
-- **THEN** `meta.source_tiers` contains both `supported` and `derived`
+- **WHEN** a composite tool uses documented and best-effort Steam facts
+- **THEN** `meta.source_tiers` contains both `supported` and `best_effort`
 
 ### Requirement: Stable result envelope
 

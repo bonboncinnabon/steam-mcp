@@ -98,9 +98,8 @@
 - [x] 6.3 TDD `steam_get_library` for filtering, sorting, opaque cursor
       pagination, limits, deterministic continuation, empty libraries, and
       private libraries.
-- [x] 6.4 TDD `steam_analyze_library` for documented playtime, backlog,
-      abandoned-game, and genre heuristics, including threshold explanations and
-      insufficient-data behavior.
+- [x] 6.4 Remove derived library analysis from the v1 MCP surface so player
+      tools expose normalized Steam facts without opinionated heuristics.
 - [x] 6.5 TDD `steam_get_recent_activity` for bounded recent games, current
       activity, successful empty results, privacy, and partial optional facets.
 - [x] 6.6 TDD `steam_get_achievements` for user-and-game resolution, opaque
@@ -124,18 +123,12 @@
 - [x] 7.3 TDD `steam_get_game` partial-result composition so successful
       supported facets survive optional best-effort failures with precise
       warnings and source tiers.
-- [ ] 7.4 TDD deterministic recommendation rules for player-library facts, seed
-      games, tags, constraints, ownership exclusion, scoring, stable
-      tie-breaking, and bounded output.
-- [ ] 7.5 TDD `steam_recommend_games` for player-based, seed-only, mixed-input,
-      private-library, insufficient-data, and explainable derived-result
-      behavior.
-- [ ] 7.6 Add golden contract tests proving recommendations never claim learned,
-      collaborative, or upstream-personalized behavior that was not performed.
+- [x] 7.4 Remove recommendation behavior and candidate-discovery infrastructure
+      from v1 so the MCP remains a focused Steam data-access layer.
 
 ## 8. MCP Tool Registry and Local Transport
 
-- [ ] 8.1 TDD strict input and output schemas for all ten tools, including
+- [ ] 8.1 TDD strict input and output schemas for all eight tools, including
       unknown-field rejection, bounds, annotations, descriptions, and stable
       structured content.
 - [ ] 8.2 TDD the shared MCP tool adapter that invokes application services,
@@ -230,9 +223,9 @@
 - [ ] 12.3 Document hosted connection, OAuth discovery, Steam identity linking,
       arbitrary public-profile lookup, unlinking, deletion, quotas, privacy
       limits, and troubleshooting.
-- [ ] 12.4 Document architecture, dependency direction, all ten tool contracts,
-      schemas, pagination, errors, source tiers, best-effort degradation,
-      security model, data retention, and threat boundaries.
+- [ ] 12.4 Document architecture, dependency direction, all eight tool
+      contracts, schemas, pagination, errors, source tiers, best-effort
+      degradation, security model, data retention, and threat boundaries.
 - [ ] 12.5 Document strict TDD contribution rules, fixture scrubbing, live-probe
       safety, test commands, coverage gates, compatibility policy, versioning,
       changelog, operations, migration, rollout, and rollback.

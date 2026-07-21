@@ -2,15 +2,15 @@
 
 ### Requirement: Local stdio transport
 
-The system SHALL expose the same ten tool contracts through an MCP `stdio` entry
-point for local and self-hosted use.
+The system SHALL expose the same eight tool contracts through an MCP `stdio`
+entry point for local and self-hosted use.
 
 #### Scenario: Local MCP initialization
 
 - **WHEN** an MCP client starts the packaged local command with valid
   environment configuration
 - **THEN** the process negotiates MCP over stdin and stdout and lists the same
-  ten tools as hosted mode
+  eight tools as hosted mode
 
 ### Requirement: Environment-based local configuration
 

@@ -47,7 +47,7 @@ predictable contracts, and substantially better reliability evidence.
 ### 3.1 In scope for v1
 
 - Read-only Steam player, library, activity, achievement, friend, wishlist,
-  store, search, and recommendation workflows.
+  store, and search workflows.
 - Hosted Streamable HTTP transport.
 - Local `stdio` transport.
 - OAuth 2.1 authorization for the hosted MCP endpoint.
@@ -121,9 +121,8 @@ allowlisting, credential injection, timeout handling, retry classification, and
 Steam-specific normalization. Documented and best-effort endpoints use separate
 adapters.
 
-`services` : Application behaviors that compose upstream operations, including
-library analysis and explainable recommendations. Services depend on domain
-contracts and ports, not transport implementations.
+`services` : Application behaviors that compose upstream Steam operations.
+Services depend on domain contracts and ports, not transport implementations.
 
 `mcp-tools` : Tool names, descriptions, input schemas, output schemas,
 annotations, bounded defaults, and mapping between MCP results and application
@@ -231,18 +230,6 @@ does not imply access to private profile fields.
 playtime and optional recent-play fields. It supports bounded filtering and
 sorting without returning an unbounded library payload.
 
-`steam_analyze_library` : Compute playtime distribution, backlog signals,
-abandoned-game signals, frequently played genres, and other explicitly
-documented heuristics. The response explains each heuristic and distinguishes
-facts from derived observations.
-
-The version-one heuristics define backlog as zero recorded minutes and an
-abandoned-game signal as 1–119 minutes with a known last-played timestamp at
-least 180 days old. Distribution buckets are unplayed, under 2 hours, 2–10
-hours, 10–50 hours, and 50+ hours. Genre evidence uses at most the 20
-most-played games, requires at least three successful store-detail enrichments,
-and marks missing evidence unavailable rather than guessing.
-
 `steam_get_recent_activity` : Return recently played games and public current
 activity for a user.
 
@@ -268,14 +255,8 @@ bounded optional facets for reviews, current player count, Steam Deck
 compatibility, news, and global achievements. The global-achievement facet
 contains definitions and global unlock percentages. Only selected optional
 facets are fetched. Failure of an optional best-effort facet produces a partial
-result rather than discarding successful facets. Failure of a selected
-supported Steam Web API facet remains terminal.
-
-`steam_recommend_games` : Produce explainable recommendations from a linked or
-explicit player, seed games, and bounded constraints such as price, platform,
-tags, or ownership exclusion. Recommendations identify their evidence and never
-claim collaborative or model-based personalization that the implementation does
-not perform.
+result rather than discarding successful facets. Failure of a selected supported
+Steam Web API facet remains terminal.
 
 ## 8. Upstream Source Policy
 
@@ -293,11 +274,11 @@ breaking unrelated tool facets.
 facts. Derived results disclose their inputs and relevant heuristics.
 
 Best-effort sources are permitted for wishlist enrichment, store details and
-deal fields, Steam Deck information, search, and richer recommendation inputs.
-Aggregate reviews use Steam's documented response schema but a best-effort
-zero-content request that avoids retrieving review text. Each adapter must
-document why it exists, the observed contract, its fallback behavior, and the
-fixture or live probe that detects drift.
+deal fields, Steam Deck information, and search. Aggregate reviews use Steam's
+documented response schema but a best-effort zero-content request that avoids
+retrieving review text. Each adapter must document why it exists, the observed
+contract, its fallback behavior, and the fixture or live probe that detects
+drift.
 
 The outbound HTTP layer permits only HTTPS requests to an explicit Steam host
 allowlist. Redirects are revalidated at every hop. Arbitrary URLs, hosts,
@@ -538,7 +519,7 @@ stable API contracts.
 
 V1 is complete only when:
 
-- All ten tools meet their documented contracts over both transports.
+- All eight tools meet their documented contracts over both transports.
 - Hosted OAuth passes discovery, PKCE, audience, scope, expiry, revocation, and
   cross-tenant isolation tests.
 - Linked and explicit Steam identities resolve according to the defined order.

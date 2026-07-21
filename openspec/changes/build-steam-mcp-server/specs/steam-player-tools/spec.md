@@ -39,32 +39,6 @@ filtering, and sorting.
 - **WHEN** a caller supplies a limit outside the documented bounds
 - **THEN** schema validation returns `INVALID_INPUT` before invoking Steam
 
-### Requirement: Library analysis tool
-
-The system SHALL expose `steam_analyze_library` to compute documented playtime
-distribution, backlog, abandoned-game, and frequently played genre signals from
-available library facts.
-
-#### Scenario: Derived library analysis
-
-- **WHEN** a public library contains sufficient data for analysis
-- **THEN** the tool labels the result as derived and explains the thresholds and
-  facts supporting each observation
-
-#### Scenario: Insufficient analysis data
-
-- **WHEN** the available library facts cannot support a requested heuristic
-- **THEN** the tool omits or marks that observation unavailable rather than
-  inventing a conclusion
-
-#### Scenario: Version-one analysis thresholds
-
-- **WHEN** the tool derives backlog, abandoned-game, playtime-distribution, or
-  frequently played genre signals
-- **THEN** it applies and returns the documented version-one thresholds from the
-  design, bounds genre enrichment to twenty games, and never treats missing
-  last-played or genre evidence as a positive signal
-
 ### Requirement: Recent activity tool
 
 The system SHALL expose `steam_get_recent_activity` to return bounded recently

@@ -22,7 +22,7 @@ remote MCP clients, and MCP Inspector are target compatibility surfaces.
 
 **Goals:**
 
-- Provide ten stable, read-only, task-oriented Steam tools over both supported
+- Provide eight stable, read-only, task-oriented Steam tools over both supported
   transports.
 - Keep domain behavior independent of MCP, HTTP, OAuth, and persistence
   implementations.
@@ -94,8 +94,8 @@ The core modules are:
 
 - `domain`: identifiers, normalized entities, source tiers, versioned results,
   errors, and pure rules.
-- `application`: use cases, composite analysis, recommendation rules, and
-  declared ports.
+- `application`: use cases, composite Steam-data composition, and declared
+  ports.
 - `steam`: documented and best-effort upstream adapters plus shared HTTP policy.
 - `mcp`: tool definitions, schemas, annotations, text rendering, and service
   invocation.
@@ -112,20 +112,18 @@ behavior.
 creates the same monolithic testing and maintenance problems seen in several
 existing Steam MCP implementations.
 
-### 3. Expose ten curated tools rather than raw Steam operations
+### 3. Expose eight curated tools rather than raw Steam operations
 
 The public surface is:
 
 - `steam_get_player`
 - `steam_get_library`
-- `steam_analyze_library`
 - `steam_get_recent_activity`
 - `steam_get_achievements`
 - `steam_get_friends`
 - `steam_get_wishlist`
 - `steam_search_games`
 - `steam_get_game`
-- `steam_recommend_games`
 
 All tools are read-only, reject unknown input fields, use bounded collections,
 and declare precise annotations and input/output schemas. Composite tools call
@@ -242,24 +240,6 @@ pretending these compatibility assumptions are stable.
 **Alternatives considered:** Excluding all undocumented endpoints makes the
 product materially weaker; mixing them into one generic client hides their risk
 and makes drift harder to diagnose.
-
-#### Library-analysis policy
-
-Library analysis is deterministic and discloses these version-one thresholds:
-
-- backlog means exactly zero recorded playtime;
-- an abandoned-game signal requires 1 through 119 recorded minutes and a known
-  last-played time at least 180 days old;
-- playtime distribution uses unplayed, under 2 hours, 2 to under 10 hours, 10 to
-  under 50 hours, and at least 50 hours;
-- genre evidence considers at most the 20 most-played games with positive
-  playtime and requires at least three successfully enriched games. Each genre
-  receives the full playtime of every evidence game carrying that genre, so the
-  result is a ranking signal rather than a partition of total playtime.
-
-Missing last-played timestamps never create an abandoned-game claim. Failed or
-insufficient store enrichment marks genre evidence unavailable or partial rather
-than inventing genres.
 
 ### 7. Enforce policy before issuing upstream work
 
@@ -391,9 +371,9 @@ useful level.
 - **[Caching exposes personal data]** → Cache only explicitly classified
   non-sensitive public game/store data by default; reject secrets from cache
   keys and prohibit durable caching of user payloads.
-- **[Ten composite tools still produce large results]** → Use opaque pagination,
-  bounded defaults, explicit facet selection, output-size limits, and concise
-  structured summaries.
+- **[Composite tools produce large results]** → Use opaque pagination, bounded
+  defaults, explicit facet selection, output-size limits, and concise structured
+  summaries.
 - **[Strict TDD increases initial delivery time]** → Keep behavioral increments
   small and the domain framework-independent so Red-Green-Refactor cycles remain
   fast; the added time buys safer auth, quota, and compatibility changes.
@@ -413,7 +393,7 @@ than replacement of an existing service:
    results, and configuration validation through TDD.
 2. Implement the typed Steam HTTP boundary and documented adapters with scrubbed
    fixtures and opt-in live probes.
-3. Implement the ten application services and MCP tool contracts over `stdio`;
+3. Implement the eight application services and MCP tool contracts over `stdio`;
    publish no hosted endpoint yet.
 4. Add PostgreSQL and Redis-compatible ports, migrations, atomic quotas,
    cache/coalescing, and redacted observability.

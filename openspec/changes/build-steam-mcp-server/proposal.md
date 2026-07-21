@@ -13,9 +13,8 @@ preserving local and self-hosted access for users who prefer their own key.
   “me” and “my” without requiring a SteamID on every call.
 - Add explicit lookup of any public Steam profile using a SteamID64, vanity
   name, or Steam Community profile URL.
-- Add ten curated tools for player profiles, libraries, library analysis, recent
-  activity, achievements, friends, wishlists, game search, game details, and
-  explainable recommendations.
+- Add eight curated tools for player profiles, libraries, recent activity,
+  achievements, friends, wishlists, game search, and game details.
 - Add structured, versioned result and error contracts with bounded pagination
   and partial-result reporting.
 - Add isolated support for documented Steam Web API operations and clearly
@@ -38,10 +37,9 @@ preserving local and self-hosted access for users who prefer their own key.
   authorization, health behavior, and cross-client connectivity.
 - `steam-user-identity`: Explicit Steam user resolution, optional linked Steam
   identity, local default identity, and tenant-isolated link lifecycle.
-- `steam-player-tools`: Player, library, library-analysis, activity,
-  achievement, friend, and wishlist tool behavior.
-- `steam-game-tools`: Game search, consolidated game details, and explainable
-  recommendation tool behavior.
+- `steam-player-tools`: Player, library, activity, achievement, friend, and
+  wishlist tool behavior.
+- `steam-game-tools`: Game search and consolidated game-details behavior.
 - `steam-upstream-reliability`: Steam credential handling, source-tier
   classification, host restrictions, quotas, caching, concurrency, retries,
   partial results, and stable errors.

@@ -1,3 +1,4 @@
+import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 
 import type { QuotaPort } from "../application/ports/quota.js";
@@ -86,10 +87,24 @@ export function createInMemoryQuota(options: InMemoryQuotaOptions): QuotaPort {
       // atomicity boundary promised by this single-instance adapter.
       globalUsed += request.cost;
       subjectUsage.set(subjectKey, userUsed);
+      let rolledBack = false;
 
       return Promise.resolve({
         reserved: true,
         remaining: options.perUserDailyQuota - userUsed,
+        rollback() {
+          if (rolledBack) return;
+          rolledBack = true;
+          if (utcDay !== requestUtcDay) return;
+          // Same-day reservations are the only writers for this key, and each
+          // closure rolls back at most once, so usage is present here.
+          const currentUsage = subjectUsage.get(subjectKey);
+          assert(currentUsage !== undefined);
+          globalUsed -= request.cost;
+          const nextUsage = currentUsage - request.cost;
+          if (nextUsage === 0) subjectUsage.delete(subjectKey);
+          else subjectUsage.set(subjectKey, nextUsage);
+        },
       });
     },
   };

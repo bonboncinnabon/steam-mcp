@@ -1,7 +1,13 @@
 {
   "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
   "coverageAnalysis": "perTest",
-  "mutate": ["src/**/*.ts", "!src/bin/**/*.ts"],
+  "mutate": [
+    "src/application/services/steam-identity-resolver.ts",
+    "src/infrastructure/hosted-authorization-gate.ts",
+    "src/infrastructure/oauth-resource.ts",
+    "src/infrastructure/oauth-token-validator.ts",
+    "src/steam/http/steam-http-policy.ts"
+  ],
   "plugins": ["@stryker-mutator/vitest-runner"],
   "reporters": ["clear-text", "progress", "html"],
   "testRunner": "vitest",

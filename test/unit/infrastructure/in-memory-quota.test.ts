@@ -25,7 +25,7 @@ describe("in-memory quota", () => {
 
     await expect(
       quota.reserve({ subject: "oauth-subject", operation: "player", cost: 2 }),
-    ).resolves.toEqual({ reserved: true, remaining: 3 });
+    ).resolves.toMatchObject({ reserved: true, remaining: 3 });
   });
 
   it("rejects subject exhaustion without consuming global capacity", async () => {
@@ -42,7 +42,7 @@ describe("in-memory quota", () => {
     ).resolves.toEqual({ reserved: false, reason: "user_exhausted" });
     await expect(
       quota.reserve({ subject: "second", operation: "library", cost: 6 }),
-    ).resolves.toEqual({ reserved: true, remaining: 0 });
+    ).resolves.toMatchObject({ reserved: true, remaining: 0 });
   });
 
   it("preserves the configured global safety reserve", async () => {
@@ -59,7 +59,7 @@ describe("in-memory quota", () => {
     ).resolves.toEqual({ reserved: false, reason: "global_reserve" });
     await expect(
       quota.reserve({ subject: "second", operation: "game", cost: 2 }),
-    ).resolves.toEqual({ reserved: true, remaining: 5 });
+    ).resolves.toMatchObject({ reserved: true, remaining: 5 });
   });
 
   it("resets counters at the next UTC day", async () => {
@@ -76,7 +76,7 @@ describe("in-memory quota", () => {
 
     await expect(
       quota.reserve({ subject: "same", operation: "player", cost: 5 }),
-    ).resolves.toEqual({ reserved: true, remaining: 0 });
+    ).resolves.toMatchObject({ reserved: true, remaining: 0 });
   });
 
   it("rejects malformed requests before mutating quota state", async () => {
@@ -110,7 +110,7 @@ describe("in-memory quota", () => {
 
     await expect(
       quota.reserve({ subject: "valid", operation: "player", cost: 5 }),
-    ).resolves.toEqual({ reserved: true, remaining: 0 });
+    ).resolves.toMatchObject({ reserved: true, remaining: 0 });
   });
 
   it("rejects invalid quota bounds at construction", () => {
@@ -164,6 +164,74 @@ describe("in-memory quota", () => {
     ).toHaveLength(15);
   });
 
+  it("rolls back an unused reservation exactly once", async () => {
+    const quota = createInMemoryQuota({
+      globalDailyQuota: 5,
+      globalSafetyReserve: 0,
+      perUserDailyQuota: 5,
+      now: () => new Date("2026-07-22T12:00:00.000Z"),
+    });
+    const reservation = await quota.reserve({
+      subject: "first",
+      operation: "player",
+      cost: 5,
+    });
+    if (!reservation.reserved) throw new Error("Expected reservation");
+
+    reservation.rollback();
+    reservation.rollback();
+
+    await expect(
+      quota.reserve({ subject: "second", operation: "player", cost: 5 }),
+    ).resolves.toMatchObject({ reserved: true, remaining: 0 });
+  });
+
+  it("preserves other same-subject usage while rolling back", async () => {
+    const quota = createInMemoryQuota({
+      globalDailyQuota: 5,
+      globalSafetyReserve: 0,
+      perUserDailyQuota: 5,
+      now: () => new Date("2026-07-22T12:00:00.000Z"),
+    });
+    const first = await quota.reserve({
+      subject: "same",
+      operation: "player",
+      cost: 1,
+    });
+    await quota.reserve({ subject: "same", operation: "library", cost: 1 });
+    if (!first.reserved) throw new Error("Expected reservation");
+
+    first.rollback();
+
+    await expect(
+      quota.reserve({ subject: "same", operation: "game", cost: 4 }),
+    ).resolves.toMatchObject({ reserved: true, remaining: 0 });
+  });
+
+  it("does not apply an old rollback to a new UTC day", async () => {
+    let now = new Date("2026-07-22T23:59:59.999Z");
+    const quota = createInMemoryQuota({
+      globalDailyQuota: 1,
+      globalSafetyReserve: 0,
+      perUserDailyQuota: 1,
+      now: () => now,
+    });
+    const oldReservation = await quota.reserve({
+      subject: "old",
+      operation: "player",
+      cost: 1,
+    });
+    if (!oldReservation.reserved) throw new Error("Expected reservation");
+    now = new Date("2026-07-23T00:00:00.000Z");
+    await quota.reserve({ subject: "new", operation: "player", cost: 1 });
+
+    oldReservation.rollback();
+
+    await expect(
+      quota.reserve({ subject: "third", operation: "player", cost: 1 }),
+    ).resolves.toEqual({ reserved: false, reason: "global_reserve" });
+  });
+
   it("fails closed when the UTC clock moves backward or becomes unavailable", async () => {
     let readNow = () => new Date("2026-07-22T12:00:00.000Z");
     const quota = createInMemoryQuota({
@@ -201,6 +269,6 @@ describe("in-memory quota", () => {
 
     await expect(
       restarted.reserve({ subject: "same", operation: "player", cost: 1 }),
-    ).resolves.toEqual({ reserved: true, remaining: 0 });
+    ).resolves.toMatchObject({ reserved: true, remaining: 0 });
   });
 });

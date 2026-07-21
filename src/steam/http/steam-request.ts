@@ -149,12 +149,15 @@ interface SteamEndpointQueries {
 }
 
 export interface SteamHttpRequest {
+  readonly operation: SteamOperation;
   readonly url: string;
   readonly method: "GET";
   readonly headers: Readonly<{ accept: "application/json" }>;
   readonly redirect: "manual";
   readonly acceptedErrorStatuses?: readonly number[];
 }
+
+export type SteamOperation = SteamEndpoint | "appReviews" | "tagVocabulary";
 
 export function buildSteamRequest<E extends SteamEndpoint>(
   endpoint: E,
@@ -174,6 +177,7 @@ export function buildSteamRequest<E extends SteamEndpoint>(
   }
 
   return {
+    operation: endpoint,
     url: url.href,
     method: "GET",
     headers: { accept: "application/json" },
@@ -195,6 +199,7 @@ export function buildSteamAppReviewsRequest(appId: AppId): SteamHttpRequest {
   url.searchParams.set("num_per_page", "0");
 
   return {
+    operation: "appReviews",
     url: url.href,
     method: "GET",
     headers: { accept: "application/json" },
@@ -211,6 +216,7 @@ export function buildSteamTagVocabularyRequest(
     "https://store.steampowered.com",
   );
   return {
+    operation: "tagVocabulary",
     url: url.href,
     method: "GET",
     headers: { accept: "application/json" },

@@ -18,6 +18,7 @@ describe("STEAM_HOST_ALLOWLIST", () => {
 describe("buildSteamRequest", () => {
   it("constructs a fixed HTTPS request from the endpoint catalog", () => {
     expect(buildSteamRequest("storeDetails", { appids: "570" })).toEqual({
+      operation: "storeDetails",
       url: "https://store.steampowered.com/api/appdetails?appids=570",
       method: "GET",
       headers: { accept: "application/json" },

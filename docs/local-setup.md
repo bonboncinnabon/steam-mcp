@@ -23,8 +23,10 @@ configuration file, protect that file as a credential-bearing file.
 
 ## Run the packaged server
 
-The package exposes the `steam-mcp` executable. `pnpm dlx` runs it without
-cloning this repository or adding it to another project's dependencies:
+The package exposes the `steam-mcp` executable for local stdio. The separate
+`steam-mcp-hosted` executable is for OAuth-protected remote HTTP deployments and
+does not change this local setup. `pnpm dlx` runs local stdio without cloning
+this repository or adding it to another project's dependencies:
 
 ```sh
 export STEAM_API_KEY="<your Steam Web API key>"

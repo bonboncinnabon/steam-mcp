@@ -24,7 +24,8 @@ function run(command, args, options = {}) {
     child.once("error", reject);
     child.once("exit", (code) => {
       clearTimeout(timeout);
-      if (code === 0) {
+      const expectedExitCode = options.expectedExitCode ?? 0;
+      if (code === expectedExitCode) {
         resolvePromise();
       } else {
         reject(
@@ -92,6 +93,38 @@ async function main() {
         ),
         stdio: ["ignore", "ignore", "pipe"],
         timeoutMs: 5_000,
+      },
+    );
+    await run(
+      join(
+        consumer,
+        "node_modules",
+        ".bin",
+        process.platform === "win32"
+          ? "steam-mcp-hosted.cmd"
+          : "steam-mcp-hosted",
+      ),
+      [],
+      {
+        cwd: consumer,
+        env: Object.fromEntries(
+          Object.entries(process.env).filter(
+            ([name]) =>
+              ![
+                "STEAM_API_KEY",
+                "OAUTH_ISSUER",
+                "OAUTH_JWKS_URI",
+                "OAUTH_INTROSPECTION_URI",
+                "OAUTH_CLIENT_ID",
+                "OAUTH_CLIENT_SECRET",
+                "MCP_RESOURCE_URI",
+                "ALLOWED_HOSTS",
+              ].includes(name),
+          ),
+        ),
+        stdio: ["ignore", "ignore", "pipe"],
+        timeoutMs: 5_000,
+        expectedExitCode: 1,
       },
     );
 

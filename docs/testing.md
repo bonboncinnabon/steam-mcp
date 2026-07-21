@@ -87,3 +87,10 @@ Coverage is a release floor, not proof of correctness. Overall line and branch
 coverage must remain at or above 90 percent. High-risk behavior additionally
 requires complete branch coverage and its configured mutation or fault-injection
 checks.
+
+`pnpm mutation` deliberately mutates the authorization, OAuth resource,
+identity-separation, and outbound-host policy boundaries. `pnpm test:high-risk`
+is the complementary fault-injection gate for quota accounting, host
+enforcement, redaction, and shutdown cleanup. Declarative schemas and runtime
+composition are covered by contract and integration tests rather than broad
+equivalent-mutant generation.

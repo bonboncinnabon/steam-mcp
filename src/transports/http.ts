@@ -236,13 +236,14 @@ async function authorize(
   request: Request,
   createServer: HostedMcpHttpHandlerOptions["createServer"],
   activeRequests: ActiveRequestRegistry,
+  inspectedControl?: McpMessageControl,
 ): Promise<Response> {
   const authorizationHeader = request.headers.get("authorization");
   const result = await gate.run({
     ...(authorizationHeader === null ? {} : { authorizationHeader }),
     signal: request.signal,
     execute: async (context) => {
-      const control = await inspectMcpMessage(request);
+      const control = inspectedControl ?? (await inspectMcpMessage(request));
       const clientKey = opaqueClientKey(authorizationHeader ?? "");
       if (control.cancellationId !== undefined) {
         activeRequests.cancel(clientKey, control.cancellationId);
@@ -279,6 +280,8 @@ export function createHostedMcpHttpHandler(
     resource: options.resource,
     validator: options.validator,
   });
+  let inFlightRequests = 0;
+  let inFlightCancellationRequests = 0;
 
   return {
     async handle(request) {
@@ -301,7 +304,42 @@ export function createHostedMcpHttpHandler(
         });
       }
 
-      return authorize(gate, request, options.createServer, activeRequests);
+      if (inFlightRequests >= maxActiveRequests) {
+        if (inFlightCancellationRequests >= 1) {
+          return jsonRpcError(429, -32_029, "Too many active requests", {
+            "retry-after": "1",
+          });
+        }
+        inFlightCancellationRequests += 1;
+        try {
+          const control = await inspectMcpMessage(request);
+          if (control.cancellationId === undefined) {
+            return jsonRpcError(429, -32_029, "Too many active requests", {
+              "retry-after": "1",
+            });
+          }
+          return await authorize(
+            gate,
+            request,
+            options.createServer,
+            activeRequests,
+            control,
+          );
+        } finally {
+          inFlightCancellationRequests -= 1;
+        }
+      }
+      inFlightRequests += 1;
+      try {
+        return await authorize(
+          gate,
+          request,
+          options.createServer,
+          activeRequests,
+        );
+      } finally {
+        inFlightRequests -= 1;
+      }
     },
   };
 }

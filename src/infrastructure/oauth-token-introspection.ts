@@ -13,6 +13,7 @@ export interface TokenIntrospectionClientOptions {
   readonly endpoint: string;
   readonly clientId: string;
   readonly clientSecret: string;
+  readonly timeoutMs?: number;
   readonly fetchImplementation?: typeof fetch;
 }
 
@@ -26,7 +27,11 @@ function validateOptions(options: TokenIntrospectionClientOptions): void {
       endpoint.search !== "" ||
       endpoint.hash !== "" ||
       options.clientId.trim().length === 0 ||
-      options.clientSecret.trim().length === 0
+      options.clientSecret.trim().length === 0 ||
+      (options.timeoutMs !== undefined &&
+        (!Number.isSafeInteger(options.timeoutMs) ||
+          options.timeoutMs <= 0 ||
+          options.timeoutMs > 10_000))
     ) {
       throw new Error();
     }
@@ -40,10 +45,16 @@ export function createTokenIntrospectionClient(
 ): AccessTokenStatusPort {
   validateOptions(options);
   const fetchImplementation = options.fetchImplementation ?? fetch;
+  const timeoutMs = options.timeoutMs ?? 2_000;
 
   return {
     async isActive(accessToken, signal) {
       try {
+        const deadlineSignal = AbortSignal.timeout(timeoutMs);
+        const requestSignal =
+          signal === undefined
+            ? deadlineSignal
+            : AbortSignal.any([signal, deadlineSignal]);
         const response = await fetchImplementation(options.endpoint, {
           method: "POST",
           redirect: "error",
@@ -57,7 +68,7 @@ export function createTokenIntrospectionClient(
             token: accessToken,
             token_type_hint: "access_token",
           }).toString(),
-          ...(signal === undefined ? {} : { signal }),
+          signal: requestSignal,
         });
 
         if (!response.ok) {

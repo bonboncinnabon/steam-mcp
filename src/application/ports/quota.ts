@@ -5,7 +5,11 @@ export interface QuotaRequest {
 }
 
 export type QuotaReservation =
-  | { readonly reserved: true; readonly remaining: number }
+  | {
+      readonly reserved: true;
+      readonly remaining: number;
+      readonly rollback: () => void;
+    }
   | {
       readonly reserved: false;
       readonly reason: "user_exhausted" | "global_reserve" | "unavailable";

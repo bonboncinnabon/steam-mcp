@@ -80,6 +80,46 @@ function createServer(): McpServer {
 }
 
 describe("createHostedMcpHttpHandler", () => {
+  it("bounds requests while authorization is still pending", async () => {
+    let finishValidation:
+      | ((value: Awaited<ReturnType<AccessTokenValidator["validate"]>>) => void)
+      | undefined;
+    const validator = {
+      validate: vi.fn<AccessTokenValidator["validate"]>().mockImplementation(
+        () =>
+          new Promise((resolve) => {
+            finishValidation = resolve;
+          }),
+      ),
+    } satisfies AccessTokenValidator;
+    const handler = createHostedMcpHttpHandler({
+      resource,
+      validator,
+      createServer,
+      maxActiveRequests: 1,
+    });
+
+    const first = handler.handle(initializationRequest());
+    await vi.waitFor(() => {
+      expect(validator.validate).toHaveBeenCalledOnce();
+    });
+    const second = handler.handle(initializationRequest());
+    const secondOutcome = await Promise.race([
+      second,
+      new Promise<"timed_out">((resolve) => {
+        setTimeout(() => {
+          resolve("timed_out");
+        }, 50);
+      }),
+    ]);
+
+    expect(secondOutcome).not.toBe("timed_out");
+    expect((secondOutcome as Response).status).toBe(429);
+    expect(validator.validate).toHaveBeenCalledOnce();
+    finishValidation?.({ authorized: false, reason: "invalid_token" });
+    await expect(first).resolves.toMatchObject({ status: 401 });
+  });
+
   it("handles authenticated initialization without creating a session", async () => {
     const serverFactory = vi.fn(createServer);
     const handler = createHostedMcpHttpHandler({
@@ -477,6 +517,7 @@ describe("createHostedMcpHttpHandler", () => {
     const handler = createHostedMcpHttpHandler({
       resource,
       validator: validValidator(),
+      maxActiveRequests: 1,
       createServer: () => {
         const server = createServer();
         server.registerTool(

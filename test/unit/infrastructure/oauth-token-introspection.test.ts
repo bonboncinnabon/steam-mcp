@@ -46,7 +46,7 @@ describe("createTokenIntrospectionClient", () => {
         "content-type": "application/x-www-form-urlencoded",
       },
     });
-    expect(init).not.toHaveProperty("signal");
+    expect(init.signal).toBeInstanceOf(AbortSignal);
     expect(typeof init.body).toBe("string");
     expect(new URLSearchParams(init.body as string)).toEqual(
       new URLSearchParams({
@@ -104,7 +104,7 @@ describe("createTokenIntrospectionClient", () => {
   });
 
   it("sanitizes network failures and forwards cancellation", async () => {
-    const signal = new AbortController().signal;
+    const controller = new AbortController();
     const fetchImplementation = vi
       .fn()
       .mockRejectedValue(new Error("private network detail"));
@@ -114,12 +114,47 @@ describe("createTokenIntrospectionClient", () => {
     });
 
     await expect(
-      client.isActive("synthetic-access-token", signal),
+      client.isActive("synthetic-access-token", controller.signal),
     ).rejects.toThrow("Authorization dependency unavailable");
-    expect(fetchImplementation).toHaveBeenCalledWith(
-      options.endpoint,
-      expect.objectContaining({ signal }),
+    const requestSignal = (
+      fetchImplementation.mock.calls[0]?.[1] as RequestInit
+    ).signal;
+    controller.abort();
+    expect(requestSignal?.aborted).toBe(true);
+  });
+
+  it("fails closed on its own deadline when the provider stalls", async () => {
+    const fetchImplementation = vi.fn(
+      (_input: string | URL | Request, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener(
+            "abort",
+            () => {
+              reject(new Error("synthetic stalled provider"));
+            },
+            { once: true },
+          );
+        }),
     );
+    const client = createTokenIntrospectionClient({
+      ...options,
+      timeoutMs: 5,
+      fetchImplementation,
+    });
+
+    const outcome = await Promise.race([
+      client.isActive("synthetic-access-token").then(
+        () => "unexpected_success",
+        () => "dependency_unavailable",
+      ),
+      new Promise<string>((resolve) => {
+        setTimeout(() => {
+          resolve("caller_timed_out");
+        }, 50);
+      }),
+    ]);
+
+    expect(outcome).toBe("dependency_unavailable");
   });
 
   it.each([

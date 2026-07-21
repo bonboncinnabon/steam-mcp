@@ -198,6 +198,11 @@
 - [x] 11.6 Add high-risk mutation or fault-injection tests with 100 percent
       branch coverage for host enforcement, redaction, quota accounting, and
       shutdown cleanup.
+- [x] 11.7 TDD a portable hosted Node entry point that composes the external
+      OAuth verifier, service-owned Steam adapters, process-local quota and
+      concurrency enforcement, health routing, and graceful shutdown from
+      explicit validated environment configuration. Keep deployment-platform
+      manifests and external account lifecycle outside the MCP runtime.
 
 ## 12. Packaging and Public Documentation
 
@@ -216,17 +221,24 @@
 - [x] 12.5 Document strict TDD contribution rules, fixture scrubbing, live-probe
       safety, test commands, coverage gates, compatibility policy, versioning,
       changelog, operations, rollout, and rollback.
-- [ ] 12.6 Verify local, self-hosted, and hosted documentation from clean
-      supported environments without undocumented maintainer steps.
+- [ ] 12.6a Verify the packaged local and self-hosted stdio documentation from
+      clean supported Node.js environments, including one public Steam tool
+      call, without undocumented maintainer steps.
+- [ ] 12.6b Verify the hosted documentation against the canonical staging
+      deployment and external OAuth tenant without undocumented maintainer
+      steps.
 
 ## 13. Release Verification and Rollout
 
 - [x] 13.1 Run fresh full verification for formatting, linting, strict types,
       unit and contract tests, dependency audit, coverage thresholds, and all
       configured mutation or fault-injection gates.
-- [ ] 13.2 Run hosted quota and concurrency integration suites for races,
-      cancellation, rollover, safety reserve, bounded memory, and configured
-      dependency recovery.
+- [x] 13.2a Run deterministic single-instance hosted quota and concurrency
+      integration suites for races, cancellation, rollover, safety reserve,
+      bounded memory, and dependency-failure cleanup and recovery.
+- [ ] 13.2b Before configuring an external quota adapter or horizontal scaling,
+      run its atomicity, outage, and recovery integration suite; this is not a
+      prerequisite for the initial single-instance quota-limited cohort.
 - [ ] 13.3 Run opt-in Steam live probes with the dedicated credential, review
       best-effort drift, measure observed call costs, and set documented initial
       quota policies while preserving the safety reserve.
@@ -234,9 +246,14 @@
       initialization, OAuth discovery, authorization, tool listing,
       representative calls, structured results, errors, and cancellation in
       staging.
-- [ ] 13.5 Execute bounded load, abuse, outage, graceful-shutdown,
-      staged-deployment, previous-version rollback, and independent
-      best-effort-adapter disablement tests.
-- [ ] 13.6 Publish the release evidence and compatibility matrix, then open the
-      hosted endpoint only to the approved quota-limited cohort; expand access
-      only after reliability, privacy, capacity, and Steam-budget gates pass.
+- [x] 13.5a Execute local deterministic bounded-load, abusive-input, dependency
+      outage, graceful-shutdown, and independent best-effort-adapter disablement
+      tests.
+- [ ] 13.5b In staging, execute a staged deployment and restore the previous
+      immutable version without a data migration.
+- [ ] 13.6a Publish the release evidence and compatibility matrix with the
+      immutable artifact digest, configuration revision, known limitations,
+      rollback target, approver, and observation window.
+- [ ] 13.6b Open the hosted endpoint only to the approved quota-limited cohort;
+      expand access only after reliability, privacy, capacity, and Steam-budget
+      gates pass.

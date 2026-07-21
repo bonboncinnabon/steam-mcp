@@ -48,6 +48,30 @@ Game search and exact game lookup do not require a user.
 For Codex, Claude Desktop, generic stdio clients, MCP Inspector, and
 development-from-source instructions, see [Local setup](docs/local-setup.md).
 
+## Self-hosted HTTP quick start
+
+The package also exposes `steam-mcp-hosted`, a portable Node.js executable for
+running the OAuth-protected Streamable HTTP server. This repository does not
+publish a public hosted URL, and hosted client or staging compatibility has not
+yet been verified.
+
+After configuring the required Steam, OAuth, resource, and Host environment
+variables plus any desired optional capacity settings, run the packaged
+executable:
+
+```sh
+pnpm dlx --package steam-mcp-server steam-mcp-hosted
+```
+
+The executable listens on plain HTTP (`0.0.0.0:3000` by default). Production
+deployments must terminate TLS at a trusted reverse proxy and expose the exact
+HTTPS `MCP_RESOURCE_URI`. The initial quota and concurrency implementations are
+process-local, so run exactly one instance until a distributed atomic quota
+adapter exists.
+
+See [Hosted setup](docs/hosted-setup.md) for every environment variable and
+[Operations](docs/operations.md) for TLS, health, draining, and rollout gates.
+
 ## Development
 
 This repository uses pnpm exclusively:
@@ -69,6 +93,8 @@ Additional test commands are documented in [Testing](docs/testing.md).
 - The server never logs the Steam API key.
 - Local mode does not require hosted authorization, account linking, or
   persistent storage.
+- Hosted mode is only an OAuth resource server. It has no MCP account creation,
+  Steam linking or unlinking, token revocation, or account deletion lifecycle.
 - Local process state is discarded when the server exits.
 
 ## License

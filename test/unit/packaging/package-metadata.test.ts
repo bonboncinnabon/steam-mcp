@@ -19,6 +19,7 @@ describe("public package metadata", () => {
     expect(manifest["version"]).toBe("0.1.0");
     expect(manifest["bin"]).toEqual({
       "steam-mcp": "dist/bin/steam-mcp.js",
+      "steam-mcp-hosted": "dist/bin/steam-mcp-hosted.js",
     });
     expect(manifest["engines"]).toEqual({
       node: ">=22.22.0 <23 || >=24.0.0",
@@ -54,10 +55,16 @@ describe("public package metadata", () => {
     );
     expect(manifest["scripts"]).toMatchObject({
       build: "node scripts/clean-dist.mjs && tsc -p tsconfig.build.json",
+      "test:integration": "vitest run test/integration",
       "package:verify": "node scripts/verify-package.mjs",
       "package:release": "node scripts/package-release.mjs",
       prepack: "pnpm build",
     });
+    const packageVerification = await readFile(
+      resolve(root, "scripts/verify-package.mjs"),
+      "utf8",
+    );
+    expect(packageVerification).toContain("steam-mcp-hosted");
   });
 
   it("pins release provenance and uploads checksummed artifacts", async () => {

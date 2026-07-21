@@ -53,9 +53,15 @@ The modules have these responsibilities:
 - `src/mcp`: the eight strict schemas, tool annotations, registry, and safe
   conversion from application results to MCP responses.
 - `src/transports`: local `stdio`, stateless Streamable HTTP, health routing,
-  and hosted shutdown lifecycle.
+  Node HTTP adaptation, OAuth metadata, and hosted shutdown lifecycle.
 - `src/infrastructure`: configuration, OAuth validation, Host and Origin checks,
-  process-local quotas and concurrency, and redacted observability.
+  local/hosted composition, process-local quotas and concurrency, and redacted
+  observability.
+
+The package exposes two portable Node entry points. `steam-mcp` composes local
+stdio mode; `steam-mcp-hosted` parses hosted environment configuration, starts
+the Node HTTP listener, and coordinates `SIGINT`/`SIGTERM` draining. Neither
+entry point changes the application or domain dependency direction.
 
 Application services depend on the `SteamDataPort`, not concrete HTTP clients.
 Composite behavior is implemented in services and never by one MCP tool calling
@@ -85,10 +91,19 @@ are HTTPS.
 The service is an OAuth 2.1 resource server, not an authorization server. It
 validates RS256 signatures, issuer, resource audience, time claims, required
 scopes, subject, and current token status before constructing tool execution
-context. Bearer tokens are stripped before a request enters the MCP SDK and are
-never passed to Steam. The downstream context contains only the OAuth subject
-and granted scopes. The external provider owns login, consent, revocation, and
-account deletion.
+context. Signing keys come from the configured HTTPS JWKS endpoint. Current
+token status comes from the configured HTTPS introspection endpoint using a
+confidential client ID and secret. Bearer tokens are stripped before a request
+enters the MCP SDK and are never passed to Steam. The downstream context
+contains only the OAuth subject and granted scopes. The external provider owns
+login, consent, revocation, and account deletion; the MCP surface has no
+account, Steam-link, unlink, revocation, or deletion lifecycle.
+
+The Node listener is intentionally plain HTTP. A deployment terminates TLS at a
+trusted reverse proxy and maps requests onto URLs based on the configured public
+HTTPS resource origin. The proxy must preserve the original `Host`; forwarded
+host headers do not override the allowlist. `ALLOWED_HOSTS` is mandatory, while
+`ALLOWED_ORIGINS` is optional because non-browser MCP clients can omit `Origin`.
 
 Active requests are tracked only so a stateless cancellation notification can
 cancel matching work. The bounded registry key is an opaque SHA-256 digest of

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { success } from "../../../src/domain/result.js";
+import { failure, success } from "../../../src/domain/result.js";
+import type { SteamSearchGamesInput } from "../../../src/application/services/steam-search-games.js";
 import { createLocalToolBindings } from "../../../src/mcp/local-tool-bindings.js";
 
 describe("local MCP tool bindings", () => {
@@ -272,6 +273,60 @@ describe("local MCP tool bindings", () => {
       "Steam wishlist: 4 of 8 games.",
     ]);
     expect(JSON.stringify(results)).not.toContain(localDefault);
+  });
+
+  it("cancels service work when the configured execution deadline elapses", async () => {
+    vi.useFakeTimers();
+    try {
+      let executionSignal: AbortSignal | undefined;
+      const bindings = createLocalToolBindings(
+        {
+          getPlayer: { execute: vi.fn() },
+          getLibrary: { execute: vi.fn() },
+          getRecentActivity: { execute: vi.fn() },
+          getAchievements: { execute: vi.fn() },
+          getFriends: { execute: vi.fn() },
+          getWishlist: { execute: vi.fn() },
+          searchGames: {
+            execute: vi.fn(
+              (_input: SteamSearchGamesInput, signal: AbortSignal) => {
+                executionSignal = signal;
+                return new Promise<ReturnType<typeof failure>>((resolve) => {
+                  signal.addEventListener(
+                    "abort",
+                    () => {
+                      resolve(
+                        failure(
+                          "UPSTREAM_UNAVAILABLE",
+                          "Steam is currently unavailable.",
+                          true,
+                        ),
+                      );
+                    },
+                    { once: true },
+                  );
+                });
+              },
+            ),
+          },
+          getGame: { execute: vi.fn() },
+        },
+        undefined,
+        50,
+      );
+
+      const resultPromise = invoke(
+        bindings.steam_search_games,
+        { query: "portal", limit: 3 },
+        new AbortController().signal,
+      );
+      await vi.advanceTimersByTimeAsync(50);
+
+      await expect(resultPromise).resolves.toMatchObject({ isError: true });
+      expect(executionSignal?.aborted).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

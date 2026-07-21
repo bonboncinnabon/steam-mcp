@@ -28,10 +28,26 @@ public profile. Hosted mode requires:
 
 - `STEAM_API_KEY`, supplied by the deployment secret manager;
 - `OAUTH_ISSUER`, an HTTPS external authorization-server issuer;
+- `OAUTH_JWKS_URI`, the provider's HTTPS signing-key endpoint (commonly
+  `/oauth2/jwks` for a WorkOS-style issuer);
+- `OAUTH_INTROSPECTION_URI`, the provider's HTTPS token-status endpoint
+  (commonly `/oauth2/introspection` for a WorkOS-style issuer);
+- `OAUTH_CLIENT_ID` and `OAUTH_CLIENT_SECRET`, confidential credentials used
+  only for server-to-server token introspection;
 - `MCP_RESOURCE_URI`, the exact canonical HTTPS MCP resource URI;
-- deployment-level allowed Host and Origin values;
+- `ALLOWED_HOSTS`, including the canonical resource host and any explicit port;
+- optional `ALLOWED_ORIGINS` for exact HTTPS browser origins;
+- `LISTEN_HOST`, `PORT`, and `SHUTDOWN_DRAIN_TIMEOUT_MS` when their defaults of
+  `0.0.0.0`, `3000`, and `10000` milliseconds are unsuitable;
 - validated service-policy values for timeout, retries, quota, concurrency,
   fan-out, pagination, execution deadline, and output size.
+
+The five independently configurable best-effort switches are
+`STEAM_BEST_EFFORT_WISHLIST_ENABLED`, `STEAM_BEST_EFFORT_STORE_SEARCH_ENABLED`,
+`STEAM_BEST_EFFORT_STORE_DETAILS_ENABLED`,
+`STEAM_BEST_EFFORT_DECK_COMPATIBILITY_ENABLED`, and
+`STEAM_BEST_EFFORT_GAME_REVIEWS_ENABLED`. Each defaults to `true` and accepts
+only `true` or `false`.
 
 Hosted mode rejects `STEAM_USER`; subject-oriented tools require an explicit
 public Steam user. OAuth subjects are authorization identities and must never be
@@ -42,6 +58,26 @@ Use the platform secret manager and least-privilege access. Rotate a suspected
 Steam key or authorization credential at its owner, restart the affected
 processes with the new secret, and verify only sanitized success/failure
 signals. Never print a credential to test whether rotation succeeded.
+
+## Process and ingress
+
+The npm package exposes the portable `steam-mcp-hosted` Node executable. Start
+it from an installed package or run it without a permanent install:
+
+```sh
+pnpm dlx --package steam-mcp-server steam-mcp-hosted
+```
+
+The executable serves plain HTTP. Terminate TLS at a trusted reverse proxy or
+load balancer, preserve the original public `Host`, and forward the canonical
+MCP route, protected-resource metadata route, `/livez`, and `/readyz`. Do not
+depend on `Forwarded` or `X-Forwarded-Host`; the application checks the actual
+`Host` header against `ALLOWED_HOSTS`.
+
+Keep this deployment at one instance. Quota counters and concurrency queues are
+process-local, and a restart resets quota counters. A distributed atomic quota
+adapter is required before multiple replicas, restart-safe quota enforcement, or
+broad public access.
 
 ## Health and shutdown
 
@@ -121,8 +157,8 @@ platform's deletion and notification process.
 
 ### Best-effort source drift
 
-- Identify the adapter from the bounded drift metric, then disable that adapter
-  independently when its deployment switch is wired and verified.
+- Identify the adapter from the bounded drift metric, then disable only its
+  corresponding best-effort environment switch.
 - Preserve supported tools and successful optional facets; return the stable
   drift error or partial-result warning.
 - Reproduce with a dedicated live-probe credential, never production traffic.

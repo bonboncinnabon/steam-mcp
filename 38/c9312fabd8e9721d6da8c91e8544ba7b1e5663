@@ -1,0 +1,28 @@
+test/unit/mcp/tool-registry.test.ts
+  s_336c0404d47041::t_6c71a352228eac 15-16,18-21,51-53,77-78,80-83
+  s_336c0404d47041::t_9ce6eec3515777 1-5,7-14,17,22-39,42-48,70
+  s_336c0404d47041::t_01b530e170e07d 40-41
+  s_336c0404d47041::t_4eb6eba42ed414 6,49-50,54-69,71-76,79,84-105
+src/mcp/tool-registry.ts
+  s_336c0404d47041::t_d3179f545c553c 5-20,61
+  s_336c0404d47041::t_6c71a352228eac 1-4
+  s_336c0404d47041::t_01b530e170e07d 21-60
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_91535aec896a3f 137
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "38c9312fabd8e9721d6da8c91e8544ba7b1e5663",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

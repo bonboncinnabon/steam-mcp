@@ -1,0 +1,87 @@
+test/unit/application/steam-get-library.test.ts
+  s_336c0404d47041::t_5621b66abf3ba5 169,337
+  s_336c0404d47041::t_d2bbc2f55865df 182
+openspec/changes/build-steam-mcp-server/specs/security-privacy-operations/spec.md
+  s_336c0404d47041::t_b66053dfbd8774 85-86,126-127
+  s_336c0404d47041::t_765dbfa3231829 5-8,17,19-22,68-69,79-80,82,84,133-134
+  s_336c0404d47041::t_13dab7eb1786c8 28
+openspec/changes/build-steam-mcp-server/specs/steam-upstream-reliability/spec.md
+  s_336c0404d47041::t_765dbfa3231829 106-109
+  s_336c0404d47041::t_13dab7eb1786c8 19
+src/application/services/steam-identity-resolver.ts
+  s_336c0404d47041::t_70062e978dac24 17,85
+test/unit/application/steam-identity-resolver.test.ts
+  s_336c0404d47041::t_0e5904ebe8bec4 4-7,55-58,60
+  s_336c0404d47041::t_8b4699c025080a 10,41,68,78,100
+  s_336c0404d47041::t_9ca496f3b8f69e 49,61-63
+openspec/changes/build-steam-mcp-server/specs/local-mcp-access/spec.md
+  s_336c0404d47041::t_13dab7eb1786c8 46-48,58
+src/mcp/tool-adapter.ts
+  s_336c0404d47041::t_71aad9cce76fd9 11
+test/unit/application/steam-get-recent-activity.test.ts
+  s_336c0404d47041::t_d2bbc2f55865df 90
+  s_336c0404d47041::t_5621b66abf3ba5 69,215
+test/unit/infrastructure/config.test.ts
+  s_336c0404d47041::t_80bdd534da4110 49,56,61
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_b66053dfbd8774 28-29,175-176,193-194,196-197
+  s_336c0404d47041::t_58d18ab6cca65f 146
+  s_336c0404d47041::t_13dab7eb1786c8 4-5,34-35,76-77,93-95,147-148
+  s_336c0404d47041::t_765dbfa3231829 150-156,158-162,177-179,190-191,210-212,218,227-229,232
+openspec/changes/build-steam-mcp-server/specs/steam-user-identity/spec.md
+  s_336c0404d47041::t_765dbfa3231829 30-32,34,36-38,40,42-43,47-48
+test/unit/mcp/tool-adapter.test.ts
+  s_336c0404d47041::t_e8ca781a9d2eb6 118-139
+test/unit/application/steam-get-player.test.ts
+  s_336c0404d47041::t_5621b66abf3ba5 109,122,145
+  s_336c0404d47041::t_d2bbc2f55865df 154
+test/unit/application/steam-get-friends.test.ts
+  s_336c0404d47041::t_5621b66abf3ba5 326
+openspec/changes/build-steam-mcp-server/specs/hosted-mcp-access/spec.md
+  s_336c0404d47041::t_b66053dfbd8774 116-117
+src/mcp/tool-contracts.ts
+  s_336c0404d47041::t_c195570b5066f8 22
+test/unit/domain/service-policy.test.ts
+  s_336c0404d47041::t_e94fffc4d71407 59
+test/unit/application/steam-get-wishlist.test.ts
+  s_336c0404d47041::t_5621b66abf3ba5 75,221
+  s_336c0404d47041::t_d2bbc2f55865df 88
+openspec/changes/build-steam-mcp-server/specs/steam-player-tools/spec.md
+  s_336c0404d47041::t_b66053dfbd8774 113-114
+  s_336c0404d47041::t_765dbfa3231829 109,115
+docs/superpowers/specs/2026-07-20-steam-mcp-design.md
+  s_336c0404d47041::t_8c56d4f8c8de28 13-15,23-25,34,42,54,59-60,74-75,85,109,133-134,143-146,174-175,180-181,183-184,206-207,333,349-354,435-437,454,456,460,469-470
+  s_336c0404d47041::t_7aa25852e3f4a3 471-472,479-480
+test/unit/mcp/tool-contracts.test.ts
+  s_336c0404d47041::t_586111abbbfa06 49-50,53-55
+  s_336c0404d47041::t_5d698aa498f9ba 51-52
+  s_336c0404d47041::t_6131b080a79cee 47-48
+docs/testing.md
+  s_336c0404d47041::t_8c56d4f8c8de28 78-79,81-83
+test/unit/application/steam-get-achievements.test.ts
+  s_336c0404d47041::t_d2bbc2f55865df 314
+  s_336c0404d47041::t_5621b66abf3ba5 299,581
+openspec/changes/build-steam-mcp-server/design.md
+  s_336c0404d47041::t_13dab7eb1786c8 254,391
+  s_336c0404d47041::t_b66053dfbd8774 57-58,221-225,259-260,305-306,361-362,411-412
+  s_336c0404d47041::t_765dbfa3231829 27,31-32,37-39,59,93,105,107-108,194-195,201-204,207-209,252-253,262-265,267-270,272-275,284-286,313-317,320-322,341-342,350,360,370-372,385-387,400-403,420-422
+openspec/changes/build-steam-mcp-server/proposal.md
+  s_336c0404d47041::t_765dbfa3231829 12-13,22-23,26-27,38-39,48-49,58-59,63-66
+  s_336c0404d47041::t_b66053dfbd8774 44-45
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "2d782edb51f548aaa3e5819a5036e145fe376558",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

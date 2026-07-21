@@ -1,0 +1,34 @@
+src/transports/hosted-lifecycle.ts
+  s_336c0404d47041::t_6e55871f947996 1-3,5-7,9-37,41-43,59-101,108-112,114-119,123,125-158
+  s_336c0404d47041::t_13852ae4c4bd22 4,8,38-40,102-107,120-122
+  s_336c0404d47041::t_aa123a6ca817d9 113
+  s_336c0404d47041::t_ad7a9f602f4d96 44-58,124
+test/unit/transports/hosted-lifecycle.test.ts
+  s_336c0404d47041::t_f6d7e4b88e7778 1-6,11-31,33,35,37,39-40,42,44-170,174-207,262-276
+  s_336c0404d47041::t_13852ae4c4bd22 32,34,36,38,41,43
+  s_336c0404d47041::t_aa123a6ca817d9 171-173
+  s_336c0404d47041::t_5e2978fec581d2 7-10,208-261
+test/unit/transports/health.test.ts
+  s_336c0404d47041::t_4aa3dbb1556293 79-91
+src/transports/health.ts
+  s_336c0404d47041::t_78eb05c872407c 12,32-33,52-55,69-70
+  s_336c0404d47041::t_732b441a1113d5 71
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_06c94e043267ca 192
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "c6311bbcf13e8dab094fa75e79378ec75d89ebcd",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

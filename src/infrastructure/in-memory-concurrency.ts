@@ -53,7 +53,8 @@ export function createInMemoryConcurrency(
   }
 
   function decrement(counter: Map<string, number>, key: string): void {
-    const next = (counter.get(key) ?? 1) - 1;
+    // An idempotent lease can release only after admission created both keys.
+    const next = Number(counter.get(key)) - 1;
     if (next === 0) counter.delete(key);
     else counter.set(key, next);
   }

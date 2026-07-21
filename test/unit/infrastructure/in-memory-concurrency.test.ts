@@ -17,6 +17,18 @@ async function expectLease(
   return lease;
 }
 
+type AbortListener = Parameters<AbortSignal["addEventListener"]>[1];
+
+function asCallback(listener: AbortListener): () => void {
+  return typeof listener === "function"
+    ? () => {
+        listener(new Event("abort"));
+      }
+    : () => {
+        listener.handleEvent(new Event("abort"));
+      };
+}
+
 describe("in-memory concurrency", () => {
   it("rejects invalid concurrency bounds at construction", () => {
     const baseline = {
@@ -313,5 +325,93 @@ describe("in-memory concurrency", () => {
     expect(thirdAcquired).not.toHaveBeenCalled();
     nextLease.release();
     await expectLease(third);
+  });
+
+  it("keeps shared-key counts correct while multiple leases are active", async () => {
+    const concurrency = createInMemoryConcurrency({
+      maxHostConcurrency: 2,
+      maxOperationConcurrency: 2,
+      maxQueueSize: 1,
+    });
+    const signal = new AbortController().signal;
+    const first = await concurrency.acquire("host", "operation", signal);
+    const second = await concurrency.acquire("host", "operation", signal);
+    const third = concurrency.acquire("host", "operation", signal);
+
+    first.release();
+    const thirdLease = await third;
+    const fourth = concurrency.acquire("host", "operation", signal);
+    const fourthAcquired = vi.fn();
+    void fourth.then(fourthAcquired);
+    await Promise.resolve();
+    expect(fourthAcquired).not.toHaveBeenCalled();
+
+    second.release();
+    await expectLease(fourth);
+    thirdLease.release();
+  });
+
+  it("ignores a stale abort callback after its waiter was admitted", async () => {
+    let staleAbort: (() => void) | undefined;
+    const faultSignal = {
+      aborted: false,
+      addEventListener: (_type: string, listener: AbortListener) => {
+        staleAbort = asCallback(listener);
+      },
+      removeEventListener: () => undefined,
+    } as unknown as AbortSignal;
+    const concurrency = createInMemoryConcurrency({
+      maxHostConcurrency: 1,
+      maxOperationConcurrency: 1,
+      maxQueueSize: 1,
+    });
+    const active = await concurrency.acquire(
+      "host",
+      "operation",
+      new AbortController().signal,
+    );
+    const admitted = concurrency.acquire("host", "operation", faultSignal);
+
+    active.release();
+    const admittedLease = await admitted;
+    const next = concurrency.acquire(
+      "host",
+      "operation",
+      new AbortController().signal,
+    );
+    staleAbort?.();
+    admittedLease.release();
+
+    await expectLease(next);
+  });
+
+  it("cleans up when abort wins immediately after queue insertion", async () => {
+    let abortedReads = 0;
+    let abortAfterInsert: (() => void) | undefined;
+    const faultSignal = {
+      get aborted() {
+        abortedReads += 1;
+        return abortedReads > 1;
+      },
+      addEventListener: (_type: string, listener: AbortListener) => {
+        abortAfterInsert = asCallback(listener);
+      },
+      removeEventListener: () => undefined,
+    } as unknown as AbortSignal;
+    const concurrency = createInMemoryConcurrency({
+      maxHostConcurrency: 1,
+      maxOperationConcurrency: 1,
+      maxQueueSize: 1,
+    });
+    await concurrency.acquire(
+      "host",
+      "operation",
+      new AbortController().signal,
+    );
+
+    await expect(
+      concurrency.acquire("host", "operation", faultSignal),
+    ).rejects.toMatchObject({ kind: "cancelled" });
+    expect(abortAfterInsert).toBeDefined();
   });
 });

@@ -180,7 +180,7 @@
 
 ## 11. Hosted Streamable HTTP and Operations
 
-- [ ] 11.1 TDD the Streamable HTTP MCP endpoint for authenticated
+- [x] 11.1 TDD the Streamable HTTP MCP endpoint for authenticated
       initialization, request handling, cancellation, stateless operation,
       canonical resource binding, and rejection of legacy HTTP plus SSE.
 - [ ] 11.2 TDD configured Origin and Host enforcement before authorization or

@@ -134,7 +134,7 @@
 - [x] 8.2 TDD the shared MCP tool adapter that invokes application services,
       maps expected failures to `isError: true`, sanitizes unexpected
       exceptions, and derives concise text from structured results.
-- [ ] 8.3 TDD the single shared tool registry and verify exact tool-name,
+- [x] 8.3 TDD the single shared tool registry and verify exact tool-name,
       schema, annotation, result, and error parity across transport
       constructions.
 - [ ] 8.4 TDD the stdio entry point with environment credentials, memory

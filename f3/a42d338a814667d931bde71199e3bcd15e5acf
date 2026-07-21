@@ -1,0 +1,52 @@
+test/unit/infrastructure/in-memory-quota.test.ts
+  s_336c0404d47041::t_d0a9e454f93911 30-34,36-40,42-46
+  s_336c0404d47041::t_0356bb527d8864 133-138
+  s_336c0404d47041::t_cf5eb7d4b6cdd7 189-205
+  s_336c0404d47041::t_f6ff9c45ac0db5 64-80
+  s_336c0404d47041::t_a75777c35a0446 166-188
+  s_336c0404d47041::t_12e7097e76512b 96-100
+  s_336c0404d47041::t_38cd1b22601f3c 115-132,139
+  s_336c0404d47041::t_641a0e9fd72ec3 140-165
+  s_336c0404d47041::t_2510cd35e18f00 1-2,7-8,18-21,23-29,206
+  s_336c0404d47041::t_319c18503c8980 95,101-105
+  s_336c0404d47041::t_afa8cb2e372a70 81-94,106-114
+  s_336c0404d47041::t_1e2a5f302354ca 41
+  s_336c0404d47041::t_fc36a719e7d33f 62
+  s_336c0404d47041::t_f9fdd9dc5dfdbe 3-6,9-17
+  s_336c0404d47041::t_c421b0ddb23692 22,35
+  s_336c0404d47041::t_2b6f12138b08d1 47-61,63
+src/infrastructure/in-memory-quota.ts
+  s_336c0404d47041::t_5de315e873d69f 31,60-65
+  s_336c0404d47041::t_3836cc2dc39681 68-75
+  s_336c0404d47041::t_c9928cc29cc15e 51-59
+  s_336c0404d47041::t_add5def3c16b0a 33-34,85-86
+  s_336c0404d47041::t_5825bcb5c1fe7e 92
+  s_336c0404d47041::t_7dfa86d6c0e773 17,19,21,23-30
+  s_336c0404d47041::t_4865a7d9e7d794 3-9,14-15,32,35-38,87,89-91,93-96
+  s_336c0404d47041::t_bceedf23712f00 76-84
+  s_336c0404d47041::t_e80713f7e277f2 1-2,10-13,66-67,88
+  s_336c0404d47041::t_7a138e4d7e7404 18,20,22
+  s_336c0404d47041::t_12e7097e76512b 16
+  s_336c0404d47041::t_9c781c9c202dc6 39-44,46-50
+  s_336c0404d47041::t_fd63d97ed5e3b4 45
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_eb783219811418 152
+openspec/changes/build-steam-mcp-server/design.md
+  s_336c0404d47041::t_add5def3c16b0a 263-267,387-390
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "f3a42d338a814667d931bde71199e3bcd15e5acf",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

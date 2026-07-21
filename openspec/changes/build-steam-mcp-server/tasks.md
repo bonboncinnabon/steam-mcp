@@ -137,10 +137,10 @@
 - [x] 8.3 TDD the single shared tool registry and verify exact tool-name,
       schema, annotation, result, and error parity across transport
       constructions.
-- [ ] 8.4 TDD the stdio entry point with environment credentials, memory
-      infrastructure, clean initialization and shutdown, actionable missing-key
-      behavior, and protocol-only stdout.
-- [ ] 8.5 Add MCP SDK and Inspector conformance tests for local initialization,
+- [x] 8.4 TDD the stdio entry point with environment credentials, no unused
+      persistence infrastructure, clean initialization and shutdown, actionable
+      missing-key behavior, and protocol-only stdout.
+- [x] 8.5 Add MCP SDK and Inspector conformance tests for local initialization,
       tool listing, representative executions, cancellation, structured errors,
       and stderr diagnostic isolation.
 

@@ -53,14 +53,16 @@ result envelopes, error codes, identity-input rules, and source-tier behavior.
 
 ### Requirement: Local data minimization
 
-Local mode SHALL use bounded in-memory quota and cache adapters and SHALL NOT
-require hosted PostgreSQL, Redis, OAuth, or account persistence.
+Local mode SHALL NOT require hosted PostgreSQL, Redis, OAuth, account
+persistence, or unused placeholder infrastructure. Any process-local state added
+for a consumed port SHALL be bounded and SHALL NOT persist Steam payloads to
+disk.
 
 #### Scenario: Local process exits
 
 - **WHEN** the local MCP process terminates
-- **THEN** its in-memory account-independent cache and quota state are discarded
-  without writing user Steam payloads to disk
+- **THEN** any process-local state is discarded without writing user Steam
+  payloads to disk
 
 ### Requirement: Packaged local execution
 

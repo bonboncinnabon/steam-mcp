@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { failure, success } from "../../../src/domain/result.js";
 import { createMcpToolHandler } from "../../../src/mcp/tool-adapter.js";
+import { SteamUpstreamError } from "../../../src/steam/http/steam-retry-policy.js";
 
 describe("MCP tool adapter", () => {
   it("returns concise text and the exact structured success result", async () => {
@@ -83,6 +84,35 @@ describe("MCP tool adapter", () => {
         ok: false,
         error: { code: "INTERNAL_ERROR" },
       },
+    });
+  });
+
+  it("maps a typed Steam upstream exception to its stable public error", async () => {
+    const handler = createMcpToolHandler({
+      execute: vi.fn().mockRejectedValue(
+        new SteamUpstreamError({
+          code: "STEAM_AUTH_FAILED",
+          retryable: false,
+        }),
+      ),
+      renderSuccess: () => "unused",
+    });
+
+    await expect(
+      handler({}, { signal: new AbortController().signal }),
+    ).resolves.toEqual({
+      isError: true,
+      content: [
+        {
+          type: "text",
+          text: "Steam authentication failed. Local users should set STEAM_API_KEY; hosted users should contact the server operator.",
+        },
+      ],
+      structuredContent: failure(
+        "STEAM_AUTH_FAILED",
+        "Steam authentication failed. Local users should set STEAM_API_KEY; hosted users should contact the server operator.",
+        false,
+      ),
     });
   });
 });

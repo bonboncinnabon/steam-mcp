@@ -240,6 +240,32 @@ describe("Steam MCP tool contracts", () => {
     ).toThrow();
   });
 
+  it("accepts the shared failure envelope through every advertised output schema", () => {
+    const failureResult = {
+      ok: false as const,
+      error: {
+        code: "STEAM_AUTH_FAILED" as const,
+        message: "Configure Steam credentials.",
+        retryable: false,
+      },
+    };
+
+    for (const contract of Object.values(STEAM_TOOL_CONTRACTS)) {
+      expect(contract.outputSchema.parse(failureResult)).toEqual(failureResult);
+      expect(() =>
+        contract.outputSchema.parse({
+          ...failureResult,
+          meta: {
+            schema_version: "1",
+            source_tiers: [],
+            partial: false,
+            warnings: [],
+          },
+        }),
+      ).toThrow();
+    }
+  });
+
   it("builds collection bounds from the active service policy", () => {
     const contracts = createSteamToolContracts({
       defaultPageSize: 7,

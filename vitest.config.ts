@@ -14,7 +14,12 @@ export default defineConfig({
         statements: 90,
       },
     },
-    exclude: ["test/live/**", "node_modules/**", "dist/**"],
+    exclude: [
+      "test/conformance/**",
+      "test/live/**",
+      "node_modules/**",
+      "dist/**",
+    ],
     passWithNoTests: true,
     sequence: {
       concurrent: false,

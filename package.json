@@ -27,6 +27,7 @@
     "test": "vitest run",
     "test:contract": "vitest run test/contract",
     "test:coverage": "vitest run --coverage",
+    "test:inspector": "pnpm build && vitest run --config vitest.conformance.config.ts",
     "test:live": "vitest run --config vitest.live.config.ts",
     "test:unit": "vitest run test/unit",
     "typecheck": "tsc -p tsconfig.json --noEmit"
@@ -37,6 +38,7 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@modelcontextprotocol/inspector-cli": "1.0.0",
     "@stryker-mutator/core": "9.6.1",
     "@stryker-mutator/vitest-runner": "9.6.1",
     "@types/node": "22.20.1",

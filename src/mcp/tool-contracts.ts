@@ -62,24 +62,46 @@ const successMetaSchema = z.strictObject({
   warnings: z.array(z.string()),
 });
 
-export const TOOL_FAILURE_OUTPUT_SCHEMA = z.strictObject({
-  ok: z.literal(false),
-  error: z.strictObject({
-    code: z.enum(ERROR_CODES),
-    message: z.string().min(1),
-    retryable: z.boolean(),
-  }),
+const toolErrorSchema = z.strictObject({
+  code: z.enum(ERROR_CODES),
+  message: z.string().min(1),
+  retryable: z.boolean(),
 });
 
-function successOutputSchema<DataSchema extends z.ZodType>(data: DataSchema) {
-  return z.strictObject({
-    ok: z.literal(true),
-    data,
-    meta: successMetaSchema,
-  });
+export const TOOL_FAILURE_OUTPUT_SCHEMA = z.strictObject({
+  ok: z.literal(false),
+  error: toolErrorSchema,
+});
+
+function toolOutputSchema<DataSchema extends z.ZodType>(data: DataSchema) {
+  return z
+    .strictObject({
+      ok: z.boolean(),
+      data: data.optional(),
+      meta: successMetaSchema.optional(),
+      error: toolErrorSchema.optional(),
+    })
+    .superRefine((result, context) => {
+      const isSuccessShape =
+        result.ok &&
+        result.data !== undefined &&
+        result.meta !== undefined &&
+        result.error === undefined;
+      const isFailureShape =
+        !result.ok &&
+        result.data === undefined &&
+        result.meta === undefined &&
+        result.error !== undefined;
+      if (!isSuccessShape && !isFailureShape) {
+        context.addIssue({
+          code: "custom",
+          message: "Invalid Steam tool result envelope",
+        });
+      }
+    });
 }
 
-const playerOutputSchema = successOutputSchema(
+const playerOutputSchema = toolOutputSchema(
   z.strictObject({
     steamId: steamIdSchema,
     profile: playerSummarySchema,
@@ -92,7 +114,7 @@ const playerOutputSchema = successOutputSchema(
     }),
   }),
 );
-const libraryOutputSchema = successOutputSchema(
+const libraryOutputSchema = toolOutputSchema(
   z.strictObject({
     steamId: steamIdSchema,
     games: z.array(ownedGameSchema),
@@ -112,14 +134,14 @@ const currentActivitySchema = z.union([
   }),
   z.strictObject({ status: z.literal("unavailable") }),
 ]);
-const recentActivityOutputSchema = successOutputSchema(
+const recentActivityOutputSchema = toolOutputSchema(
   z.strictObject({
     steamId: steamIdSchema,
     recentGames: z.array(ownedGameSchema),
     currentActivity: currentActivitySchema,
   }),
 );
-const achievementOutputSchema = successOutputSchema(
+const achievementOutputSchema = toolOutputSchema(
   z.strictObject({
     steamId: steamIdSchema,
     appId: appIdSchema,
@@ -152,7 +174,7 @@ const enrichedFriendRelationshipSchema = z.strictObject({
     z.strictObject({ status: z.literal("fan_out_limited") }),
   ]),
 });
-const friendsOutputSchema = successOutputSchema(
+const friendsOutputSchema = toolOutputSchema(
   z.strictObject({
     steamId: steamIdSchema,
     friends: z.array(
@@ -162,7 +184,7 @@ const friendsOutputSchema = successOutputSchema(
     nextCursor: cursorSchema.optional(),
   }),
 );
-const wishlistOutputSchema = successOutputSchema(
+const wishlistOutputSchema = toolOutputSchema(
   z.strictObject({
     steamId: steamIdSchema,
     items: z.array(
@@ -178,7 +200,7 @@ const wishlistOutputSchema = successOutputSchema(
     nextCursor: cursorSchema.optional(),
   }),
 );
-const searchOutputSchema = successOutputSchema(
+const searchOutputSchema = toolOutputSchema(
   z.strictObject({
     query: z.string().min(1).max(100),
     candidates: z.array(
@@ -216,7 +238,7 @@ const storeGameSchema = z.strictObject({
   discountPercent: z.number().int().min(0).max(100).optional(),
   releaseDate: z.string().optional(),
 });
-const gameOutputSchema = successOutputSchema(
+const gameOutputSchema = toolOutputSchema(
   z.strictObject({
     appId: appIdSchema,
     facets: z.strictObject({

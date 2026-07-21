@@ -291,10 +291,11 @@ is not added to a new implementation.
 ### 9. Keep local behavior equivalent but credential acquisition different
 
 The `stdio` entry point constructs the same services and tool registry using
-environment configuration and memory infrastructure. It writes only MCP protocol
-messages to stdout and sends redacted diagnostics to stderr. Missing key or
-identity configuration becomes an actionable tool or startup error according to
-whether the enabled tools require it.
+environment configuration and no persistence infrastructure. Process-local
+adapters are added only when a tool behavior actually consumes their ports. It
+writes only MCP protocol messages to stdout and sends redacted diagnostics to
+stderr. Missing key or identity configuration becomes an actionable tool or
+startup error according to whether the enabled tools require it.
 
 **Rationale:** Local users receive the same contracts and tests without hosted
 identity, PostgreSQL, or Redis. Environment-based credentials follow MCP

@@ -1,0 +1,35 @@
+openspec/changes/build-steam-mcp-server/proposal.md
+  s_336c0404d47041::t_9945432b1499fc 16-17,40-42
+openspec/changes/build-steam-mcp-server/design.md
+  s_336c0404d47041::t_9945432b1499fc 25,97-98,115,396
+  s_336c0404d47041::t_e0888e91dcacbd 374-376
+openspec/changes/build-steam-mcp-server/specs/local-mcp-access/spec.md
+  s_336c0404d47041::t_9945432b1499fc 13
+  s_336c0404d47041::t_e0888e91dcacbd 5-6
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_e0888e91dcacbd 226-228
+  s_336c0404d47041::t_9945432b1499fc 101-102,126-127,131
+openspec/changes/build-steam-mcp-server/specs/hosted-mcp-access/spec.md
+  s_336c0404d47041::t_9945432b1499fc 13
+docs/superpowers/specs/2026-07-20-steam-mcp-design.md
+  s_336c0404d47041::t_9945432b1499fc 50,124-125,522
+  s_336c0404d47041::t_e0888e91dcacbd 258-259,277-281
+openspec/changes/build-steam-mcp-server/specs/steam-upstream-reliability/spec.md
+  s_336c0404d47041::t_9945432b1499fc 45-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "a07df716e9abf6db8738c2eb5f8b69e8e501b231",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

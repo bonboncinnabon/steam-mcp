@@ -5,6 +5,10 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import type { AuthorizationContext } from "../application/ports/authorization.js";
 import {
+  createHttpRequestBoundary,
+  type HttpRequestBoundaryOptions,
+} from "../infrastructure/http-request-boundary.js";
+import {
   createHostedAuthorizationGate,
   type HostedAuthorizationGate,
 } from "../infrastructure/hosted-authorization-gate.js";
@@ -14,7 +18,7 @@ import type {
   OAuthResourceOptions,
 } from "../infrastructure/oauth-resource.js";
 
-export interface HostedMcpHttpHandlerOptions {
+export interface HostedMcpHttpHandlerOptions extends HttpRequestBoundaryOptions {
   readonly resource: OAuthResourceOptions;
   readonly validator: AccessTokenValidator;
   readonly createServer: (context: AuthorizationContext) => McpServer;
@@ -270,6 +274,7 @@ export function createHostedMcpHttpHandler(
     throw new RangeError("maxActiveRequests is outside the supported range");
   }
   const activeRequests = createActiveRequestRegistry(maxActiveRequests);
+  const requestBoundary = createHttpRequestBoundary(options);
   const gate = createHostedAuthorizationGate({
     resource: options.resource,
     validator: options.validator,
@@ -277,6 +282,15 @@ export function createHostedMcpHttpHandler(
 
   return {
     async handle(request) {
+      const boundaryDecision = requestBoundary.check(request.headers);
+      if (!boundaryDecision.allowed) {
+        return jsonRpcError(
+          boundaryDecision.reason === "malformed_host" ? 400 : 403,
+          -32_000,
+          "Request boundary rejected",
+        );
+      }
+
       if (request.url !== options.resource.resourceUri) {
         return jsonRpcError(404, -32_001, "Not found");
       }

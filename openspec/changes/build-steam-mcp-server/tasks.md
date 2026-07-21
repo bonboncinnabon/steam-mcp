@@ -183,7 +183,7 @@
 - [x] 11.1 TDD the Streamable HTTP MCP endpoint for authenticated
       initialization, request handling, cancellation, stateless operation,
       canonical resource binding, and rejection of legacy HTTP plus SSE.
-- [ ] 11.2 TDD configured Origin and Host enforcement before authorization or
+- [x] 11.2 TDD configured Origin and Host enforcement before authorization or
       MCP parsing, including missing, malformed, proxy-forwarded, and disallowed
       values.
 - [ ] 11.3 TDD liveness and readiness endpoints so neither calls Steam and

@@ -201,19 +201,19 @@
 
 ## 12. Packaging and Public Documentation
 
-- [ ] 12.1 Produce a reproducible local package with a supported executable
+- [x] 12.1 Produce a reproducible local package with a supported executable
       command, pinned runtime range, clean install verification, provenance,
       checksums, and release metadata.
-- [ ] 12.2 Document local client setup for Codex, Claude, OpenAI-compatible
+- [x] 12.2 Document local client setup for Codex, Claude, OpenAI-compatible
       clients, and MCP Inspector using `STEAM_API_KEY` and optional
       `STEAM_USER`, without example secrets.
-- [ ] 12.3 Document hosted connection, OAuth discovery, required explicit Steam
+- [x] 12.3 Document hosted connection, OAuth discovery, required explicit Steam
       users for subject-oriented tools, arbitrary public-profile lookup, OAuth
       provider account ownership, quotas, privacy limits, and troubleshooting.
-- [ ] 12.4 Document architecture, dependency direction, all eight tool
+- [x] 12.4 Document architecture, dependency direction, all eight tool
       contracts, schemas, pagination, errors, source tiers, best-effort
       degradation, security model, data retention, and threat boundaries.
-- [ ] 12.5 Document strict TDD contribution rules, fixture scrubbing, live-probe
+- [x] 12.5 Document strict TDD contribution rules, fixture scrubbing, live-probe
       safety, test commands, coverage gates, compatibility policy, versioning,
       changelog, operations, rollout, and rollback.
 - [ ] 12.6 Verify local, self-hosted, and hosted documentation from clean

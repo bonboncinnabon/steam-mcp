@@ -1,10 +1,22 @@
 {
   "name": "steam-mcp-server",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "A remote-first, read-only Steam MCP server with local stdio support.",
   "type": "module",
-  "private": true,
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abiswas97/steam-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/abiswas97/steam-mcp/issues"
+  },
+  "homepage": "https://github.com/abiswas97/steam-mcp#readme",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "steam"
+  ],
   "packageManager": "pnpm@11.15.1",
   "engines": {
     "node": ">=22.22.0 <23 || >=24.0.0"
@@ -12,18 +24,22 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "docs"
   ],
   "bin": {
     "steam-mcp": "dist/bin/steam-mcp.js"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "node scripts/clean-dist.mjs && tsc -p tsconfig.build.json",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test:coverage",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint . --max-warnings 0",
     "mutation": "stryker run",
+    "package:release": "node scripts/package-release.mjs",
+    "package:verify": "node scripts/verify-package.mjs",
+    "prepack": "pnpm build",
     "test": "vitest run",
     "test:contract": "vitest run test/contract",
     "test:coverage": "vitest run --coverage",
@@ -35,7 +51,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.29.0",
-    "jose": "^6.2.3",
+    "jose": "6.2.3",
     "zod": "4.4.3"
   },
   "devDependencies": {

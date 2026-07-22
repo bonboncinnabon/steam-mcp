@@ -1,0 +1,21 @@
+src/steam/adapters/steam-store-adapter.ts
+  s_336c0404d47041::t_a156374cd329b2 28-31,46,188-190
+test/unit/steam/steam-store-adapter.test.ts
+  s_336c0404d47041::t_f540dca0c8a6ad 113-155
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "22c655ba92150c33be908c25ac7e71fe61a23b5f",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

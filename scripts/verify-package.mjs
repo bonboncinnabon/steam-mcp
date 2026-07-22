@@ -112,11 +112,7 @@ async function main() {
             ([name]) =>
               ![
                 "STEAM_API_KEY",
-                "OAUTH_ISSUER",
-                "OAUTH_JWKS_URI",
-                "OAUTH_INTROSPECTION_URI",
-                "OAUTH_CLIENT_ID",
-                "OAUTH_CLIENT_SECRET",
+                "MCP_ACCESS_TOKEN",
                 "MCP_RESOURCE_URI",
                 "ALLOWED_HOSTS",
               ].includes(name),

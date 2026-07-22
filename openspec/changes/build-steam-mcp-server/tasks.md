@@ -27,12 +27,12 @@
 - [x] 2.3 TDD centralized typed policies for timeouts, retries, quotas, safety
       reserve, concurrency, fan-out, pagination, execution deadlines, and output
       size.
-- [x] 2.4 TDD hosted and local configuration parsing, secret-safe diagnostics,
+- [x] 2.4 TDD remote and local configuration parsing, secret-safe diagnostics,
       required values, numeric bounds, incompatible combinations, and deployment
-      HTTPS requirements.
+      HTTPS requirements, including a high-entropy `MCP_ACCESS_TOKEN` for remote
+      mode and no OAuth configuration.
 - [x] 2.5 Define the inward-facing application ports for Steam data, identity,
-      authorization context, quota, concurrency, clock, cancellation, and
-      observability.
+      instance quota, concurrency, clock, cancellation, and observability.
 
 ## 3. Shared Steam HTTP Boundary
 
@@ -91,8 +91,8 @@
 ## 6. Identity Resolution and Player Application Services
 
 - [x] 6.1 TDD the common identity-resolution order of explicit user, local
-      `STEAM_USER`, then `IDENTITY_NOT_LINKED`, including proof that hosted
-      authorization identity is never treated as Steam identity.
+      `STEAM_USER`, then `IDENTITY_NOT_LINKED`, including proof that the remote
+      bearer credential is never treated as Steam identity.
 - [x] 6.2 TDD `steam_get_player` for normalized public profile facets, unknown
       players, private fields, and stable envelope rendering.
 - [x] 6.3 TDD `steam_get_library` for filtering, sorting, opaque cursor
@@ -143,52 +143,51 @@
 - [x] 8.5 Add MCP SDK and Inspector conformance tests for local initialization,
       tool listing, representative executions, cancellation, structured errors,
       and stderr diagnostic isolation.
-- [x] 8.6 TDD removal of obsolete hosted-link and account-persistence seams,
-      simplify hosted configuration to require no database, and update public
+- [x] 8.6 TDD removal of obsolete account, OAuth, and persistence seams,
+      simplify remote configuration to require no database, and update public
       identity guidance while retaining the stable v1 error code.
 
-## 9. Hosted Quotas and Concurrency
+## 9. Remote Quotas and Concurrency
 
-- [x] 9.1 TDD atomic global and per-user quota reservation, daily rollover,
-      configured call costs, safety reserve, same-instance races, and failures.
-      Keep the adapter storage-independent and document that multi-instance or
-      broad public rollout requires a distributed atomic implementation.
+- [x] 9.1 TDD atomic instance-wide quota reservation, daily rollover, configured
+      call costs, safety reserve, same-instance races, and failures. Keep the
+      adapter storage-independent and document that multi-instance operation
+      requires a distributed atomic implementation outside v1.
 - [x] 9.2 TDD per-host and per-operation concurrency acquisition, bounded
       queueing, cancellation, deadlines, release-on-error, and backpressure.
 - [x] 9.3 Add high-risk race and fault-injection coverage for quota and
       concurrency cleanup, including proof that process-local state is bounded
       and never persisted to disk.
 
-## 10. Hosted Authorization
+## 10. Remote Bearer Protection
 
-- [x] 10.1 Record an ADR and compatibility evaluation for the external
-      OAuth/OIDC provider against Protected Resource Metadata, PKCE, Resource
-      Indicators, supported client-registration methods, revocation, and target
-      MCP clients.
-- [x] 10.2 TDD Protected Resource Metadata and `WWW-Authenticate` responses with
-      the canonical resource URI, authorization-server location, and supported
-      scopes.
-- [x] 10.3 TDD access-token validation for signature, issuer, audience, expiry,
-      scope, token status, key rotation, malformed tokens, and authorization
-      dependency failures.
+- [x] 10.1 Supersede the external OAuth ADR with the approved zero-provider-cost
+      self-hosted model: one operator-managed static bearer token, no accounts,
+      no public shared endpoint, and explicit client limitations.
+- [x] 10.2 TDD exact bearer-header acceptance plus generic 401
+      `WWW-Authenticate: Bearer` responses for missing, malformed, and incorrect
+      credentials before MCP parsing or application work.
+- [x] 10.3 TDD constant-time credential comparison, startup rejection of weak or
+      missing values, rotation-by-restart behavior, and complete secret
+      redaction.
 - [x] 10.4 Add high-risk mutation or fault-injection tests proving rejected
-      tokens perform no tool, quota, or Steam work and MCP tokens are never
-      passed upstream.
+      bearer tokens perform no MCP, quota, concurrency, or Steam work and the
+      bearer token is never passed upstream.
 - [x] 10.5 Add 100 percent branch coverage and targeted mutation or
-      fault-injection checks for authorization, OAuth-subject/Steam-identity
-      separation, and credential separation.
+      fault-injection checks for bearer protection, bearer/Steam-identity
+      separation, and credential isolation.
 
-## 11. Hosted Streamable HTTP and Operations
+## 11. Remote Streamable HTTP and Operations
 
-- [x] 11.1 TDD the Streamable HTTP MCP endpoint for authenticated
-      initialization, request handling, cancellation, stateless operation,
-      canonical resource binding, and rejection of legacy HTTP plus SSE.
+- [x] 11.1 TDD the Streamable HTTP MCP endpoint for bearer-authorized
+      initialization, request handling, request-abort cancellation, stateless
+      operation, canonical URI binding, and rejection of legacy HTTP plus SSE.
 - [x] 11.2 TDD configured Origin and Host enforcement before authorization or
       MCP parsing, including missing, malformed, proxy-forwarded, and disallowed
       values.
 - [x] 11.3 TDD liveness and readiness endpoints so neither calls Steam and
-      readiness reflects required authorization and configured quota
-      dependencies.
+      startup validation, rather than an external identity dependency, protects
+      readiness.
 - [x] 11.4 TDD graceful shutdown that marks readiness false, stops new work,
       drains to a deadline, cancels remaining upstream requests, and closes HTTP
       and configured quota clients.
@@ -196,13 +195,13 @@
       drift signals, and secret scrubbing across nested errors and
       credential-bearing URLs.
 - [x] 11.6 Add high-risk mutation or fault-injection tests with 100 percent
-      branch coverage for host enforcement, redaction, quota accounting, and
-      shutdown cleanup.
-- [x] 11.7 TDD a portable hosted Node entry point that composes the external
-      OAuth verifier, service-owned Steam adapters, process-local quota and
-      concurrency enforcement, health routing, and graceful shutdown from
+      branch coverage for bearer and host enforcement, redaction, quota
+      accounting, and shutdown cleanup.
+- [x] 11.7 TDD a portable remote Node entry point that composes the static
+      bearer gate, operator-owned Steam adapters, process-local instance quota
+      and concurrency enforcement, health routing, and graceful shutdown from
       explicit validated environment configuration. Keep deployment-platform
-      manifests and external account lifecycle outside the MCP runtime.
+      manifests and account lifecycle outside the MCP runtime.
 
 ## 12. Packaging and Public Documentation
 
@@ -212,9 +211,10 @@
 - [x] 12.2 Document local client setup for Codex, Claude, OpenAI-compatible
       clients, and MCP Inspector using `STEAM_API_KEY` and optional
       `STEAM_USER`, without example secrets.
-- [x] 12.3 Document hosted connection, OAuth discovery, required explicit Steam
-      users for subject-oriented tools, arbitrary public-profile lookup, OAuth
-      provider account ownership, quotas, privacy limits, and troubleshooting.
+- [x] 12.3 Document self-hosted remote connection, bearer secret generation and
+      rotation, required explicit Steam users, arbitrary public-profile lookup,
+      compatible-client limitations, quotas, privacy limits, and
+      troubleshooting.
 - [x] 12.4 Document architecture, dependency direction, all eight tool
       contracts, schemas, pagination, errors, source tiers, best-effort
       degradation, security model, data retention, and threat boundaries.
@@ -224,36 +224,35 @@
 - [ ] 12.6a Verify the packaged local and self-hosted stdio documentation from
       clean supported Node.js environments, including one public Steam tool
       call, without undocumented maintainer steps.
-- [ ] 12.6b Verify the hosted documentation against the canonical staging
-      deployment and external OAuth tenant without undocumented maintainer
-      steps.
+- [ ] 12.6b Verify the self-hosted remote documentation against a clean
+      disposable deployment using an out-of-band bearer token and no
+      undocumented maintainer steps.
 
 ## 13. Release Verification and Rollout
 
 - [x] 13.1 Run fresh full verification for formatting, linting, strict types,
       unit and contract tests, dependency audit, coverage thresholds, and all
       configured mutation or fault-injection gates.
-- [x] 13.2a Run deterministic single-instance hosted quota and concurrency
+- [x] 13.2a Run deterministic single-instance remote quota and concurrency
       integration suites for races, cancellation, rollover, safety reserve,
       bounded memory, and dependency-failure cleanup and recovery.
-- [ ] 13.2b Before configuring an external quota adapter or horizontal scaling,
-      run its atomicity, outage, and recovery integration suite; this is not a
-      prerequisite for the initial single-instance quota-limited cohort.
+- [x] 13.2b Verify the package and documentation make no multi-instance quota
+      safety claim; distributed quota and horizontal scaling remain outside v1.
 - [ ] 13.3 Run opt-in Steam live probes with the dedicated credential, review
       best-effort drift, measure observed call costs, and set documented initial
       quota policies while preserving the safety reserve.
-- [ ] 13.4 Verify MCP Inspector, Codex, Claude, and OpenAI remote-client
-      initialization, OAuth discovery, authorization, tool listing,
-      representative calls, structured results, errors, and cancellation in
-      staging.
+- [ ] 13.4 Verify MCP Inspector and documented remote-client paths that support
+      a fixed bearer header for initialization, authorization, tool listing,
+      representative calls, structured results, errors, and request-abort
+      cancellation. Record OAuth-only client paths as unsupported in remote v1.
 - [x] 13.5a Execute local deterministic bounded-load, abusive-input, dependency
       outage, graceful-shutdown, and independent best-effort-adapter disablement
       tests.
-- [ ] 13.5b In staging, execute a staged deployment and restore the previous
-      immutable version without a data migration.
+- [ ] 13.5b In a disposable self-hosted deployment, execute a version upgrade
+      and restore the previous immutable container without a data migration.
 - [ ] 13.6a Publish the release evidence and compatibility matrix with the
       immutable artifact digest, configuration revision, known limitations,
       rollback target, approver, and observation window.
-- [ ] 13.6b Open the hosted endpoint only to the approved quota-limited cohort;
-      expand access only after reliability, privacy, capacity, and Steam-budget
-      gates pass.
+- [ ] 13.6b Verify the release publishes packages and containers only, operates
+      no shared public endpoint, and requires both Steam and remote bearer
+      secrets before accepting remote work.

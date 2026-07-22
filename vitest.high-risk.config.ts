@@ -5,6 +5,7 @@ export default defineConfig({
     include: [
       "test/unit/infrastructure/http-request-boundary.test.ts",
       "test/unit/infrastructure/in-memory-quota.test.ts",
+      "test/unit/infrastructure/remote-bearer-gate.test.ts",
       "test/unit/infrastructure/safe-observability.test.ts",
       "test/unit/transports/hosted-lifecycle.test.ts",
     ],
@@ -14,6 +15,7 @@ export default defineConfig({
       include: [
         "src/infrastructure/http-request-boundary.ts",
         "src/infrastructure/in-memory-quota.ts",
+        "src/infrastructure/remote-bearer-gate.ts",
         "src/infrastructure/safe-observability.ts",
         "src/transports/hosted-lifecycle.ts",
       ],

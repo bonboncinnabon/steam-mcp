@@ -20,16 +20,12 @@ export type BestEffortAdapterId =
 
 export type OperationalEvent =
   | {
-      readonly name: "authorization_rejected";
-      readonly reason:
-        | "missing_token"
-        | "invalid_token"
-        | "insufficient_scope"
-        | "dependency_unavailable";
+      readonly name: "authentication_rejected";
+      readonly reason: "missing_token" | "invalid_token";
     }
   | {
       readonly name: "quota_rejected";
-      readonly reason: "user_exhausted" | "global_reserve" | "unavailable";
+      readonly reason: "global_reserve" | "unavailable";
     }
   | {
       readonly name: "shutdown";
@@ -37,7 +33,7 @@ export type OperationalEvent =
     }
   | {
       readonly name: "dependency_failure";
-      readonly dependency: "authorization" | "quota" | "steam";
+      readonly dependency: "quota" | "steam";
       readonly failureKind:
         "timeout" | "unavailable" | "malformed_response" | "internal";
     };

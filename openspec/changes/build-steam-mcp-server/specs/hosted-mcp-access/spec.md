@@ -1,15 +1,15 @@
 ## ADDED Requirements
 
-### Requirement: Hosted Streamable HTTP endpoint
+### Requirement: Self-hosted Streamable HTTP endpoint
 
 The system SHALL expose the complete read-only Steam MCP tool surface through
-one standards-compliant Streamable HTTP endpoint on a canonical HTTPS resource
-URI.
+one Streamable HTTP endpoint on a canonical HTTPS URI for operator-controlled
+self-hosting.
 
-#### Scenario: Authenticated MCP initialization
+#### Scenario: Authorized MCP initialization
 
-- **WHEN** a client sends a valid MCP initialization request with an accepted
-  access token
+- **WHEN** a client sends a valid MCP initialization request with the exact
+  configured bearer token
 - **THEN** the system completes protocol negotiation and exposes the eight
   approved tools
 
@@ -20,73 +20,60 @@ URI.
 - **THEN** the system rejects that transport without creating a parallel legacy
   endpoint
 
-### Requirement: OAuth protected-resource discovery
+### Requirement: Static bearer protection
 
-The system SHALL implement OAuth Protected Resource Metadata and SHALL identify
-the external authorization server and canonical MCP resource URI.
+The remote endpoint MUST require one high-entropy bearer token supplied through
+deployment configuration and MUST compare presented credentials in constant
+time.
 
-#### Scenario: Unauthenticated MCP request
+#### Scenario: Missing or malformed credential
 
-- **WHEN** a client requests the protected MCP endpoint without an access token
-- **THEN** the system returns HTTP 401 with a `WWW-Authenticate` challenge that
-  identifies the protected-resource metadata URL
+- **WHEN** a remote MCP request omits the Authorization header or uses a scheme
+  other than exactly one bearer credential
+- **THEN** the system returns HTTP 401 with a generic `WWW-Authenticate: Bearer`
+  challenge before MCP parsing, quota reservation, or Steam work
 
-#### Scenario: Metadata discovery
+#### Scenario: Incorrect credential
 
-- **WHEN** a client requests the protected-resource metadata document
-- **THEN** the system returns the canonical resource URI, authorization-server
-  location, and supported MCP scopes
+- **WHEN** a remote MCP request presents a bearer token other than the
+  configured token
+- **THEN** the system returns the same generic HTTP 401 response without
+  revealing comparison details or performing application work
 
-### Requirement: Access-token validation
+#### Scenario: Token rotation
 
-The system MUST validate token signature, issuer, audience, expiry, required
-scope, and revocation or current token status before processing a hosted MCP
-request.
+- **WHEN** an operator replaces the configured bearer token and restarts the
+  process
+- **THEN** the previous token stops authorizing requests and the replacement
+  token becomes the sole accepted credential
 
-#### Scenario: Valid audience-bound token
+### Requirement: Bearer and Steam credential isolation
 
-- **WHEN** a client presents an unexpired, correctly signed token issued for the
-  canonical MCP resource with the required scope
-- **THEN** the system authorizes the request for that token subject
-
-#### Scenario: Token for another resource
-
-- **WHEN** a client presents an otherwise valid token whose audience does not
-  include the canonical MCP resource
-- **THEN** the system rejects the request without invoking a tool or Steam
-  upstream
-
-#### Scenario: Expired or revoked token
-
-- **WHEN** a client presents an expired or revoked token
-- **THEN** the system rejects the request and performs no application work
-
-### Requirement: No OAuth token passthrough
-
-The system MUST use MCP access tokens only to authorize this resource server and
-MUST NOT forward them to Steam or any other upstream system.
+The system MUST use the bearer token only to protect the remote MCP endpoint and
+MUST NOT forward it to Steam, expose it to tools, treat it as a Steam identity,
+or include it in logs, metrics, errors, or persisted state.
 
 #### Scenario: Authorized Steam tool call
 
-- **WHEN** an authorized hosted tool call requires Steam data
-- **THEN** the outbound request uses only the service-owned Steam credential
-  required for that operation and excludes the MCP access token
+- **WHEN** an authorized remote tool call requires Steam data
+- **THEN** the outbound request uses only the operator-provided Steam credential
+  required for that operation and excludes the bearer token
 
-### Requirement: Hosted access requires no user Steam API key
+### Requirement: Remote access requires no caller Steam API key
 
-The system SHALL allow an ordinary hosted user to use all eligible tools without
-supplying or storing a personal Steam API key.
+The system SHALL allow an authorized remote caller to use eligible tools without
+supplying a Steam API key because the self-hosting operator configures it at
+deployment time.
 
-#### Scenario: First hosted tool call
+#### Scenario: First remote tool call
 
-- **WHEN** an authorized user with no personal Steam API key invokes a tool
-  against public data
-- **THEN** the system executes the call using the hosted service credential and
-  applicable quota policy
+- **WHEN** an authorized caller invokes a tool against public data
+- **THEN** the system executes the call using the operator's Steam credential
+  and configured instance quota policy
 
 ### Requirement: Origin and Host enforcement
 
-The system MUST validate HTTP Origin and Host values for hosted MCP traffic
+The system MUST validate HTTP Origin and Host values for remote MCP traffic
 according to the deployed allowlists.
 
 #### Scenario: Disallowed Origin
@@ -98,12 +85,13 @@ according to the deployed allowlists.
 #### Scenario: Disallowed Host
 
 - **WHEN** a request targets an unrecognized Host value
-- **THEN** the system rejects the request before authorization or tool execution
+- **THEN** the system rejects the request before bearer validation or tool
+  execution
 
 ### Requirement: Independent health endpoints
 
 The system SHALL expose separate liveness and readiness endpoints that do not
-call Steam.
+call Steam and do not disclose configured secrets.
 
 #### Scenario: Live process with unavailable Steam API
 
@@ -111,22 +99,21 @@ call Steam.
 - **THEN** the liveness endpoint reports healthy without issuing an upstream
   request
 
-#### Scenario: Required hosted dependency unavailable
+#### Scenario: Invalid required remote configuration
 
-- **WHEN** a required authorization or configured quota dependency is
-  unavailable
-- **THEN** the readiness endpoint reports not ready while liveness remains based
-  on process health
+- **WHEN** the bearer token, Steam credential, canonical URI, or
+  request-boundary configuration is invalid
+- **THEN** startup fails before either health or MCP traffic is accepted
 
 ### Requirement: Supported-client compatibility
 
-The hosted endpoint SHALL be verified against MCP Inspector and the documented
-remote MCP connection paths for supported Codex, Claude, and OpenAI clients
-before release.
+The remote endpoint SHALL be verified against MCP Inspector and documented MCP
+client paths that can configure a fixed Authorization bearer header. Clients
+that require browser OAuth SHALL be documented as unsupported for remote v1.
 
 #### Scenario: Release candidate compatibility run
 
-- **WHEN** a hosted release candidate is prepared
-- **THEN** the compatibility suite verifies initialization, discovery,
-  authorization, tool listing, tool execution, structured results, and errors on
-  each supported client path
+- **WHEN** a remote release candidate is prepared
+- **THEN** the compatibility suite verifies initialization, bearer rejection and
+  acceptance, tool listing, tool execution, structured results, errors, and
+  request-abort cancellation on each supported client path

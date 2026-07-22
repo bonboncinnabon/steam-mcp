@@ -19,7 +19,7 @@ describe("ERROR_CODES", () => {
       "STEAM_RATE_LIMITED",
       "UPSTREAM_UNAVAILABLE",
       "BEST_EFFORT_SOURCE_CHANGED",
-      "USER_QUOTA_EXCEEDED",
+      "SERVICE_QUOTA_EXCEEDED",
       "INTERNAL_ERROR",
     ]);
   });

@@ -46,18 +46,18 @@ describe("Steam identity resolver", () => {
     expect(resolveVanityName).toHaveBeenCalledWith("portal_fan", signal);
   });
 
-  it("never treats an OAuth subject as a Steam identity", async () => {
+  it("never treats a remote access token as a Steam identity", async () => {
     const resolveVanityName = vi.fn();
     const resolver = createSteamIdentityResolver({
       steamIdentities: { resolveVanityName },
     });
 
-    const oauthShapedInput = {
-      subject: "issuer-scoped-subject",
+    const credentialShapedInput = {
+      authorizationToken: "remote-access-token",
     } as unknown as ResolveSteamIdentityInput;
 
     await expect(
-      resolver.resolve(oauthShapedInput, new AbortController().signal),
+      resolver.resolve(credentialShapedInput, new AbortController().signal),
     ).rejects.toMatchObject({
       code: "IDENTITY_NOT_LINKED",
       retryable: false,

@@ -16,7 +16,7 @@ const PUBLIC_ERROR_MESSAGES: Readonly<Record<ErrorCode, string>> = {
   STEAM_RATE_LIMITED: "Steam rate limit reached.",
   UPSTREAM_UNAVAILABLE: "Steam is currently unavailable.",
   BEST_EFFORT_SOURCE_CHANGED: "A best-effort Steam source changed.",
-  USER_QUOTA_EXCEEDED: "The Steam tool quota is exhausted.",
+  SERVICE_QUOTA_EXCEEDED: "This Steam MCP instance has exhausted its quota.",
   INTERNAL_ERROR: "The Steam tool could not complete.",
 };
 

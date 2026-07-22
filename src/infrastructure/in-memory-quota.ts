@@ -1,17 +1,9 @@
-import assert from "node:assert/strict";
-import { createHash } from "node:crypto";
-
 import type { QuotaPort } from "../application/ports/quota.js";
 
 interface InMemoryQuotaOptions {
   readonly globalDailyQuota: number;
   readonly globalSafetyReserve: number;
-  readonly perUserDailyQuota: number;
   readonly now: () => Date;
-}
-
-export function deriveQuotaSubjectKey(subject: string): string {
-  return createHash("sha256").update(subject, "utf8").digest("hex");
 }
 
 export function createInMemoryQuota(options: InMemoryQuotaOptions): QuotaPort {
@@ -20,26 +12,18 @@ export function createInMemoryQuota(options: InMemoryQuotaOptions): QuotaPort {
     options.globalDailyQuota <= 0 ||
     !Number.isSafeInteger(options.globalSafetyReserve) ||
     options.globalSafetyReserve < 0 ||
-    !Number.isSafeInteger(options.perUserDailyQuota) ||
-    options.perUserDailyQuota <= 0 ||
-    options.globalSafetyReserve > options.globalDailyQuota ||
-    options.perUserDailyQuota >
-      options.globalDailyQuota - options.globalSafetyReserve
+    options.globalSafetyReserve > options.globalDailyQuota
   ) {
     throw new RangeError("Invalid in-memory quota bounds");
   }
 
+  const usableDailyQuota =
+    options.globalDailyQuota - options.globalSafetyReserve;
   let utcDay: string | undefined;
-  let globalUsed = 0;
-  // Only successful positive-cost reservations are inserted, so the map size
-  // cannot exceed the usable global daily quota and is cleared at rollover.
-  const subjectUsage = new Map<string, number>();
+  let used = 0;
 
   return {
     reserve(request) {
-      if (request.subject.trim().length === 0) {
-        return Promise.reject(new RangeError("Quota subject is required"));
-      }
       if (request.operation.trim().length === 0) {
         return Promise.reject(new RangeError("Quota operation is required"));
       }
@@ -60,50 +44,23 @@ export function createInMemoryQuota(options: InMemoryQuotaOptions): QuotaPort {
       }
       if (requestUtcDay !== utcDay) {
         utcDay = requestUtcDay;
-        globalUsed = 0;
-        subjectUsage.clear();
+        used = 0;
       }
 
-      const subjectKey = deriveQuotaSubjectKey(request.subject);
-      const currentUserUsed = subjectUsage.get(subjectKey) ?? 0;
-      const userUsed = currentUserUsed + request.cost;
-      if (userUsed > options.perUserDailyQuota) {
-        return Promise.resolve({
-          reserved: false,
-          reason: "user_exhausted",
-        });
+      if (used + request.cost > usableDailyQuota) {
+        return Promise.resolve({ reserved: false, reason: "global_reserve" });
       }
 
-      const usableGlobalQuota =
-        options.globalDailyQuota - options.globalSafetyReserve;
-      if (globalUsed + request.cost > usableGlobalQuota) {
-        return Promise.resolve({
-          reserved: false,
-          reason: "global_reserve",
-        });
-      }
-
-      // Keep checks and both writes synchronous: one event-loop turn is the
-      // atomicity boundary promised by this single-instance adapter.
-      globalUsed += request.cost;
-      subjectUsage.set(subjectKey, userUsed);
+      used += request.cost;
       let rolledBack = false;
 
       return Promise.resolve({
         reserved: true,
-        remaining: options.perUserDailyQuota - userUsed,
+        remaining: usableDailyQuota - used,
         rollback() {
           if (rolledBack) return;
           rolledBack = true;
-          if (utcDay !== requestUtcDay) return;
-          // Same-day reservations are the only writers for this key, and each
-          // closure rolls back at most once, so usage is present here.
-          const currentUsage = subjectUsage.get(subjectKey);
-          assert(currentUsage !== undefined);
-          globalUsed -= request.cost;
-          const nextUsage = currentUsage - request.cost;
-          if (nextUsage === 0) subjectUsage.delete(subjectKey);
-          else subjectUsage.set(subjectKey, nextUsage);
+          if (utcDay === requestUtcDay) used -= request.cost;
         },
       });
     },

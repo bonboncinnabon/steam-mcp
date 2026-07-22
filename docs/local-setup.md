@@ -24,9 +24,9 @@ configuration file, protect that file as a credential-bearing file.
 ## Run the packaged server
 
 The package exposes the `steam-mcp` executable for local stdio. The separate
-`steam-mcp-hosted` executable is for OAuth-protected remote HTTP deployments and
-does not change this local setup. `pnpm dlx` runs local stdio without cloning
-this repository or adding it to another project's dependencies:
+`steam-mcp-hosted` executable is for static-bearer-protected remote HTTP
+deployments and does not change this local setup. `pnpm dlx` runs local stdio
+without cloning this repository or adding it to another project's dependencies:
 
 ```sh
 export STEAM_API_KEY="<your Steam Web API key>"
@@ -109,9 +109,10 @@ wrap it in `mcpServers`, while others ask for the command, arguments, and
 environment separately. Remove `STEAM_USER` if you prefer to supply `user`
 explicitly on every player-oriented call.
 
-OpenAI's hosted Responses API connects to remote MCP URLs, not a process on your
-computer. Use this stdio configuration with a local OpenAI-compatible MCP host
-such as Codex; use the hosted setup for Responses API integrations.
+Remote API integrations connect to MCP URLs, not a process on your computer. Use
+this stdio configuration with a local MCP host such as Codex. Use the
+self-hosted HTTP setup only when the remote client can attach a fixed
+`Authorization` bearer header.
 
 ## MCP Inspector
 

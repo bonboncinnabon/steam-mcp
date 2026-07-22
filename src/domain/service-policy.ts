@@ -3,7 +3,6 @@ export interface ServicePolicy {
   readonly maxRetryAttempts: number;
   readonly globalDailyQuota: number;
   readonly globalSafetyReserve: number;
-  readonly perUserDailyQuota: number;
   readonly maxHostConcurrency: number;
   readonly maxOperationConcurrency: number;
   readonly maxConcurrencyQueueSize: number;
@@ -19,7 +18,6 @@ export const BASELINE_SERVICE_POLICY: ServicePolicy = Object.freeze({
   maxRetryAttempts: 2,
   globalDailyQuota: 80_000,
   globalSafetyReserve: 20_000,
-  perUserDailyQuota: 500,
   maxHostConcurrency: 8,
   maxOperationConcurrency: 4,
   maxConcurrencyQueueSize: 64,
@@ -33,7 +31,6 @@ export const BASELINE_SERVICE_POLICY: ServicePolicy = Object.freeze({
 const POSITIVE_POLICY_FIELDS = [
   "upstreamTimeoutMs",
   "globalDailyQuota",
-  "perUserDailyQuota",
   "maxHostConcurrency",
   "maxOperationConcurrency",
   "maxConcurrencyQueueSize",
@@ -53,7 +50,6 @@ const POLICY_MAXIMA = [
   ["upstreamTimeoutMs", 60_000],
   ["maxRetryAttempts", 5],
   ["globalDailyQuota", 100_000],
-  ["perUserDailyQuota", 10_000],
   ["maxHostConcurrency", 64],
   ["maxOperationConcurrency", 32],
   ["maxConcurrencyQueueSize", 1_024],
@@ -88,13 +84,6 @@ export function createServicePolicy(
 
   if (policy.globalSafetyReserve > policy.globalDailyQuota) {
     throw new RangeError("globalSafetyReserve exceeds globalDailyQuota");
-  }
-
-  if (
-    policy.perUserDailyQuota >
-    policy.globalDailyQuota - policy.globalSafetyReserve
-  ) {
-    throw new RangeError("perUserDailyQuota exceeds usable global quota");
   }
 
   if (policy.defaultPageSize > policy.maxPageSize) {

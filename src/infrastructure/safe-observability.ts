@@ -33,24 +33,15 @@ const BEST_EFFORT_ADAPTERS = new Set([
 const ERROR_CODE_SET = new Set<string>(ERROR_CODES);
 const SOURCE_TIER_SET = new Set<string>(SOURCE_TIERS);
 const STATUS_CLASSES = new Set(["2xx", "4xx", "5xx"]);
-const AUTHORIZATION_REASONS = new Set([
-  "missing_token",
-  "invalid_token",
-  "insufficient_scope",
-  "dependency_unavailable",
-]);
-const QUOTA_REASONS = new Set([
-  "user_exhausted",
-  "global_reserve",
-  "unavailable",
-]);
+const AUTHENTICATION_REASONS = new Set(["missing_token", "invalid_token"]);
+const QUOTA_REASONS = new Set(["global_reserve", "unavailable"]);
 const SHUTDOWN_PHASES = new Set([
   "started",
   "drained",
   "deadline_exceeded",
   "completed",
 ]);
-const DEPENDENCIES = new Set(["authorization", "quota", "steam"]);
+const DEPENDENCIES = new Set(["quota", "steam"]);
 const FAILURE_KINDS = new Set([
   "timeout",
   "unavailable",
@@ -240,12 +231,12 @@ function safeOperationalEvent(event: OperationalEvent): {
 } {
   const candidate = event as unknown as Record<string, unknown>;
   if (
-    candidate["name"] === "authorization_rejected" &&
+    candidate["name"] === "authentication_rejected" &&
     typeof candidate["reason"] === "string" &&
-    AUTHORIZATION_REASONS.has(candidate["reason"])
+    AUTHENTICATION_REASONS.has(candidate["reason"])
   ) {
     return {
-      name: "authorization_rejected",
+      name: "authentication_rejected",
       attributes: { reason: candidate["reason"] },
     };
   }

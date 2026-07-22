@@ -1,93 +1,67 @@
 # Operations
 
-This runbook covers local/self-hosted operation and the controls required before
-a hosted rollout. There is no public hosted endpoint deployed or externally
-verified from this repository yet. Do not advertise hosted availability until
-the release-verification and staged-rollout gates have produced reviewed
-evidence.
+This runbook covers local stdio and private self-hosted HTTP operation. The
+project does not operate a hosted provider, user-account system, public shared
+endpoint, or multi-tenant service.
 
 ## Operational boundaries
 
-Steam MCP exposes only eight read-only Steam data tools. It does not own user
-accounts, Steam identity links, or account deletion. The external authorization
-provider owns signup, login, consent, token revocation, and its account
-lifecycle. Never add an administrative MCP tool that mutates Steam or provider
-accounts.
+Steam MCP exposes eight read-only Steam data tools. HTTP access is protected by
+one operator-configured `MCP_ACCESS_TOKEN` shared with approved clients. The
+token is an instance credential only: it has no subject, user lifecycle, Steam
+identity, or per-client quota.
 
-The hosted process is a stateless OAuth resource server. It does not persist
-OAuth subjects, Steam identities, Steam payloads, prompts, or tool arguments.
-The initial quota adapter keeps bounded counters in one process. A restart
-resets them, and multiple replicas cannot share an atomic budget. A distributed
-atomic quota implementation is therefore a hard prerequisite for horizontal
-scaling or broad public access.
+The HTTP process does not persist Steam identities, Steam payloads, prompts, or
+tool arguments. Its bounded quota and concurrency state is process-local. A
+restart resets quota counters, and replicas cannot share an atomic budget. Run
+one instance in v1.
 
 ## Configuration and secrets
 
 Local stdio mode reads `STEAM_API_KEY` and may use `STEAM_USER` as its default
-public profile. Hosted mode requires:
+public profile. Self-hosted HTTP mode requires:
 
 - `STEAM_API_KEY`, supplied by the deployment secret manager;
-- `OAUTH_ISSUER`, an HTTPS external authorization-server issuer;
-- `OAUTH_JWKS_URI`, the provider's HTTPS signing-key endpoint (commonly
-  `/oauth2/jwks` for a WorkOS-style issuer);
-- `OAUTH_INTROSPECTION_URI`, the provider's HTTPS token-status endpoint
-  (commonly `/oauth2/introspection` for a WorkOS-style issuer);
-- `OAUTH_CLIENT_ID` and `OAUTH_CLIENT_SECRET`, confidential credentials used
-  only for server-to-server token introspection;
-- `MCP_RESOURCE_URI`, the exact canonical HTTPS MCP resource URI;
-- `ALLOWED_HOSTS`, including the canonical resource host and any explicit port;
+- `MCP_ACCESS_TOKEN`, a high-entropy secret of at least 32 characters;
+- `MCP_RESOURCE_URI`, the exact canonical HTTPS MCP URL;
+- `ALLOWED_HOSTS`, including the canonical host and any explicit port;
 - optional `ALLOWED_ORIGINS` for exact HTTPS browser origins;
-- `LISTEN_HOST`, `PORT`, and `SHUTDOWN_DRAIN_TIMEOUT_MS` when their defaults of
-  `0.0.0.0`, `3000`, and `10000` milliseconds are unsuitable;
-- validated service-policy values for timeout, retries, quota, concurrency,
-  fan-out, pagination, execution deadline, and output size.
+- optional listener, shutdown, capacity, and best-effort source settings
+  documented in [Self-hosted HTTP setup](./hosted-setup.md).
 
-The five independently configurable best-effort switches are
-`STEAM_BEST_EFFORT_WISHLIST_ENABLED`, `STEAM_BEST_EFFORT_STORE_SEARCH_ENABLED`,
-`STEAM_BEST_EFFORT_STORE_DETAILS_ENABLED`,
-`STEAM_BEST_EFFORT_DECK_COMPATIBILITY_ENABLED`, and
-`STEAM_BEST_EFFORT_GAME_REVIEWS_ENABLED`. Each defaults to `true` and accepts
-only `true` or `false`.
+HTTP mode rejects `STEAM_USER`; player-oriented tools require an explicit public
+Steam user. Never infer Steam identity from the bearer token.
 
-Hosted mode rejects `STEAM_USER`; subject-oriented tools require an explicit
-public Steam user. OAuth subjects are authorization identities and must never be
-treated as Steam identities. Tokens and Steam keys must not appear in command
-arguments, images, logs, metrics, health responses, traces, or incident notes.
-
-Use the platform secret manager and least-privilege access. Rotate a suspected
-Steam key or authorization credential at its owner, restart the affected
-processes with the new secret, and verify only sanitized success/failure
-signals. Never print a credential to test whether rotation succeeded.
+Store both secrets in the platform secret manager with least-privilege access.
+Do not place them in command arguments, images, logs, metrics, health responses,
+traces, or incident notes. Never print a credential to test it.
 
 ## Process and ingress
 
-The npm package exposes the portable `steam-mcp-hosted` Node executable. Start
-it from an installed package or run it without a permanent install:
+Start the portable HTTP executable with:
 
 ```sh
 pnpm dlx --package steam-mcp-server steam-mcp-hosted
 ```
 
 The executable serves plain HTTP. Terminate TLS at a trusted reverse proxy or
-load balancer, preserve the original public `Host`, and forward the canonical
-MCP route, protected-resource metadata route, `/livez`, and `/readyz`. Do not
-depend on `Forwarded` or `X-Forwarded-Host`; the application checks the actual
-`Host` header against `ALLOWED_HOSTS`.
+load balancer, preserve the original public `Host`, and forward the exact MCP
+route plus `/livez` and `/readyz`. Do not rely on `Forwarded` or
+`X-Forwarded-Host`; the application validates the actual `Host` header.
 
-Keep this deployment at one instance. Quota counters and concurrency queues are
-process-local, and a restart resets quota counters. A distributed atomic quota
-adapter is required before multiple replicas, restart-safe quota enforcement, or
-broad public access.
+Keep the deployment at one instance. A distributed atomic quota adapter is
+required before multiple replicas or restart-safe quota enforcement. A public
+shared rollout would additionally require a different authentication and abuse
+model and is outside v1.
 
 ## Health and shutdown
 
 `GET /livez` reports whether the process can serve HTTP. `GET /readyz` reports
-whether the service is accepting work and whether required authorization and
-configured quota dependencies are ready. Neither endpoint calls Steam.
+whether the process is accepting work. Static bearer validation has no external
+identity-provider dependency, and neither endpoint calls Steam.
 
-Route load-balancer liveness and readiness checks only to those paths. Do not
-use a Steam tool call as a health check because it consumes quota, depends on
-Steam availability, and may expose a user argument.
+Use only these routes for platform health checks. A Steam tool call consumes
+instance quota, depends on Steam, and may expose a user argument.
 
 Graceful termination must:
 
@@ -97,147 +71,127 @@ Graceful termination must:
 4. cancel remaining upstream requests;
 5. close the HTTP server and any configured quota client.
 
-The platform termination grace period must exceed the application drain
-deadline. A process that remains ready while terminating or is killed before the
-deadline has elapsed is a deployment configuration error.
+Set the platform termination grace period longer than
+`SHUTDOWN_DRAIN_TIMEOUT_MS`.
 
 ## Monitoring and privacy
 
 Monitor bounded dimensions only: tool name, stable result code, source tier,
-HTTP status class, approved best-effort adapter name, authorization rejection
+HTTP status class, approved best-effort adapter name, authentication rejection
 reason, quota rejection reason, dependency, and shutdown phase. Useful signals
 include:
 
-- authorization rejection and authorization-dependency failure rates;
-- global-reserve and per-user quota rejection rates;
+- bearer rejection rate;
+- instance reserve exhaustion;
 - queue saturation, concurrency rejection, and tool latency;
 - `BEST_EFFORT_SOURCE_CHANGED` by approved adapter;
-- supported Steam authentication, rate-limit, timeout, and availability
-  failures;
+- Steam authentication, rate-limit, timeout, and availability failures;
 - readiness transitions and shutdown deadline exhaustion.
 
 Do not use raw or hashed user identifiers as log or metric labels. Do not record
 request bodies, prompts, tool arguments, bearer tokens, Steam keys, SteamIDs,
 raw upstream responses, or credential-bearing URLs. Treat a redaction failure as
 a security incident: restrict log access, stop affected emission, rotate exposed
-credentials, preserve only sanitized diagnostic evidence, and follow the hosting
-platform's deletion and notification process.
+credentials, and preserve only sanitized evidence.
 
 ## Failure response
 
-### Authorization unavailable or invalid
+### Bearer authentication fails
 
-- Confirm readiness and provider health without logging tokens.
-- Verify issuer, canonical resource audience, published keys, scope, and token
-  status configuration.
-- Return safe 401, 403, or dependency-unavailable responses; do not bypass
-  validation or pass MCP tokens upstream.
-- If the provider is unavailable, keep the service unready until validation is
-  reliable.
+- Verify that the client sends exactly one fixed `Authorization: Bearer` header.
+- Verify server and client secrets through their secret managers without
+  printing either value.
+- Return `401` for missing, malformed, or incorrect credentials. Never bypass
+  the gate or forward the header to Steam.
+- If the secret may be exposed, rotate it for the server and all clients, then
+  verify the old value is rejected.
 
-### Quota pressure
+### Instance quota pressure
 
-- Confirm whether per-user budget, usable global budget, or the safety reserve
-  caused rejection.
-- Preserve the configured global safety reserve. Do not raise limits based only
-  on a single user's request.
-- Check retry and adapter call-cost assumptions before changing policy.
-- A restart is not quota recovery: process-local counters reset and can make the
-  budget appear replenished. Reconcile conservatively before resuming a hosted
-  cohort.
+- Confirm whether the usable daily budget or safety reserve caused rejection.
+- Preserve the configured safety reserve and check adapter call-cost assumptions
+  before changing policy.
+- Treat every client as consuming the same instance budget; there is no
+  per-token or per-Steam-user accounting.
+- Do not restart to recover quota. Process-local counters reset on restart and
+  can make the upstream budget appear replenished.
 
-### Supported Steam API outage or authentication failure
+### Steam outage or credential failure
 
-- Stop retry amplification and keep configured retry bounds.
-- Distinguish credential rejection from rate limiting and transient outage using
+- Keep retry bounds and avoid retry amplification.
+- Distinguish credential rejection, rate limiting, and transient outage using
   stable status classes only.
-- Rotate a rejected service key through the secret manager if Valve confirms it
-  is invalid; do not expose the key in diagnostics.
-- Supported-facet failure remains terminal where the tool contract requires it.
+- Rotate a rejected Steam key through the secret manager if Valve confirms it is
+  invalid.
+- Keep required supported-facet failures terminal where the tool contract
+  requires it.
 
 ### Best-effort source drift
 
-- Identify the adapter from the bounded drift metric, then disable only its
-  corresponding best-effort environment switch.
-- Preserve supported tools and successful optional facets; return the stable
-  drift error or partial-result warning.
+- Identify the adapter from the bounded drift metric and disable only its
+  corresponding environment switch.
+- Preserve supported tools and successful optional facets.
 - Reproduce with a dedicated live-probe credential, never production traffic.
 - Update the source register, scrubbed fixtures, validator, and rollback notes
   before re-enabling the adapter.
 
 ### Concurrency saturation
 
-- Confirm host, operation, and queue bounds are functioning and requests release
-  capacity after success, error, timeout, and cancellation.
-- Prefer backpressure to increasing fan-out. Check upstream latency and stuck
-  request cancellation before tuning limits.
-- Restart only after evaluating its quota-reset effect.
+- Confirm host, operation, and queue bounds release capacity after success,
+  error, timeout, and cancellation.
+- Prefer backpressure to increasing fan-out.
+- Check upstream latency and stuck-request cancellation before tuning limits.
+- Consider the quota-reset effect before restarting.
 
 ## Pre-deployment gate
 
 For each immutable candidate artifact:
 
-1. Install with the frozen pnpm lockfile on every supported Node.js line.
-2. Run formatting, lint, strict types, unit/contract/conformance tests,
-   coverage, the high-risk suite, configured mutation checks, dependency audit,
-   and build.
-3. Verify artifact provenance, checksums, executable metadata, and package
-   contents.
-4. Run opt-in Steam probes with the dedicated credential and manually review
+1. Install with the frozen pnpm lockfile on each supported Node.js line.
+2. Run formatting, lint, strict types, tests, coverage, configured mutation
+   checks, dependency audit, and build.
+3. Verify artifact provenance, checksums, executable metadata, and contents.
+4. Run opt-in Steam probes with the dedicated credential and review only
    sanitized drift output.
-5. Exercise initialization, OAuth discovery, authorization, tool listing,
-   representative success and error calls, and cancellation against each target
-   client in staging.
-6. Exercise bounded load, abusive input, dependency outage, graceful shutdown,
-   and independent best-effort disablement.
-7. Record the exact version/digest, configuration revision, results, known
-   limitations, and rollback target. Failed or missing evidence blocks rollout.
+5. Against each target client, verify fixed-header support, initialization, tool
+   listing, a representative call, invalid-token rejection, and cancellation by
+   aborting the original HTTP request.
+6. Exercise bounded load, abusive input, graceful shutdown, and independent
+   best-effort disablement.
+7. Record the exact version or digest, configuration revision, results, known
+   limitations, and rollback target.
 
-Do not infer external compatibility from unit tests. Hosted client and OAuth
-claims become supported only after staging verification has been recorded.
+Client compatibility must be demonstrated against the exact client and version.
+An OAuth-only client is incompatible with the v1 HTTP transport. Cross-request
+`notifications/cancelled` is also unsupported because one shared bearer token
+cannot safely identify which client owns a request. Clients must abort the
+original HTTP request to cancel remote work.
 
-## Staged rollout
+## Rollout boundary
 
-1. Deploy the candidate to an isolated staging resource and complete the
-   pre-deployment gate.
-2. Deploy one hosted instance with process-local quota accounting and no public
-   traffic. Verify liveness, readiness, OAuth audience binding, Host/Origin
-   policy, telemetry redaction, and graceful shutdown.
-3. Admit only an explicitly approved, quota-limited cohort. Watch Steam budget,
-   authorization failures, latency, drift, saturation, memory, and shutdown
-   behavior through a complete observation window.
-4. Pause expansion on unexplained error growth, redaction concerns, budget
-   uncertainty, source drift, or dependency instability.
-5. Expand only after reliability, privacy, capacity, client compatibility, and
-   Steam-budget gates pass. Add a distributed atomic quota backend before a
-   second instance or broad public rollout.
+Deploy to an operator-controlled, private environment. Admit only approved
+clients that have received the shared secret through an appropriate secret
+channel. Observe quota, authentication failures, latency, drift, saturation,
+memory, and shutdown behavior.
 
-Record who approved each stage and the immutable artifact digest. Configuration
-changes use the same staged path as code changes when they affect credentials,
-authorization, quotas, concurrency, hosts, origins, upstream requests, or
-privacy.
+Do not expand this deployment into a public or multi-tenant service. Static
+shared bearer authentication cannot provide signup, consent, individual
+revocation, client attribution, or per-user abuse controls. Those needs require
+a new security design and decision record.
 
-## Rollback
+## Rotation and rollback
 
-Prepare and verify a known-good immutable artifact before rollout. Roll back
-when a release causes contract incompatibility, authorization bypass or outage,
-secret exposure, unbounded quota/concurrency behavior, sustained readiness
-failure, unsafe telemetry, or material Steam source regression.
+Rotate `MCP_ACCESS_TOKEN` on suspected exposure, when a client loses access, or
+on the operator's regular credential schedule:
 
-1. Stop cohort expansion and mark the candidate instances unready.
-2. If one best-effort adapter is responsible, disable only that adapter when the
-   switch has been verified; otherwise route traffic to the known-good artifact.
-3. Allow candidate instances to drain to their deadline, then terminate them.
-4. Restore the prior configuration revision together with the prior artifact; do
-   not mix unverified schema or policy changes across versions.
-5. Verify health, OAuth discovery and audience checks, all eight tool listings,
-   a bounded representative call, quota accounting, and redacted telemetry.
-6. Reconcile the Steam budget conservatively because process restarts reset
-   in-memory quota counters.
-7. Document the sanitized timeline, affected version/digest, trigger, outcome,
-   and follow-up regression test.
+1. generate a new high-entropy token;
+2. update every approved client and the server secret;
+3. restart and drain the prior instance;
+4. verify the old token receives `401` and the new token initializes MCP;
+5. record only the sanitized rotation outcome.
 
-Rollback never means weakening OAuth, Host/Origin validation, the quota safety
-reserve, redaction, or Steam privacy behavior. If the known-good release cannot
-meet those boundaries, keep the hosted service unavailable while local stdio
-remains an independently configured option.
+For a code or configuration regression, route traffic back to a verified
+immutable artifact, restore its matching configuration, and recheck health,
+bearer rejection, all eight tools, instance quota accounting, and redacted
+telemetry. Rollback never means weakening bearer authentication, Host/Origin
+validation, quota reserves, redaction, or Steam privacy controls.

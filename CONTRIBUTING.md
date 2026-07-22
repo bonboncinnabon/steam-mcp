@@ -1,10 +1,10 @@
 # Contributing
 
-Steam MCP is a read-only data-access server with security-sensitive OAuth,
-quota, host-validation, and redaction boundaries. Contributions should stay
-small, preserve the inward dependency direction described in the architecture
-documentation, and avoid adding account management, Steam mutations, generic
-HTTP proxying, or analysis behavior.
+Steam MCP is a read-only data-access server with security-sensitive bearer
+authentication, quota, host-validation, and redaction boundaries. Contributions
+should stay small, preserve the inward dependency direction described in the
+architecture documentation, and avoid adding account management, Steam
+mutations, generic HTTP proxying, or analysis behavior.
 
 ## Development environment
 
@@ -84,9 +84,10 @@ pnpm build
 `pnpm check` runs formatting, linting, strict type checking, and the normal
 coverage suite. CI also performs a frozen install, build, dependency audit, and
 configured high-risk mutation checks. Overall line and branch coverage must be
-at least 90 percent. Authorization, identity separation, secret redaction, quota
-accounting, Host enforcement, and shutdown cleanup require 100 percent branch
-coverage plus their configured mutation or fault-injection checks.
+at least 90 percent. Bearer authentication, identity separation, secret
+redaction, quota accounting, Host enforcement, and shutdown cleanup require 100
+percent branch coverage plus their configured mutation or fault-injection
+checks.
 
 Coverage is a floor, not evidence that failure paths, races, or security
 boundaries are correct. Add explicit tests for empty input, missing data,

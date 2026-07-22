@@ -13,9 +13,9 @@ describe("redactTelemetryValue", () => {
       `request failed at https://api.steampowered.com/test?key=${secret}&steamid=76561198000000000`,
       {
         cause: {
-          authorization: "Bearer oauth.private.token",
+          authorization: "Bearer remote.private.token",
           body: { games: [1, 2, 3] },
-          note: `Bearer oauth.private.token credential ${secret}`,
+          note: `Bearer remote.private.token credential ${secret}`,
         },
       },
     );
@@ -28,7 +28,7 @@ describe("redactTelemetryValue", () => {
     expect(serialized).toContain('"body":"[REDACTED]"');
     expect(serialized).not.toContain(secret);
     expect(serialized).not.toContain("76561198000000000");
-    expect(serialized).not.toContain("oauth.private.token");
+    expect(serialized).not.toContain("remote.private.token");
   });
 
   it("bounds depth, collection size, keys, strings, and cycles", () => {
@@ -266,16 +266,16 @@ describe("createSafeObservability", () => {
     });
 
     observability.recordEvent({
-      name: "authorization_rejected",
+      name: "authentication_rejected",
       reason: "invalid_token",
-      subject: "oauth-subject-must-not-appear",
+      token: "remote-access-token-must-not-appear",
       tool_arguments: "private input",
     } as never);
 
     expect(records).toEqual([
       {
         kind: "event",
-        name: "authorization_rejected",
+        name: "authentication_rejected",
         attributes: { reason: "invalid_token" },
       },
     ]);
@@ -314,8 +314,8 @@ describe("createSafeObservability", () => {
   });
 
   it.each([
-    { name: "authorization_rejected", reason: 1 },
-    { name: "authorization_rejected", reason: "private" },
+    { name: "authentication_rejected", reason: 1 },
+    { name: "authentication_rejected", reason: "private" },
     { name: "quota_rejected", reason: 1 },
     { name: "quota_rejected", reason: "private" },
     { name: "shutdown", phase: 1 },

@@ -2,7 +2,7 @@
 
 ### Requirement: Steam credential separation
 
-Hosted Steam requests MUST use the service-owned credential and local Steam
+Remote Steam requests MUST use the operator-provided credential and local Steam
 requests MUST use the environment-provided credential; neither credential SHALL
 be accepted through MCP tool arguments.
 
@@ -68,7 +68,7 @@ concise text derived from that same result.
 The system SHALL restrict public v1 execution errors to `INVALID_INPUT`,
 `IDENTITY_NOT_LINKED`, `PROFILE_PRIVATE`, `NOT_FOUND`, `STEAM_AUTH_FAILED`,
 `STEAM_RATE_LIMITED`, `UPSTREAM_UNAVAILABLE`, `BEST_EFFORT_SOURCE_CHANGED`,
-`USER_QUOTA_EXCEEDED`, and `INTERNAL_ERROR`.
+`SERVICE_QUOTA_EXCEEDED`, and `INTERNAL_ERROR`.
 
 #### Scenario: Unexpected internal exception
 
@@ -100,25 +100,18 @@ with jitter and applicable upstream retry guidance.
 - **THEN** the system returns the applicable sanitized rate-limit or unavailable
   error and performs no additional attempts
 
-### Requirement: Atomic quota reservation
+### Requirement: Atomic instance quota reservation
 
-Hosted mode MUST reserve global and per-user quota atomically before starting
-upstream work and MUST preserve a configurable global safety reserve. A
-single-instance deployment MAY use bounded process-local counters, but
-horizontal scaling or broad public rollout requires a distributed atomic quota
-adapter.
-
-#### Scenario: User quota exhausted
-
-- **WHEN** a user lacks sufficient remaining quota for a requested operation
-- **THEN** the system returns `USER_QUOTA_EXCEEDED` before acquiring concurrency
-  or calling Steam
+Remote mode MUST reserve instance-wide quota atomically before starting upstream
+work and MUST preserve a configurable global safety reserve. A single-instance
+deployment MAY use a bounded process-local counter, but horizontal scaling
+requires a distributed atomic quota adapter.
 
 #### Scenario: Global reserve reached
 
 - **WHEN** the remaining global budget equals the configured safety reserve
-- **THEN** the system rejects additional non-reserved upstream work without
-  overspending the budget across instances
+- **THEN** the system returns `SERVICE_QUOTA_EXCEEDED` before acquiring
+  concurrency or calling Steam
 
 ### Requirement: Bounded concurrency and fan-out
 

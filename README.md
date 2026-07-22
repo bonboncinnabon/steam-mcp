@@ -1,9 +1,9 @@
 # Steam MCP Server
 
-A remote-first, read-only
+A self-hostable, read-only
 [Model Context Protocol](https://modelcontextprotocol.io/) server for clean
 access to public Steam data. It exposes eight focused tools and supports both
-hosted Streamable HTTP and local stdio clients.
+self-hosted Streamable HTTP and local stdio clients.
 
 The server does not modify Steam accounts, manage account settings, delete
 accounts, or provide recommendation and player-analysis tools.
@@ -51,15 +51,18 @@ development-from-source instructions, see [Local setup](docs/local-setup.md).
 ## Self-hosted HTTP quick start
 
 The package also exposes `steam-mcp-hosted`, a portable Node.js executable for
-running the OAuth-protected Streamable HTTP server. This repository does not
-publish a public hosted URL, and hosted client or staging compatibility has not
-yet been verified.
+running a Streamable HTTP server protected by one operator-configured bearer
+token. This repository does not operate a hosted provider, user-account system,
+or public shared service.
 
-After configuring the required Steam, OAuth, resource, and Host environment
-variables plus any desired optional capacity settings, run the packaged
-executable:
+Generate a high-entropy token, configure the required Steam, token, resource,
+and Host environment variables, then run the packaged executable:
 
 ```sh
+export STEAM_API_KEY="<deployment Steam Web API key>"
+export MCP_ACCESS_TOKEN="<random secret of at least 32 characters>"
+export MCP_RESOURCE_URI="https://mcp.example.com/mcp"
+export ALLOWED_HOSTS="mcp.example.com"
 pnpm dlx --package steam-mcp-server steam-mcp-hosted
 ```
 
@@ -69,7 +72,9 @@ HTTPS `MCP_RESOURCE_URI`. The initial quota and concurrency implementations are
 process-local, so run exactly one instance until a distributed atomic quota
 adapter exists.
 
-See [Hosted setup](docs/hosted-setup.md) for every environment variable and
+Remote clients must support configuring a fixed `Authorization: Bearer <token>`
+header. OAuth discovery and interactive login are not part of v1. See
+[Hosted setup](docs/hosted-setup.md) for every environment variable and
 [Operations](docs/operations.md) for TLS, health, draining, and rollout gates.
 
 ## Development
@@ -91,10 +96,13 @@ Additional test commands are documented in [Testing](docs/testing.md).
 - Local credentials are read from process environment or the MCP client's local
   configuration.
 - The server never logs the Steam API key.
-- Local mode does not require hosted authorization, account linking, or
+- Local mode does not require remote authorization, account linking, or
   persistent storage.
-- Hosted mode is only an OAuth resource server. It has no MCP account creation,
-  Steam linking or unlinking, token revocation, or account deletion lifecycle.
+- Self-hosted HTTP mode compares each bearer credential with one
+  operator-configured secret. It has no users, accounts, OAuth flow, or
+  token-to-Steam identity mapping.
+- Remote quota and concurrency limits apply to the whole running instance, not
+  to individual clients.
 - Local process state is discarded when the server exits.
 
 ## License

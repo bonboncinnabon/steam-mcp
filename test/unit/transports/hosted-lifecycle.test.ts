@@ -277,7 +277,7 @@ describe("createHostedRequestLifecycle", () => {
 
   it("keeps liveness up while readiness and MCP admission are closed", async () => {
     const health = createHealthHttpHandler({
-      authorization: { isReady: vi.fn().mockResolvedValue(true) },
+      dependencies: [{ isReady: vi.fn().mockResolvedValue(true) }],
     });
     const lifecycle = createHostedRequestLifecycle({
       handler: { handle: vi.fn().mockResolvedValue(new Response("mcp")) },

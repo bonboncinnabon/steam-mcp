@@ -3,9 +3,7 @@
   "coverageAnalysis": "perTest",
   "mutate": [
     "src/application/services/steam-identity-resolver.ts",
-    "src/infrastructure/hosted-authorization-gate.ts",
-    "src/infrastructure/oauth-resource.ts",
-    "src/infrastructure/oauth-token-validator.ts",
+    "src/infrastructure/remote-bearer-gate.ts",
     "src/steam/http/steam-http-policy.ts"
   ],
   "plugins": ["@stryker-mutator/vitest-runner"],

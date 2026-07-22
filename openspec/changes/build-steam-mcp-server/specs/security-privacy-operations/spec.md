@@ -1,31 +1,30 @@
 ## ADDED Requirements
 
-### Requirement: Minimal hosted data retention
+### Requirement: Minimal remote data retention
 
-The hosted MCP server SHALL create no user account record and SHALL NOT durably
-retain OAuth subjects, Steam identities, Steam responses, prompts, or tool
-arguments. Quota storage is limited to opaque subject-derived keys, bounded
-counters, and rollover metadata.
+The remote MCP server SHALL create no user account record and SHALL NOT durably
+retain bearer credentials, Steam identities, Steam responses, prompts, or tool
+arguments. Quota storage is limited to bounded instance counters and rollover
+metadata.
 
-#### Scenario: Hosted player-tool completion
+#### Scenario: Remote player-tool completion
 
-- **WHEN** a hosted player tool returns library, friend, achievement, activity,
+- **WHEN** a remote player tool returns library, friend, achievement, activity,
   or wishlist data
 - **THEN** the system does not durably store the Steam response, prompt, or tool
   arguments by default
 
-#### Scenario: OAuth account lifecycle
+#### Scenario: Account lifecycle request
 
-- **WHEN** an authenticated user logs out, revokes access, or deletes their
-  authorization-provider account
-- **THEN** the MCP server exposes no account mutation tool and relies on token
-  validation plus the provider's lifecycle controls
+- **WHEN** a caller asks the MCP server to create, link, revoke, or delete an
+  account
+- **THEN** the MCP server exposes no account lifecycle or mutation tool
 
 ### Requirement: Secret and personal-data redaction
 
-The system MUST exclude Steam API keys, OAuth tokens, credential-bearing URLs,
-raw upstream bodies, prompts, tool arguments, and unapproved personal payloads
-from logs, traces, metrics, fixtures, errors, and quota keys.
+The system MUST exclude Steam API keys, remote bearer tokens, credential-bearing
+URLs, raw upstream bodies, prompts, tool arguments, and unapproved personal
+payloads from logs, traces, metrics, fixtures, errors, and quota keys.
 
 #### Scenario: Error contains a secret
 
@@ -52,19 +51,19 @@ labels such as tool name, stable error code, source tier, and HTTP status class.
 
 ### Requirement: Validated startup configuration
 
-Hosted and local entry points MUST validate required configuration, types,
+Remote and local entry points MUST validate required configuration, types,
 bounds, and incompatible combinations before accepting work.
 
 #### Scenario: Invalid quota configuration
 
-- **WHEN** hosted startup receives a negative quota or a global safety reserve
+- **WHEN** remote startup receives a negative quota or a global safety reserve
   larger than the daily budget
 - **THEN** startup fails with a redacted actionable diagnostic rather than
   silently selecting defaults
 
-### Requirement: Graceful hosted shutdown
+### Requirement: Graceful remote shutdown
 
-The hosted system SHALL stop accepting new work, drain active requests within a
+The remote system SHALL stop accepting new work, drain active requests within a
 configured deadline, cancel remaining upstream calls, and close transport plus
 configured quota clients.
 
@@ -76,7 +75,7 @@ configured quota clients.
 
 ### Requirement: Backward-compatible deployment and rollback
 
-Hosted deployments SHALL use versioned artifacts with staged rollout and
+Remote deployments SHALL use versioned artifacts with staged rollout and
 rollback.
 
 #### Scenario: Application rollback
@@ -123,30 +122,31 @@ injection.
 
 #### Scenario: High-risk module verification
 
-- **WHEN** authorization, OAuth-subject/Steam-identity separation, secret
+- **WHEN** bearer authorization, bearer/Steam-credential separation, secret
   redaction, quota accounting, or host enforcement changes
 - **THEN** CI requires 100 percent branch coverage for the affected high-risk
   behavior plus its configured mutation or fault-injection checks
 
 ### Requirement: Layered release verification
 
-A hosted release SHALL require protocol, OAuth, quota, concurrency, shutdown,
-cross-client, and rollback evidence in addition to unit and contract tests.
+A remote release SHALL require protocol, bearer authorization, quota,
+concurrency, shutdown, cross-client, and rollback evidence in addition to unit
+and contract tests.
 
 #### Scenario: Release candidate missing cross-client evidence
 
-- **WHEN** a hosted release candidate has not passed the supported-client smoke
+- **WHEN** a remote release candidate has not passed the supported-client smoke
   matrix
 - **THEN** the release gate fails regardless of unit-test coverage
 
 ### Requirement: Public engineering documentation
 
-The repository SHALL document architecture, tool contracts, source tiers, hosted
-and local setup, OAuth and Steam identity boundaries, security, privacy,
+The repository SHALL document architecture, tool contracts, source tiers, remote
+and local setup, bearer and Steam credential boundaries, security, privacy,
 testing, contribution rules, operations, versioning, and changes.
 
 #### Scenario: Clean-environment documentation check
 
 - **WHEN** release documentation is verified from a clean supported environment
-- **THEN** hosted, local, and self-hosted setup paths complete without relying
-  on undocumented maintainer knowledge
+- **THEN** remote and local setup paths complete without relying on undocumented
+  maintainer knowledge

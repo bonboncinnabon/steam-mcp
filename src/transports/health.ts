@@ -3,8 +3,7 @@ export interface ReadinessDependency {
 }
 
 export interface HealthHttpHandlerOptions {
-  readonly authorization: ReadinessDependency;
-  readonly quota?: ReadinessDependency;
+  readonly dependencies?: readonly ReadinessDependency[];
 }
 
 export interface HealthHttpHandler {
@@ -54,10 +53,9 @@ export function createHealthHttpHandler(
       }
 
       try {
-        const checks = [options.authorization.isReady(request.signal)];
-        if (options.quota !== undefined) {
-          checks.push(options.quota.isReady(request.signal));
-        }
+        const checks = (options.dependencies ?? []).map((dependency) =>
+          dependency.isReady(request.signal),
+        );
         const ready = (await Promise.all(checks)).every(Boolean);
         return ready
           ? healthResponse(200, "ready")

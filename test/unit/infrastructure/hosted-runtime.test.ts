@@ -11,7 +11,6 @@ describe("hosted MCP runtime", () => {
     const fetchImpl = vi.fn();
     const server = createHostedMcpServer({
       steamApiKey: "synthetic-hosted-key",
-      subject: "oauth-subject",
       policy: BASELINE_SERVICE_POLICY,
       quota: { reserve: vi.fn() },
       concurrency: { acquire: vi.fn() },
@@ -45,16 +44,15 @@ describe("hosted MCP runtime", () => {
     }
   });
 
-  it("rejects exhausted subject quota before concurrency or Steam work", async () => {
+  it("rejects exhausted instance quota before concurrency or Steam work", async () => {
     const reserve = vi.fn().mockResolvedValue({
       reserved: false,
-      reason: "user_exhausted",
+      reason: "global_reserve",
     });
     const acquire = vi.fn();
     const fetchImpl = vi.fn();
     const server = createHostedMcpServer({
       steamApiKey: "synthetic-hosted-key",
-      subject: "oauth-subject",
       policy: BASELINE_SERVICE_POLICY,
       quota: { reserve },
       concurrency: { acquire },
@@ -78,11 +76,10 @@ describe("hosted MCP runtime", () => {
         isError: true,
         structuredContent: {
           ok: false,
-          error: { code: "USER_QUOTA_EXCEEDED", retryable: false },
+          error: { code: "SERVICE_QUOTA_EXCEEDED", retryable: false },
         },
       });
       expect(reserve).toHaveBeenCalledWith({
-        subject: "oauth-subject",
         operation: "storeSearch",
         cost: 3,
       });
@@ -105,7 +102,6 @@ describe("hosted MCP runtime", () => {
     const fetchImpl = vi.fn();
     const server = createHostedMcpServer({
       steamApiKey: "synthetic-hosted-key",
-      subject: "oauth-subject",
       policy: BASELINE_SERVICE_POLICY,
       quota: { reserve },
       concurrency: { acquire },
@@ -163,7 +159,6 @@ describe("hosted MCP runtime", () => {
     const fetchImpl = vi.fn();
     const server = createHostedMcpServer({
       steamApiKey: "synthetic-hosted-key",
-      subject: "oauth-subject",
       policy: BASELINE_SERVICE_POLICY,
       quota: {
         reserve: vi

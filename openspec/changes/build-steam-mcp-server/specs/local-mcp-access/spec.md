@@ -40,11 +40,11 @@ send redacted diagnostics to stderr.
 - **THEN** the diagnostic appears on stderr and cannot corrupt the MCP stdout
   stream
 
-### Requirement: Local and hosted contract parity
+### Requirement: Local and remote contract parity
 
-Local and hosted transports SHALL use the same domain services, tool schemas,
+Local and remote transports SHALL use the same domain services, tool schemas,
 result envelopes, error codes, and source-tier behavior. Transport-specific
-defaulting is limited to local `STEAM_USER`; hosted callers supply explicit
+defaulting is limited to local `STEAM_USER`; remote callers supply explicit
 users to subject-oriented tools.
 
 #### Scenario: Equivalent explicit-user call

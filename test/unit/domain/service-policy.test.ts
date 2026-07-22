@@ -12,7 +12,6 @@ describe("BASELINE_SERVICE_POLICY", () => {
       maxRetryAttempts: 2,
       globalDailyQuota: 80_000,
       globalSafetyReserve: 20_000,
-      perUserDailyQuota: 500,
       maxHostConcurrency: 8,
       maxOperationConcurrency: 4,
       maxConcurrencyQueueSize: 64,
@@ -34,7 +33,6 @@ describe("createServicePolicy", () => {
     const fields = [
       "upstreamTimeoutMs",
       "globalDailyQuota",
-      "perUserDailyQuota",
       "maxHostConcurrency",
       "maxOperationConcurrency",
       "maxConcurrencyQueueSize",
@@ -80,11 +78,6 @@ describe("createServicePolicy", () => {
       Parameters<typeof createServicePolicy>[0]
     >[] = [
       { globalDailyQuota: 100, globalSafetyReserve: 101 },
-      {
-        globalDailyQuota: 100,
-        globalSafetyReserve: 20,
-        perUserDailyQuota: 81,
-      },
       { defaultPageSize: 101, maxPageSize: 100 },
       { maxHostConcurrency: 4, maxOperationConcurrency: 5 },
       { upstreamTimeoutMs: 30_001, executionDeadlineMs: 30_000 },
@@ -109,7 +102,6 @@ describe("createServicePolicy", () => {
       { upstreamTimeoutMs: 60_001, executionDeadlineMs: 120_000 },
       { maxRetryAttempts: 6 },
       { globalDailyQuota: 100_001 },
-      { perUserDailyQuota: 10_001 },
       { maxHostConcurrency: 65 },
       { maxHostConcurrency: 64, maxOperationConcurrency: 33 },
       { maxConcurrencyQueueSize: 1_025 },

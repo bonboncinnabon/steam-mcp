@@ -8,11 +8,7 @@ import {
 
 const BASELINE_HOSTED_ENVIRONMENT = {
   STEAM_API_KEY: "synthetic-hosted-value",
-  OAUTH_ISSUER: "https://identity.example",
-  OAUTH_JWKS_URI: "https://identity.example/.well-known/jwks.json",
-  OAUTH_INTROSPECTION_URI: "https://identity.example/introspect",
-  OAUTH_CLIENT_ID: "steam-mcp",
-  OAUTH_CLIENT_SECRET: "synthetic-client-secret",
+  MCP_ACCESS_TOKEN: "synthetic-remote-access-token-value",
   MCP_RESOURCE_URI: "https://steam.example/mcp",
   ALLOWED_HOSTS: "steam.example",
 } as const;
@@ -57,16 +53,30 @@ describe("parseLocalConfig", () => {
 });
 
 describe("parseHostedConfig", () => {
+  it("rejects a remote bearer token shorter than 32 characters", () => {
+    expect(() =>
+      parseHostedConfig({
+        ...BASELINE_HOSTED_ENVIRONMENT,
+        MCP_ACCESS_TOKEN: "short-private-sentinel",
+      }),
+    ).toThrow("MCP_ACCESS_TOKEN must contain at least 32 characters");
+  });
+
+  it("rejects a remote bearer token that cannot be represented in one header", () => {
+    expect(() =>
+      parseHostedConfig({
+        ...BASELINE_HOSTED_ENVIRONMENT,
+        MCP_ACCESS_TOKEN: "synthetic remote access token value",
+      }),
+    ).toThrow("MCP_ACCESS_TOKEN contains unsupported characters");
+  });
+
   it("starts hosted mode without account or distributed quota storage", () => {
     expect(
       parseHostedConfig({
         ...BASELINE_HOSTED_ENVIRONMENT,
         STEAM_API_KEY: "synthetic-hosted-value",
-        OAUTH_ISSUER: "https://identity.example",
-        OAUTH_JWKS_URI: "https://identity.example/.well-known/jwks.json",
-        OAUTH_INTROSPECTION_URI: "https://identity.example/introspect",
-        OAUTH_CLIENT_ID: "steam-mcp",
-        OAUTH_CLIENT_SECRET: "synthetic-client-secret",
+        MCP_ACCESS_TOKEN: "synthetic-remote-access-token-value",
         MCP_RESOURCE_URI: "https://steam.example/mcp",
         ALLOWED_HOSTS: "steam.example,steam.example:8443",
         ALLOWED_ORIGINS: "https://chatgpt.com, https://claude.ai",
@@ -74,11 +84,7 @@ describe("parseHostedConfig", () => {
     ).toEqual({
       mode: "hosted",
       steamApiKey: "synthetic-hosted-value",
-      oauthIssuer: "https://identity.example",
-      oauthJwksUri: "https://identity.example/.well-known/jwks.json",
-      oauthIntrospectionUri: "https://identity.example/introspect",
-      oauthClientId: "steam-mcp",
-      oauthClientSecret: "synthetic-client-secret",
+      accessToken: "synthetic-remote-access-token-value",
       resourceUri: "https://steam.example/mcp",
       allowedHosts: ["steam.example", "steam.example:8443"],
       allowedOrigins: ["https://chatgpt.com", "https://claude.ai"],
@@ -98,7 +104,6 @@ describe("parseHostedConfig", () => {
     const environment = {
       ...BASELINE_HOSTED_ENVIRONMENT,
       STEAM_API_KEY: "synthetic-hosted-value",
-      OAUTH_ISSUER: "https://identity.example",
       MCP_RESOURCE_URI: "https://steam.example/mcp",
     };
     const requiredFields = Object.keys(
@@ -124,7 +129,6 @@ describe("parseHostedConfig", () => {
       parseHostedConfig({
         ...BASELINE_HOSTED_ENVIRONMENT,
         STEAM_API_KEY: "   ",
-        OAUTH_ISSUER: "https://identity.example",
         MCP_RESOURCE_URI: "https://steam.example/mcp",
       }),
     ).toThrow("Missing required configuration: STEAM_API_KEY");
@@ -134,15 +138,9 @@ describe("parseHostedConfig", () => {
     const environment = {
       ...BASELINE_HOSTED_ENVIRONMENT,
       STEAM_API_KEY: "synthetic-hosted-value",
-      OAUTH_ISSUER: "https://identity.example",
       MCP_RESOURCE_URI: "https://steam.example/mcp",
     };
-    const insecureFields = [
-      "OAUTH_ISSUER",
-      "OAUTH_JWKS_URI",
-      "OAUTH_INTROSPECTION_URI",
-      "MCP_RESOURCE_URI",
-    ] as const;
+    const insecureFields = ["MCP_RESOURCE_URI"] as const;
 
     const messages = insecureFields.map((field) => {
       try {
@@ -162,12 +160,7 @@ describe("parseHostedConfig", () => {
   });
 
   it("rejects hosted URLs that embed credentials or fragments", () => {
-    const fields = [
-      "OAUTH_ISSUER",
-      "OAUTH_JWKS_URI",
-      "OAUTH_INTROSPECTION_URI",
-      "MCP_RESOURCE_URI",
-    ] as const;
+    const fields = ["MCP_RESOURCE_URI"] as const;
     const messages = fields.flatMap((field) =>
       [
         "https://user:secret@identity.example/path",
@@ -195,10 +188,9 @@ describe("parseHostedConfig", () => {
       parseHostedConfig({
         ...BASELINE_HOSTED_ENVIRONMENT,
         STEAM_API_KEY: "synthetic-hosted-value",
-        OAUTH_ISSUER: "malformed-sentinel-value",
-        MCP_RESOURCE_URI: "https://steam.example/mcp",
+        MCP_RESOURCE_URI: "malformed-sentinel-value",
       }),
-    ).toThrow("OAUTH_ISSUER must be an HTTPS URL");
+    ).toThrow("MCP_RESOURCE_URI must be an HTTPS URL");
   });
 
   it("rejects malformed allowed hosts without echoing their values", () => {
@@ -356,7 +348,6 @@ describe("parseHostedConfig", () => {
     const config = parseHostedConfig({
       ...BASELINE_HOSTED_ENVIRONMENT,
       STEAM_API_KEY: "synthetic-hosted-value",
-      OAUTH_ISSUER: "https://identity.example",
       MCP_RESOURCE_URI: "https://steam.example/mcp",
     });
 
@@ -367,13 +358,11 @@ describe("parseHostedConfig", () => {
     const config = parseHostedConfig({
       ...BASELINE_HOSTED_ENVIRONMENT,
       STEAM_API_KEY: "synthetic-hosted-value",
-      OAUTH_ISSUER: "https://identity.example",
       MCP_RESOURCE_URI: "https://steam.example/mcp",
       UPSTREAM_TIMEOUT_MS: "7000",
       MAX_RETRY_ATTEMPTS: "3",
       GLOBAL_DAILY_QUOTA: "90000",
       GLOBAL_SAFETY_RESERVE: "10000",
-      PER_USER_DAILY_QUOTA: "600",
       MAX_HOST_CONCURRENCY: "10",
       MAX_OPERATION_CONCURRENCY: "5",
       MAX_CONCURRENCY_QUEUE_SIZE: "72",
@@ -389,7 +378,6 @@ describe("parseHostedConfig", () => {
       maxRetryAttempts: 3,
       globalDailyQuota: 90_000,
       globalSafetyReserve: 10_000,
-      perUserDailyQuota: 600,
       maxHostConcurrency: 10,
       maxOperationConcurrency: 5,
       maxConcurrencyQueueSize: 72,
@@ -406,7 +394,6 @@ describe("parseHostedConfig", () => {
       parseHostedConfig({
         ...BASELINE_HOSTED_ENVIRONMENT,
         STEAM_API_KEY: "synthetic-hosted-value",
-        OAUTH_ISSUER: "https://identity.example",
         MCP_RESOURCE_URI: "https://steam.example/mcp",
         MAX_RETRY_ATTEMPTS: "malformed-sentinel-value",
       }),
@@ -419,7 +406,6 @@ describe("parseHostedConfig", () => {
         ...BASELINE_HOSTED_ENVIRONMENT,
         STEAM_API_KEY: "synthetic-hosted-value",
         STEAM_USER: "unsafe-process-default",
-        OAUTH_ISSUER: "https://identity.example",
         MCP_RESOURCE_URI: "https://steam.example/mcp",
       }),
     ).toThrow("STEAM_USER is not allowed in hosted mode");

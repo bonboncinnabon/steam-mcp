@@ -1,7 +1,10 @@
 # ADR 0001: Use WorkOS AuthKit as the hosted authorization server
 
-- Status: Accepted
+- Status: Superseded by [ADR 0002](./0002-static-bearer-authentication.md)
 - Date: 2026-07-22
+
+This decision is retained as historical context only. The project no longer
+plans an external OAuth provider or public hosted service for v1.
 
 ## Context
 

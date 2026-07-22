@@ -1,25 +1,31 @@
-# Hosted Steam MCP setup
+# Self-hosted HTTP setup
 
-The hosted service is a read-only OAuth-protected MCP resource server. Users
-authorize the MCP client in a browser and do not supply a Steam Web API key. The
-deployment supplies its own Steam credential.
+Steam MCP can run as a stateless Streamable HTTP server protected by one
+operator-configured bearer token. This is a private self-hosting option, not a
+hosted product: the project provides no provider account, login flow, public
+shared URL, or per-user tenancy.
 
-This repository does not currently publish a hosted service. In the examples
-below, replace `https://mcp.example.com/mcp` with the exact canonical HTTPS MCP
-resource URL supplied by the operator. Do not append a path or trailing slash
-unless it is part of that configured URL.
+Every remote client receives the same deployment secret and must send it on each
+MCP request:
 
-## Run the portable hosted executable
+```http
+Authorization: Bearer <MCP_ACCESS_TOKEN>
+```
 
-The published package exposes `steam-mcp-hosted` in addition to the local
-`steam-mcp` stdio executable. It can run anywhere a supported Node.js runtime is
-available:
+Use this mode only with clients that can attach a fixed `Authorization` header.
+Clients that require OAuth discovery or an interactive login are not compatible
+with the v1 remote transport.
+
+## Run the executable
+
+The package exposes `steam-mcp-hosted` in addition to the local `steam-mcp`
+stdio executable:
 
 ```sh
 pnpm dlx --package steam-mcp-server steam-mcp-hosted
 ```
 
-When developing from a clone, build first and run the generated executable:
+From a source checkout:
 
 ```sh
 pnpm install --frozen-lockfile
@@ -27,47 +33,40 @@ pnpm build
 node dist/bin/steam-mcp-hosted.js
 ```
 
-The process fails closed with a sanitized startup message when configuration is
-missing or invalid. It emits no public URL and does not prove compatibility with
-any hosted client or staging environment.
+The process listens on plain HTTP. Put it behind a trusted TLS-terminating
+reverse proxy for any traffic that leaves the host.
 
-### Required configuration
+## Required configuration
 
-| Variable                  | Purpose                                                                   |
-| ------------------------- | ------------------------------------------------------------------------- |
-| `STEAM_API_KEY`           | Deployment-owned Steam Web API credential                                 |
-| `OAUTH_ISSUER`            | Exact HTTPS authorization-server issuer                                   |
-| `OAUTH_JWKS_URI`          | HTTPS signing-key endpoint                                                |
-| `OAUTH_INTROSPECTION_URI` | HTTPS token-introspection endpoint                                        |
-| `OAUTH_CLIENT_ID`         | Confidential client ID used for token introspection                       |
-| `OAUTH_CLIENT_SECRET`     | Confidential client secret used for token introspection                   |
-| `MCP_RESOURCE_URI`        | Exact canonical HTTPS MCP URL and required token audience                 |
-| `ALLOWED_HOSTS`           | Comma-separated request `Host` allowlist, including ports when applicable |
+| Variable           | Purpose                                              |
+| ------------------ | ---------------------------------------------------- |
+| `STEAM_API_KEY`    | Deployment-owned Steam Web API credential            |
+| `MCP_ACCESS_TOKEN` | Shared high-entropy bearer secret, at least 32 chars |
+| `MCP_RESOURCE_URI` | Exact canonical HTTPS MCP endpoint                   |
+| `ALLOWED_HOSTS`    | Comma-separated request `Host` allowlist             |
 
-For a WorkOS-style authorization server, the values commonly have this shape:
+Example:
 
 ```sh
-export OAUTH_ISSUER="https://<authorization-server-host>"
-export OAUTH_JWKS_URI="https://<authorization-server-host>/oauth2/jwks"
-export OAUTH_INTROSPECTION_URI="https://<authorization-server-host>/oauth2/introspection"
-export OAUTH_CLIENT_ID="<confidential client ID>"
-export OAUTH_CLIENT_SECRET="<confidential client secret>"
+export STEAM_API_KEY="<deployment Steam Web API key>"
+export MCP_ACCESS_TOKEN="<random secret of at least 32 characters>"
 export MCP_RESOURCE_URI="https://mcp.example.com/mcp"
 export ALLOWED_HOSTS="mcp.example.com"
-export STEAM_API_KEY="<deployment Steam Web API key>"
+pnpm dlx --package steam-mcp-server steam-mcp-hosted
 ```
 
-Use the exact endpoints issued for the provider deployment rather than deriving
-them blindly from this example. All four configured OAuth/resource URLs must be
-HTTPS and must not contain embedded credentials, query strings, or fragments.
-The introspection credentials are server secrets; do not expose them to MCP
-clients or logs. `STEAM_USER` is rejected in hosted mode.
+Generate `MCP_ACCESS_TOKEN` with a cryptographically secure secret generator.
+The value must contain at least 32 characters and may use letters, digits, and
+`._~+/=-`. Store it in the deployment secret manager. Do not put it in source
+control, URLs, tool arguments, shell history, logs, or client-visible output.
 
-`ALLOWED_HOSTS` is required, and it must contain the host (and port, when
-non-default) from `MCP_RESOURCE_URI`. Entries are host values such as
-`mcp.example.com` or `mcp.example.com:8443`, not URLs or paths.
+`MCP_RESOURCE_URI` must be HTTPS, contain no credentials, query, or fragment,
+and have a host present in `ALLOWED_HOSTS`. Entries in `ALLOWED_HOSTS` are host
+values such as `mcp.example.com` or `mcp.example.com:8443`, not URLs or paths.
+`STEAM_USER` is rejected in HTTP mode so every player-oriented tool call must
+supply an explicit public Steam user.
 
-### Listener, browser origins, and drain settings
+## Listener and browser origins
 
 | Variable                    | Default   | Behavior                                                        |
 | --------------------------- | --------- | --------------------------------------------------------------- |
@@ -76,26 +75,21 @@ non-default) from `MCP_RESOURCE_URI`. Entries are host values such as
 | `PORT`                      | `3000`    | Node HTTP bind port, from 1 through 65535                       |
 | `SHUTDOWN_DRAIN_TIMEOUT_MS` | `10000`   | Drain deadline in milliseconds, maximum 60000                   |
 
-An empty `ALLOWED_ORIGINS` permits non-browser MCP clients that omit `Origin`
-but rejects every request that includes an `Origin` header. Each configured
-origin must be an exact HTTPS origin with no path, query, fragment, or trailing
-path slash beyond the origin itself.
+An empty `ALLOWED_ORIGINS` permits clients that omit `Origin` and rejects every
+request that includes it. Each configured origin must be an exact HTTPS origin.
 
-The executable serves plain HTTP. Terminate public TLS at a trusted reverse
-proxy or load balancer, preserve the original public `Host` header, and route
-the canonical MCP path plus `/.well-known/oauth-protected-resource/...`,
-`/livez`, and `/readyz` to the listener. The application deliberately does not
-trust `Forwarded` or `X-Forwarded-Host` to override a rejected `Host`.
+Terminate TLS at a trusted proxy or load balancer, preserve the original public
+`Host`, and forward the exact MCP path plus `/livez` and `/readyz`. The server
+does not trust `Forwarded` or `X-Forwarded-Host` to override a rejected `Host`.
 
-### Quota, concurrency, and execution policy
+## Quota, concurrency, and execution policy
 
 | Variable                     | Default  | Purpose                                   |
 | ---------------------------- | -------- | ----------------------------------------- |
 | `UPSTREAM_TIMEOUT_MS`        | `8000`   | Per-upstream deadline                     |
 | `MAX_RETRY_ATTEMPTS`         | `2`      | Bounded retry attempts                    |
-| `GLOBAL_DAILY_QUOTA`         | `80000`  | Process-local daily global cost budget    |
-| `GLOBAL_SAFETY_RESERVE`      | `20000`  | Protected portion of the global budget    |
-| `PER_USER_DAILY_QUOTA`       | `500`    | Per-OAuth-subject daily cost budget       |
+| `GLOBAL_DAILY_QUOTA`         | `80000`  | Process-local daily instance cost budget  |
+| `GLOBAL_SAFETY_RESERVE`      | `20000`  | Protected portion of the instance budget  |
 | `MAX_HOST_CONCURRENCY`       | `8`      | Concurrent work per Steam host            |
 | `MAX_OPERATION_CONCURRENCY`  | `4`      | Concurrent work per operation             |
 | `MAX_CONCURRENCY_QUEUE_SIZE` | `64`     | Bounded admission queue and HTTP capacity |
@@ -105,17 +99,18 @@ trust `Forwarded` or `X-Forwarded-Host` to override a rejected `Host`.
 | `EXECUTION_DEADLINE_MS`      | `30000`  | Overall tool execution deadline           |
 | `MAX_OUTPUT_BYTES`           | `256000` | Response and upstream body size bound     |
 
+Quota is instance-wide. All clients using the shared bearer token consume the
+same daily budget; there is no client or user attribution. Counters and queues
+live in one process, reset on restart, and are not coordinated across replicas.
+Run one instance only. Multi-instance or restart-safe quota enforcement requires
+a distributed atomic quota implementation that is outside v1.
+
 Startup validates numeric ceilings and cross-field invariants. In particular,
-the per-user quota cannot exceed the usable global quota, operation concurrency
-cannot exceed host concurrency, the default page size cannot exceed the maximum,
-and the upstream timeout cannot exceed the execution deadline.
+the safety reserve cannot exceed the global quota, operation concurrency cannot
+exceed host concurrency, the default page size cannot exceed the maximum, and
+the upstream timeout cannot exceed the execution deadline.
 
-Quota counters and concurrency queues live only in this process. Restarts reset
-quota counters, and multiple instances cannot enforce one atomic budget. Run a
-single instance only; horizontal scaling and broad public access require a
-distributed atomic quota implementation.
-
-### Best-effort source switches
+## Best-effort source switches
 
 Each switch accepts only `true` or `false` and defaults to `true`:
 
@@ -127,48 +122,32 @@ Each switch accepts only `true` or `false` and defaults to `true`:
 
 Disable the narrowest affected source when its undocumented Steam contract
 drifts. Disabling required store details also prevents successful
-`steam_get_game` results; it is not a supported-data fallback.
+`steam_get_game` results.
 
-## Connect a remote MCP client
+## Connect a client
 
-Add the canonical resource URL as a remote Streamable HTTP MCP server in the
-client:
-
-```text
-https://mcp.example.com/mcp
-```
-
-The client should discover the protected resource, open the external provider's
-authorization flow, and return after consent. The initial hosted scope is
-`steam:read`. The endpoint does not support the deprecated HTTP-plus-SSE
-transport.
-
-Clients that manage OAuth themselves can discover the resource metadata at the
-RFC 9728 URL derived from the MCP path. For the example above, it is:
+Configure the canonical MCP URL and fixed request header in the client:
 
 ```text
-https://mcp.example.com/.well-known/oauth-protected-resource/mcp
+URL: https://mcp.example.com/mcp
+Authorization: Bearer <MCP_ACCESS_TOKEN>
 ```
 
-The metadata identifies:
+The endpoint accepts only `POST` at the exact configured URL and uses stateless
+Streamable HTTP. It does not expose OAuth metadata or the deprecated HTTP+SSE
+transport. A missing, malformed, or incorrect bearer header returns `401` with
+`WWW-Authenticate: Bearer` before MCP or Steam work begins.
 
-- the canonical MCP resource URI;
-- the external authorization server;
-- the supported scope; and
-- bearer-token transport in the `Authorization` header.
+Remote cancellation is request-scoped: abort the original HTTP request. The
+server does not correlate a later `notifications/cancelled` request because the
+shared bearer token is not a safe client identity.
 
-An unauthenticated request to the MCP endpoint returns a `WWW-Authenticate`
-challenge pointing to the same metadata document. Access tokens must be issued
-for the exact canonical resource URI. A token for another audience is rejected.
-Never place an access token in a URL, tool argument, or client log.
+## Steam identity
 
-## Steam users are explicit in hosted mode
+The bearer token authorizes access to the whole instance. It does not identify a
+client or Steam account and is never mapped to a Steam identity.
 
-OAuth authorizes access to this MCP server. It does not identify a Steam account
-and is never interpreted as a Steam user.
-
-The six subject-oriented tools therefore require a `user` argument in hosted
-mode:
+These player-oriented tools require a `user` argument in HTTP mode:
 
 - `steam_get_player`
 - `steam_get_library`
@@ -177,126 +156,58 @@ mode:
 - `steam_get_friends`
 - `steam_get_wishlist`
 
-`user` accepts a SteamID64 string, a Steam vanity name, or an allowlisted Steam
-Community profile URL. It may name any public Steam profile, not only a profile
-owned by the person who completed OAuth. Omitting it returns
-`IDENTITY_NOT_LINKED` and performs no Steam request. Hosted mode deliberately
-has no `STEAM_USER` default and stores no OAuth-to-Steam account link.
+`user` accepts a SteamID64, vanity name, or allowlisted Steam Community profile
+URL and may name any public Steam profile. Omitting it returns
+`IDENTITY_NOT_LINKED` without making a Steam request. `steam_search_games` and
+`steam_get_game` do not require a Steam user.
 
-The game-oriented `steam_search_games` and `steam_get_game` tools do not require
-a Steam user.
+Steam privacy settings still apply. Authentication never grants access to
+private Steam data.
 
-All results remain subject to the selected Steam profile's privacy settings.
-Authorization does not reveal private Steam data. For example, a private game
-library returns `PROFILE_PRIVATE` rather than being represented as an empty
-library.
+## Token rotation
 
-## Account ownership and revocation
+There is no account or token-management endpoint. To rotate access:
 
-[WorkOS AuthKit](https://workos.com/docs/authkit/mcp) is the default external
-OAuth provider. The provider owns signup, login, consent, sessions, token
-issuance, revocation, and account deletion. Follow the operator's link to the
-provider's account or authorization settings to revoke access or delete the
-provider account.
+1. generate a new high-entropy token;
+2. update the server secret and every approved client configuration;
+3. restart the server;
+4. verify the old token receives `401` and the new token can initialize MCP.
 
-The MCP server has no account creation, Steam linking, unlinking, mutation, or
-deletion endpoint or tool. Deleting a provider account does not delete or modify
-the referenced Steam profile. The resource server validates token status and
-rejects expired, invalid, or revoked access.
-
-## Quotas and availability
-
-Hosted calls share a service-owned Steam API allowance. The service applies both
-per-OAuth-subject and global daily cost budgets, retains a safety reserve, and
-limits concurrent Steam work. A composite tool can cost more than a single
-upstream call.
-
-The operator may change quota values, so clients must not depend on a fixed
-number of calls. `USER_QUOTA_EXCEEDED` means the caller's current allowance is
-exhausted. A global reserve or a saturated concurrency queue can temporarily
-make Steam work unavailable. Retry only when the structured error marks the
-failure as retryable, and respect any retry guidance returned by the service.
-
-The initial quota and concurrency implementations are bounded and process-local.
-Operators must use a distributed atomic quota implementation before running
-multiple service instances or beginning a broad public rollout. Restarting a
-single instance can reset its process-local quota counters; this is an
-operational limitation, not a quota-bypass contract.
-
-## Privacy and retention
-
-The hosted MCP is stateless with respect to user accounts and Steam data. It
-does not durably store OAuth subjects, Steam identities, Steam responses,
-prompts, or tool arguments. It has no response cache or request coalescer in v1.
-Quota accounting uses opaque subject-derived keys and bounded counters with
-rollover metadata.
-
-The service does not promise anonymity from Steam: its service-owned credential
-and network address are used for outbound requests. Steam receives the public
-Steam identifier and app identifiers needed to answer the request. The service
-cannot expose fields that Steam marks private, and selected best-effort
-Steam-operated sources can be temporarily unavailable or disabled if their
-contracts change.
+Because all clients share one secret, rotation invalidates every existing client
+at once. If independent revocation, individual quotas, or user lifecycle is
+required, v1 is not the right deployment model.
 
 ## Troubleshooting
 
-### The client does not open an OAuth login
-
-Confirm that the configured URL is the canonical HTTPS MCP resource URL, not the
-metadata URL or authorization-server URL. Fetch the protected-resource metadata
-directly and verify that its `resource` value exactly matches the MCP URL. If
-metadata is unavailable, contact the hosted operator.
-
 ### The server returns 401
 
-Reconnect the client so it can obtain a current token. A missing, expired,
-revoked, incorrectly signed, or wrong-audience token is rejected before MCP or
-Steam work begins. If reconnecting does not help, verify that the OAuth client
-requested the resource URI reported by protected-resource metadata.
+Confirm the client sends exactly one `Authorization: Bearer <token>` header and
+that its configured value matches `MCP_ACCESS_TOKEN`. Do not print either value
+while comparing them. OAuth reconnect or discovery cannot fix this response.
 
 ### The server returns 403
 
-A token may lack `steam:read`, or the deployment may reject the request's `Host`
-or browser `Origin`. Use the public canonical URL rather than a proxy alias.
-Operators must add intended hosts and browser origins to the deployment
-allowlists instead of trusting forwarded-host headers.
+Use the canonical URL rather than a proxy alias. Confirm the request `Host` is
+in `ALLOWED_HOSTS` and any browser `Origin` is in `ALLOWED_ORIGINS`.
 
-### A player tool returns `IDENTITY_NOT_LINKED`
+### The server returns 404 or 405
 
-Pass `user` explicitly. Hosted OAuth accounts are intentionally not linked to
-Steam accounts.
+The MCP request must be `POST` to the exact `MCP_RESOURCE_URI`. Health checks
+use `GET /livez` and `GET /readyz`.
 
-### A tool returns `PROFILE_PRIVATE`
+### A player-oriented tool returns `IDENTITY_NOT_LINKED`
 
-The requested field is not public on Steam. Change the Steam profile's privacy
-settings in Steam, choose another public profile, or use a tool that does not
-need that private field. OAuth cannot override Steam privacy.
+Pass `user` explicitly. The shared bearer token is intentionally unrelated to
+Steam identity, and HTTP mode does not allow a `STEAM_USER` default.
 
-### A tool returns `BEST_EFFORT_SOURCE_CHANGED`
+## Release boundary
 
-An optional Steam-operated source no longer matched its validated contract.
-Retry later or omit the affected optional facet. Supported data may still be
-returned with `meta.partial: true` and a warning when safe composition is
-possible.
+Self-hosted HTTP v1 is approved only for a trusted operator and explicitly
+authorized clients. Do not advertise a project-operated provider, hosted
+account, public endpoint, or shared multi-tenant service. Before exposing an
+instance, verify fixed-header support with the exact target client,
+invalid-token rejection, Host/Origin policy, TLS, all eight tools, instance
+quota behavior, redacted telemetry, graceful shutdown, and rollback.
 
-### A tool returns `USER_QUOTA_EXCEEDED` or is temporarily unavailable
-
-Reduce repeated and high-fan-out calls. Retry only when the structured error
-permits it. The operator can confirm current quota policy, global capacity, and
-service readiness without inspecting Steam payloads or tool arguments.
-
-## Operator boundary
-
-A self-hosted remote deployment must configure an HTTPS canonical MCP resource,
-the external OAuth issuer, explicit JWKS and introspection endpoints,
-introspection client credentials, a deployment-owned `STEAM_API_KEY`, strict
-Host and optional Origin allowlists, quota policy, and secret management. WorkOS
-must be configured with the canonical URL as an allowed Resource Indicator and
-with the client-registration modes required by target MCP clients. See
-[ADR 0001](./adr/0001-external-oauth-provider.md) for the provider decision and
-release compatibility requirements.
-
-Publishing a URL is not sufficient release evidence. Verify OAuth discovery,
-audience binding, initialization, tool listing, one successful public-data call,
-structured errors, quotas, cancellation, and shutdown against every supported
-client before announcing the deployment.
+See [ADR 0002](./adr/0002-static-bearer-authentication.md) for the decision and
+[Operations](./operations.md) for the runbook.

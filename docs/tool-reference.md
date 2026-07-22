@@ -20,9 +20,10 @@ Subject-oriented tools accept an optional `user` string in one of these forms:
 - an HTTPS `steamcommunity.com/id/{vanity}` URL.
 
 The URL form cannot contain credentials, a query, or a fragment. In local mode,
-omitting `user` uses `STEAM_USER` when configured. In hosted mode there is no
-Steam default or account link, so callers must provide `user`. Failure to
-provide either produces `IDENTITY_NOT_LINKED`.
+omitting `user` uses `STEAM_USER` when configured. In self-hosted HTTP mode
+there is no Steam default or account link, so callers must provide `user`. The
+bearer token grants access to the instance and is never mapped to a Steam user.
+Failure to provide either produces `IDENTITY_NOT_LINKED`.
 
 ### Result envelope
 
@@ -70,7 +71,7 @@ Stable error codes are:
 | `STEAM_RATE_LIMITED`         | Steam rate-limited the request.                                          |
 | `UPSTREAM_UNAVAILABLE`       | Steam or an optional dependency is unavailable.                          |
 | `BEST_EFFORT_SOURCE_CHANGED` | An undocumented Steam response no longer matches its validated contract. |
-| `USER_QUOTA_EXCEEDED`        | Hosted request capacity for the caller is exhausted.                     |
+| `SERVICE_QUOTA_EXCEEDED`     | The self-hosted instance has exhausted its available quota.              |
 | `INTERNAL_ERROR`             | An unexpected failure was converted to a safe public error.              |
 
 Retry behavior is carried by `error.retryable`; clients should not infer it from

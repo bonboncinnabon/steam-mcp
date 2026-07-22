@@ -1,15 +1,15 @@
 ## Why
 
-Existing general-purpose Steam MCP servers largely require local installation
-and a user-managed Steam API key. This change creates a heavily tested,
-remote-first Steam MCP that ordinary users can authorize through OAuth while
-preserving local and self-hosted access for users who prefer their own key.
+Existing general-purpose Steam MCP servers largely require local installation.
+This change creates a heavily tested Steam MCP that supports both local use and
+a simple self-hosted remote endpoint without introducing an account system or a
+paid identity-provider dependency.
 
 ## What Changes
 
-- Add a hosted, read-only MCP server over Streamable HTTP with
-  standards-compliant OAuth 2.1 authorization.
-- Require an explicit public Steam user for hosted subject-oriented calls while
+- Add a self-hosted, read-only MCP server over Streamable HTTP protected by one
+  operator-configured bearer token.
+- Require an explicit public Steam user for remote subject-oriented calls while
   retaining optional `STEAM_USER` defaults for local use.
 - Add explicit lookup of any public Steam profile using a SteamID64, vanity
   name, or Steam Community profile URL.
@@ -19,7 +19,7 @@ preserving local and self-hosted access for users who prefer their own key.
   and partial-result reporting.
 - Add isolated support for documented Steam Web API operations and clearly
   labeled best-effort Steam-operated public endpoints.
-- Add global and per-user quota enforcement, concurrency limits, retry policy,
+- Add instance-wide quota enforcement, concurrency limits, retry policy,
   source-drift detection, and redacted observability.
 - Add local and self-hosted `stdio` operation using `STEAM_API_KEY` and optional
   `STEAM_USER` configuration.
@@ -33,10 +33,10 @@ preserving local and self-hosted access for users who prefer their own key.
 
 ### New Capabilities
 
-- `hosted-mcp-access`: Remote Streamable HTTP access, MCP OAuth discovery and
-  authorization, health behavior, and cross-client connectivity.
+- `hosted-mcp-access`: Self-hosted Streamable HTTP access, static bearer-token
+  protection, health behavior, and compatible client connectivity.
 - `steam-user-identity`: Explicit Steam user resolution and optional local
-  default identity without hosted identity persistence.
+  default identity without remote identity persistence.
 - `steam-player-tools`: Player, library, activity, achievement, friend, and
   wishlist tool behavior.
 - `steam-game-tools`: Game search and consolidated game-details behavior.
@@ -55,13 +55,13 @@ None. This repository has no existing OpenSpec capability specifications.
 ## Impact
 
 - Introduces a TypeScript MCP application with transport-independent domain and
-  service layers, typed Steam adapters, MCP tool registration, and hosted and
+  service layers, typed Steam adapters, MCP tool registration, and remote and
   local transports.
 - Adds stable public MCP tool names, schemas, result envelopes, error codes,
   identity-resolution rules, and versioning commitments.
-- Adds hosted dependencies for an external OAuth/OIDC authorization server,
-  deployment secret management, and HTTPS ingress. A distributed quota backend
-  is required only before horizontally scaled public operation.
+- Adds deployment secret management and HTTPS ingress for self-hosted remote
+  operation. A distributed quota backend is required only before horizontal
+  scaling.
 - Adds build, packaging, container, CI, security scanning, observability,
   release, and rollback workflows.
 - Adds public security, privacy, tool-reference, source-matrix, contributor,

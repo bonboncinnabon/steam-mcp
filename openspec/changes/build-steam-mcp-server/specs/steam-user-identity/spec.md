@@ -28,12 +28,12 @@ Community profile URL anywhere a tool accepts an explicit `user` value.
 
 Subject-oriented tools SHALL resolve identity from explicit tool input first,
 local `STEAM_USER` in local mode second, and otherwise return
-`IDENTITY_NOT_LINKED`. Hosted authorization identity SHALL NOT be treated as a
+`IDENTITY_NOT_LINKED`. The remote bearer credential SHALL NOT be treated as a
 Steam identity.
 
-#### Scenario: Explicit hosted identity
+#### Scenario: Explicit remote identity
 
-- **WHEN** an authenticated hosted caller supplies an explicit public user
+- **WHEN** an authorized remote caller supplies an explicit public user
 - **THEN** the system executes the call for that user without reading or writing
   account identity state
 
@@ -44,7 +44,7 @@ Steam identity.
 
 #### Scenario: Missing identity default
 
-- **WHEN** a hosted subject-oriented call omits `user`, or a local call omits it
+- **WHEN** a remote subject-oriented call omits `user`, or a local call omits it
   without `STEAM_USER`
 - **THEN** the system returns `IDENTITY_NOT_LINKED` with corrective guidance and
   performs no Steam request

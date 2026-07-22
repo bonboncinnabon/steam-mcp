@@ -13,10 +13,20 @@ function dependency(result: boolean): ReadinessDependency {
 }
 
 describe("createHealthHttpHandler", () => {
+  it("is ready without an external authentication dependency", async () => {
+    const handler = createHealthHttpHandler({});
+
+    const response = await handler.handle(new Request(`${baseUri}/readyz`));
+
+    expect(response?.status).toBe(200);
+  });
+
   it("reports liveness without probing authorization or quota", async () => {
     const authorization = dependency(false);
     const quota = dependency(false);
-    const handler = createHealthHttpHandler({ authorization, quota });
+    const handler = createHealthHttpHandler({
+      dependencies: [authorization, quota],
+    });
 
     const response = await handler.handle(new Request(`${baseUri}/livez`));
 
@@ -29,7 +39,9 @@ describe("createHealthHttpHandler", () => {
   it("reports ready when every required dependency is available", async () => {
     const authorization = dependency(true);
     const quota = dependency(true);
-    const handler = createHealthHttpHandler({ authorization, quota });
+    const handler = createHealthHttpHandler({
+      dependencies: [authorization, quota],
+    });
     const request = new Request(`${baseUri}/readyz`);
 
     const response = await handler.handle(request);
@@ -42,7 +54,7 @@ describe("createHealthHttpHandler", () => {
 
   it("does not require an unconfigured external quota dependency", async () => {
     const handler = createHealthHttpHandler({
-      authorization: dependency(true),
+      dependencies: [dependency(true)],
     });
 
     const response = await handler.handle(new Request(`${baseUri}/readyz`));
@@ -54,7 +66,9 @@ describe("createHealthHttpHandler", () => {
     ["authorization is unavailable", dependency(false), dependency(true)],
     ["quota is unavailable", dependency(true), dependency(false)],
   ])("reports not ready when %s", async (_name, authorization, quota) => {
-    const handler = createHealthHttpHandler({ authorization, quota });
+    const handler = createHealthHttpHandler({
+      dependencies: [authorization, quota],
+    });
 
     const response = await handler.handle(new Request(`${baseUri}/readyz`));
 
@@ -66,7 +80,7 @@ describe("createHealthHttpHandler", () => {
     const authorization: ReadinessDependency = {
       isReady: vi.fn().mockRejectedValue(new Error("private provider detail")),
     };
-    const handler = createHealthHttpHandler({ authorization });
+    const handler = createHealthHttpHandler({ dependencies: [authorization] });
 
     const response = await handler.handle(new Request(`${baseUri}/readyz`));
     const body = await response?.text();
@@ -79,7 +93,9 @@ describe("createHealthHttpHandler", () => {
   it("marks readiness false without probing dependencies again", async () => {
     const authorization = dependency(true);
     const quota = dependency(true);
-    const handler = createHealthHttpHandler({ authorization, quota });
+    const handler = createHealthHttpHandler({
+      dependencies: [authorization, quota],
+    });
 
     handler.markNotReady();
     const response = await handler.handle(new Request(`${baseUri}/readyz`));
@@ -91,7 +107,7 @@ describe("createHealthHttpHandler", () => {
 
   it.each(["/livez", "/readyz"])("allows only GET for %s", async (pathname) => {
     const authorization = dependency(true);
-    const handler = createHealthHttpHandler({ authorization });
+    const handler = createHealthHttpHandler({ dependencies: [authorization] });
 
     const response = await handler.handle(
       new Request(`${baseUri}${pathname}`, { method: "POST" }),
@@ -104,7 +120,7 @@ describe("createHealthHttpHandler", () => {
 
   it("leaves unrelated routes to the hosted MCP router", async () => {
     const handler = createHealthHttpHandler({
-      authorization: dependency(true),
+      dependencies: [dependency(true)],
     });
 
     await expect(
@@ -114,7 +130,7 @@ describe("createHealthHttpHandler", () => {
 
   it("uses fixed no-store JSON responses", async () => {
     const handler = createHealthHttpHandler({
-      authorization: dependency(true),
+      dependencies: [dependency(true)],
     });
 
     const response = await handler.handle(new Request(`${baseUri}/livez`));
@@ -127,7 +143,7 @@ describe("createHealthHttpHandler", () => {
     const mcpResponse = new Response("mcp");
     const mcp = { handle: vi.fn().mockResolvedValue(mcpResponse) };
     const health = createHealthHttpHandler({
-      authorization: dependency(true),
+      dependencies: [dependency(true)],
     });
     const router = createHostedHttpRouter({ health, mcp });
     const healthRequest = new Request(`${baseUri}/livez`);

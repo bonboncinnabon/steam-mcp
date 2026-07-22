@@ -1,28 +1,18 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { AccessTokenValidator } from "../../../src/infrastructure/oauth-token-validator.js";
 import { createHostedApplication } from "../../../src/infrastructure/hosted-runtime.js";
 
+const accessToken = "synthetic-mcp-access-token-32-chars";
 const environment = {
   STEAM_API_KEY: "synthetic-hosted-key",
-  OAUTH_ISSUER: "https://login.example",
-  OAUTH_JWKS_URI: "https://login.example/oauth2/jwks",
-  OAUTH_INTROSPECTION_URI: "https://login.example/oauth2/introspection",
-  OAUTH_CLIENT_ID: "synthetic-client-id",
-  OAUTH_CLIENT_SECRET: "synthetic-client-secret",
+  MCP_ACCESS_TOKEN: accessToken,
   MCP_RESOURCE_URI: "https://steam.example/mcp",
   ALLOWED_HOSTS: "steam.example",
 } as const;
 
 describe("hosted application composition", () => {
-  it("routes canonical OAuth metadata without authorization", async () => {
-    const validator = {
-      validate: vi.fn<AccessTokenValidator["validate"]>(),
-    } satisfies AccessTokenValidator;
-    const app = createHostedApplication(environment, {
-      validator,
-      authorizationReadiness: { isReady: vi.fn().mockResolvedValue(true) },
-    });
+  it("does not expose OAuth metadata", async () => {
+    const app = createHostedApplication(environment);
 
     const response = await app.handler.handle(
       new Request(
@@ -31,46 +21,33 @@ describe("hosted application composition", () => {
       ),
     );
 
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toMatchObject({
-      resource: "https://steam.example/mcp",
-      authorization_servers: ["https://login.example"],
-    });
-    expect(validator.validate).not.toHaveBeenCalled();
+    expect(response.status).toBe(404);
   });
 
-  it("rejects disallowed hosts before metadata or health routing", async () => {
-    const readiness = { isReady: vi.fn().mockResolvedValue(true) };
-    const app = createHostedApplication(environment, {
-      validator: { validate: vi.fn() },
-      authorizationReadiness: readiness,
-    });
+  it("rejects disallowed hosts before health or MCP routing", async () => {
+    const fetchImpl = vi.fn<typeof fetch>();
+    const app = createHostedApplication(environment, { fetchImpl });
 
     const responses = await Promise.all([
       app.handler.handle(
-        new Request(
-          "https://steam.example/.well-known/oauth-protected-resource/mcp",
-          { headers: { host: "attacker.example" } },
-        ),
+        new Request("https://steam.example/readyz", {
+          headers: { host: "attacker.example" },
+        }),
       ),
       app.handler.handle(
-        new Request("https://steam.example/readyz", {
+        new Request("https://steam.example/mcp", {
+          method: "POST",
           headers: { host: "attacker.example" },
         }),
       ),
     ]);
 
     expect(responses.map((response) => response.status)).toEqual([403, 403]);
-    expect(readiness.isReady).not.toHaveBeenCalled();
+    expect(fetchImpl).not.toHaveBeenCalled();
   });
 
-  it("reports ready only when the configured signing-key dependency responds", async () => {
-    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
-      new Response(JSON.stringify({ keys: [{ kty: "RSA", kid: "key-1" }] }), {
-        status: 200,
-        headers: { "content-type": "application/json" },
-      }),
-    );
+  it("is ready without an external authentication dependency", async () => {
+    const fetchImpl = vi.fn<typeof fetch>();
     const app = createHostedApplication(environment, { fetchImpl });
 
     const response = await app.handler.handle(
@@ -80,31 +57,7 @@ describe("hosted application composition", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(fetchImpl).toHaveBeenCalledWith(
-      "https://login.example/oauth2/jwks",
-      expect.objectContaining({ method: "GET", redirect: "error" }),
-    );
-  });
-
-  it("reuses a recent bounded JWKS readiness result", async () => {
-    const fetchImpl = vi.fn<typeof fetch>().mockResolvedValue(
-      new Response(JSON.stringify({ keys: [{ kty: "RSA", kid: "key-1" }] }), {
-        status: 200,
-      }),
-    );
-    const app = createHostedApplication(environment, { fetchImpl });
-    const request = () =>
-      new Request("https://steam.example/readyz", {
-        headers: { host: "steam.example" },
-      });
-
-    const responses = await Promise.all([
-      app.handler.handle(request()),
-      app.handler.handle(request()),
-    ]);
-
-    expect(responses.map((response) => response.status)).toEqual([200, 200]);
-    expect(fetchImpl).toHaveBeenCalledOnce();
+    expect(fetchImpl).not.toHaveBeenCalled();
   });
 
   it("executes authorized tools through shared quota and concurrency without token passthrough", async () => {
@@ -122,18 +75,7 @@ describe("hosted application composition", () => {
         { status: 200 },
       ),
     );
-    const validator = {
-      validate: vi.fn<AccessTokenValidator["validate"]>().mockResolvedValue({
-        authorized: true,
-        context: {
-          subject: "oauth-subject",
-          scopes: new Set(["steam:read"]),
-        },
-      }),
-    } satisfies AccessTokenValidator;
     const app = createHostedApplication(environment, {
-      validator,
-      authorizationReadiness: { isReady: vi.fn().mockResolvedValue(true) },
       quota: { reserve },
       concurrency: { acquire },
       fetchImpl,
@@ -144,7 +86,7 @@ describe("hosted application composition", () => {
         method: "POST",
         headers: {
           accept: "application/json, text/event-stream",
-          authorization: "Bearer synthetic-mcp-token",
+          authorization: `Bearer ${accessToken}`,
           "content-type": "application/json",
           host: "steam.example",
         },
@@ -161,11 +103,7 @@ describe("hosted application composition", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(reserve).toHaveBeenCalledWith({
-      subject: "oauth-subject",
-      operation: "storeSearch",
-      cost: 3,
-    });
+    expect(reserve).toHaveBeenCalledWith({ operation: "storeSearch", cost: 3 });
     expect(acquire).toHaveBeenCalledWith(
       "store.steampowered.com",
       "storeSearch",

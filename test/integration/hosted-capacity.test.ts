@@ -1,15 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { AccessTokenValidator } from "../../src/infrastructure/oauth-token-validator.js";
 import { createHostedApplication } from "../../src/infrastructure/hosted-runtime.js";
 
+const accessToken = "synthetic-mcp-access-token-32-chars";
 const baseEnvironment = {
   STEAM_API_KEY: "synthetic-hosted-key",
-  OAUTH_ISSUER: "https://login.example",
-  OAUTH_JWKS_URI: "https://login.example/oauth2/jwks",
-  OAUTH_INTROSPECTION_URI: "https://login.example/oauth2/introspection",
-  OAUTH_CLIENT_ID: "synthetic-client-id",
-  OAUTH_CLIENT_SECRET: "synthetic-client-secret",
+  MCP_ACCESS_TOKEN: accessToken,
   MCP_RESOURCE_URI: "https://steam.example/mcp",
   ALLOWED_HOSTS: "steam.example",
   MAX_RETRY_ATTEMPTS: "0",
@@ -18,26 +14,9 @@ const baseEnvironment = {
   MAX_CONCURRENCY_QUEUE_SIZE: "4",
 } as const;
 
-function validator(): AccessTokenValidator {
-  return {
-    validate: vi
-      .fn<AccessTokenValidator["validate"]>()
-      .mockImplementation((token) =>
-        Promise.resolve({
-          authorized: true,
-          context: {
-            subject: token,
-            scopes: new Set(["steam:read"]),
-          },
-        }),
-      ),
-  };
-}
-
 function callSearch(
   app: ReturnType<typeof createHostedApplication>,
   id: number,
-  token = "subject-a",
   signal?: AbortSignal,
 ): Promise<Response> {
   return app.handler.handle(
@@ -46,7 +25,7 @@ function callSearch(
       ...(signal === undefined ? {} : { signal }),
       headers: {
         accept: "application/json, text/event-stream",
-        authorization: `Bearer ${token}`,
+        authorization: `Bearer ${accessToken}`,
         "content-type": "application/json",
         host: "steam.example",
       },
@@ -56,7 +35,7 @@ function callSearch(
         method: "tools/call",
         params: {
           name: "steam_search_games",
-          arguments: { query: "portal" },
+          arguments: { query: `portal-${String(id)}` },
         },
       }),
     }),
@@ -107,14 +86,7 @@ describe("hosted capacity integration", () => {
       active -= 1;
       return response;
     });
-    const app = createHostedApplication(
-      { ...baseEnvironment, PER_USER_DAILY_QUOTA: "2" },
-      {
-        validator: validator(),
-        authorizationReadiness: { isReady: vi.fn().mockResolvedValue(true) },
-        fetchImpl,
-      },
-    );
+    const app = createHostedApplication(baseEnvironment, { fetchImpl });
 
     const first = callSearch(app, 1);
     await vi.waitFor(() => {
@@ -134,44 +106,7 @@ describe("hosted capacity integration", () => {
     expect(maximumActive).toBe(1);
   });
 
-  it("removes a cancelled waiter and admits replacement work", async () => {
-    const gates: ReturnType<typeof deferred<Response>>[] = [];
-    const fetchImpl = vi.fn<typeof fetch>().mockImplementation(() => {
-      const gate = deferred<Response>();
-      gates.push(gate);
-      return gate.promise;
-    });
-    const app = createHostedApplication(
-      { ...baseEnvironment, PER_USER_DAILY_QUOTA: "2" },
-      {
-        validator: validator(),
-        authorizationReadiness: { isReady: vi.fn().mockResolvedValue(true) },
-        fetchImpl,
-      },
-    );
-    const cancellation = new AbortController();
-
-    const active = callSearch(app, 10);
-    await vi.waitFor(() => {
-      expect(gates).toHaveLength(1);
-    });
-    const cancelled = callSearch(app, 11, "subject-a", cancellation.signal);
-    await Promise.resolve();
-    cancellation.abort();
-    const cancelledResponse = await cancelled;
-    const replacement = callSearch(app, 12);
-    gates[0]?.resolve(steamSearchResponse());
-    await expect(active).resolves.toMatchObject({ status: 200 });
-    await vi.waitFor(() => {
-      expect(gates).toHaveLength(2);
-    });
-    gates[1]?.resolve(steamSearchResponse());
-    await expect(replacement).resolves.toMatchObject({ status: 200 });
-
-    expect(cancelledResponse.status).toBe(499);
-  });
-
-  it("resets both global and subject quota at a UTC day rollover", async () => {
+  it("resets the instance quota at a UTC day rollover", async () => {
     let now = new Date("2026-07-22T23:59:59.999Z");
     const fetchImpl = vi
       .fn<typeof fetch>()
@@ -179,13 +114,10 @@ describe("hosted capacity integration", () => {
     const app = createHostedApplication(
       {
         ...baseEnvironment,
-        GLOBAL_DAILY_QUOTA: "2",
+        GLOBAL_DAILY_QUOTA: "1",
         GLOBAL_SAFETY_RESERVE: "0",
-        PER_USER_DAILY_QUOTA: "1",
       },
       {
-        validator: validator(),
-        authorizationReadiness: { isReady: vi.fn().mockResolvedValue(true) },
         fetchImpl,
         now: () => now,
       },
@@ -202,10 +134,10 @@ describe("hosted capacity integration", () => {
         toolErrorCode(exhausted),
         toolErrorCode(afterRollover),
       ]),
-    ).resolves.toEqual([undefined, "USER_QUOTA_EXCEEDED", undefined]);
+    ).resolves.toEqual([undefined, "SERVICE_QUOTA_EXCEEDED", undefined]);
   });
 
-  it("preserves the configured global safety reserve across subjects", async () => {
+  it("preserves the configured instance safety reserve", async () => {
     const fetchImpl = vi
       .fn<typeof fetch>()
       .mockImplementation(() => Promise.resolve(steamSearchResponse()));
@@ -214,19 +146,16 @@ describe("hosted capacity integration", () => {
         ...baseEnvironment,
         GLOBAL_DAILY_QUOTA: "3",
         GLOBAL_SAFETY_RESERVE: "1",
-        PER_USER_DAILY_QUOTA: "2",
       },
       {
-        validator: validator(),
-        authorizationReadiness: { isReady: vi.fn().mockResolvedValue(true) },
         fetchImpl,
         now: () => new Date("2026-07-22T12:00:00.000Z"),
       },
     );
 
-    const first = await callSearch(app, 30, "subject-a");
-    const second = await callSearch(app, 31, "subject-b");
-    const reserved = await callSearch(app, 32, "subject-c");
+    const first = await callSearch(app, 30);
+    const second = await callSearch(app, 31);
+    const reserved = await callSearch(app, 32);
 
     await expect(
       Promise.all([
@@ -234,10 +163,10 @@ describe("hosted capacity integration", () => {
         toolErrorCode(second),
         toolErrorCode(reserved),
       ]),
-    ).resolves.toEqual([undefined, undefined, "UPSTREAM_UNAVAILABLE"]);
+    ).resolves.toEqual([undefined, undefined, "SERVICE_QUOTA_EXCEEDED"]);
   });
 
-  it("bounds remembered subjects by the usable global budget", async () => {
+  it("atomically bounds concurrent work by the usable instance budget", async () => {
     const fetchImpl = vi
       .fn<typeof fetch>()
       .mockImplementation(() => Promise.resolve(steamSearchResponse()));
@@ -246,29 +175,25 @@ describe("hosted capacity integration", () => {
         ...baseEnvironment,
         GLOBAL_DAILY_QUOTA: "4",
         GLOBAL_SAFETY_RESERVE: "1",
-        PER_USER_DAILY_QUOTA: "1",
+        MAX_CONCURRENCY_QUEUE_SIZE: "64",
       },
       {
-        validator: validator(),
-        authorizationReadiness: { isReady: vi.fn().mockResolvedValue(true) },
         fetchImpl,
         now: () => new Date("2026-07-22T12:00:00.000Z"),
       },
     );
 
-    const responses = [];
-    for (let index = 0; index < 25; index += 1) {
-      responses.push(
-        await callSearch(app, 40 + index, `unique-subject-${String(index)}`),
-      );
-    }
+    const responses = await Promise.all(
+      Array.from({ length: 25 }, (_, index) => callSearch(app, 40 + index)),
+    );
     const codes = await Promise.all(responses.map(toolErrorCode));
 
     expect({
-      admittedSubjects: fetchImpl.mock.calls.length,
-      rejectedSubjects: codes.filter((code) => code === "UPSTREAM_UNAVAILABLE")
-        .length,
-    }).toEqual({ admittedSubjects: 3, rejectedSubjects: 22 });
+      admittedRequests: fetchImpl.mock.calls.length,
+      rejectedRequests: codes.filter(
+        (code) => code === "SERVICE_QUOTA_EXCEEDED",
+      ).length,
+    }).toEqual({ admittedRequests: 3, rejectedRequests: 22 });
   });
 
   it("releases capacity after an upstream dependency failure", async () => {
@@ -279,8 +204,6 @@ describe("hosted capacity integration", () => {
       )
       .mockImplementation(() => Promise.resolve(steamSearchResponse()));
     const app = createHostedApplication(baseEnvironment, {
-      validator: validator(),
-      authorizationReadiness: { isReady: vi.fn().mockResolvedValue(true) },
       fetchImpl,
     });
 

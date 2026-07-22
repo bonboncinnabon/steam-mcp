@@ -2,7 +2,6 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
-import type { AccessTokenValidator } from "../../../src/infrastructure/oauth-token-validator.js";
 import { STEAM_TOOL_CONTRACTS } from "../../../src/mcp/tool-contracts.js";
 import {
   registerSteamTools,
@@ -15,9 +14,8 @@ import {
 
 const resource = {
   resourceUri: "https://steam.example/mcp",
-  authorizationServer: "https://login.example",
-  scopes: ["steam:read"],
 } as const;
+const accessToken = "synthetic-remote-access-token-value";
 
 function createHostedMcpHttpHandler(
   options: Omit<HostedMcpHttpHandlerOptions, "allowedHosts" | "allowedOrigins">,
@@ -40,20 +38,8 @@ function createHostedMcpHttpHandler(
   };
 }
 
-function validValidator() {
-  return {
-    validate: vi.fn<AccessTokenValidator["validate"]>().mockResolvedValue({
-      authorized: true,
-      context: {
-        subject: "oauth-user-1",
-        scopes: new Set(["steam:read"]),
-      },
-    }),
-  } satisfies AccessTokenValidator;
-}
-
 function initializationRequest(
-  authorization = "Bearer synthetic-access-token",
+  authorization = `Bearer ${accessToken}`,
 ): Request {
   return new Request(resource.resourceUri, {
     method: "POST",
@@ -80,51 +66,11 @@ function createServer(): McpServer {
 }
 
 describe("createHostedMcpHttpHandler", () => {
-  it("bounds requests while authorization is still pending", async () => {
-    let finishValidation:
-      | ((value: Awaited<ReturnType<AccessTokenValidator["validate"]>>) => void)
-      | undefined;
-    const validator = {
-      validate: vi.fn<AccessTokenValidator["validate"]>().mockImplementation(
-        () =>
-          new Promise((resolve) => {
-            finishValidation = resolve;
-          }),
-      ),
-    } satisfies AccessTokenValidator;
-    const handler = createHostedMcpHttpHandler({
-      resource,
-      validator,
-      createServer,
-      maxActiveRequests: 1,
-    });
-
-    const first = handler.handle(initializationRequest());
-    await vi.waitFor(() => {
-      expect(validator.validate).toHaveBeenCalledOnce();
-    });
-    const second = handler.handle(initializationRequest());
-    const secondOutcome = await Promise.race([
-      second,
-      new Promise<"timed_out">((resolve) => {
-        setTimeout(() => {
-          resolve("timed_out");
-        }, 50);
-      }),
-    ]);
-
-    expect(secondOutcome).not.toBe("timed_out");
-    expect((secondOutcome as Response).status).toBe(429);
-    expect(validator.validate).toHaveBeenCalledOnce();
-    finishValidation?.({ authorized: false, reason: "invalid_token" });
-    await expect(first).resolves.toMatchObject({ status: 401 });
-  });
-
   it("handles authenticated initialization without creating a session", async () => {
     const serverFactory = vi.fn(createServer);
     const handler = createHostedMcpHttpHandler({
-      resource,
-      validator: validValidator(),
+      resourceUri: resource.resourceUri,
+      accessToken,
       createServer: serverFactory,
     });
 
@@ -140,17 +86,14 @@ describe("createHostedMcpHttpHandler", () => {
       protocolVersion: "2025-11-25",
       serverInfo: { name: "steam-mcp-test" },
     });
-    expect(serverFactory).toHaveBeenCalledWith({
-      subject: "oauth-user-1",
-      scopes: new Set(["steam:read"]),
-    });
+    expect(serverFactory).toHaveBeenCalledWith();
   });
 
   it("creates a fresh MCP server and transport for every request", async () => {
     const servers: McpServer[] = [];
     const handler = createHostedMcpHttpHandler({
-      resource,
-      validator: validValidator(),
+      resourceUri: resource.resourceUri,
+      accessToken,
       createServer: vi.fn(() => {
         const server = createServer();
         servers.push(server);
@@ -170,8 +113,8 @@ describe("createHostedMcpHttpHandler", () => {
 
   it("exposes exactly the shared eight-tool registry", async () => {
     const handler = createHostedMcpHttpHandler({
-      resource,
-      validator: validValidator(),
+      resourceUri: resource.resourceUri,
+      accessToken,
       createServer: () => {
         const server = createServer();
         const bindings = Object.fromEntries(
@@ -190,7 +133,7 @@ describe("createHostedMcpHttpHandler", () => {
         method: "POST",
         headers: {
           accept: "application/json, text/event-stream",
-          authorization: "Bearer synthetic-access-token",
+          authorization: `Bearer ${accessToken}`,
           "content-type": "application/json",
         },
         body: JSON.stringify({
@@ -211,20 +154,18 @@ describe("createHostedMcpHttpHandler", () => {
     );
   });
 
-  it("returns the OAuth challenge before constructing MCP application work", async () => {
+  it("returns a generic bearer challenge before constructing MCP application work", async () => {
     const serverFactory = vi.fn(createServer);
     const handler = createHostedMcpHttpHandler({
-      resource,
-      validator: validValidator(),
+      resourceUri: resource.resourceUri,
+      accessToken,
       createServer: serverFactory,
     });
 
     const response = await handler.handle(initializationRequest(""));
 
     expect(response.status).toBe(401);
-    expect(response.headers.get("www-authenticate")).toContain(
-      "resource_metadata=",
-    );
+    expect(response.headers.get("www-authenticate")).toBe("Bearer");
     expect(serverFactory).not.toHaveBeenCalled();
   });
 
@@ -244,11 +185,10 @@ describe("createHostedMcpHttpHandler", () => {
   ])(
     "rejects %s before authorization or MCP parsing",
     async (_name, boundaryHeaders, expectedStatus) => {
-      const validator = validValidator();
       const serverFactory = vi.fn(createServer);
       const handler = createHostedMcpHttpHandlerBase({
-        resource,
-        validator,
+        resourceUri: resource.resourceUri,
+        accessToken,
         createServer: serverFactory,
         allowedHosts: ["steam.example"],
         allowedOrigins: ["https://client.example"],
@@ -259,7 +199,7 @@ describe("createHostedMcpHttpHandler", () => {
           method: "POST",
           headers: {
             ...boundaryHeaders,
-            authorization: "Bearer synthetic-access-token",
+            authorization: `Bearer ${accessToken}`,
             "content-type": "application/json",
           },
           body: "private malformed body",
@@ -267,7 +207,6 @@ describe("createHostedMcpHttpHandler", () => {
       );
 
       expect(response.status).toBe(expectedStatus);
-      expect(validator.validate).not.toHaveBeenCalled();
       expect(serverFactory).not.toHaveBeenCalled();
       expect(await response.text()).not.toContain("attacker.example");
     },
@@ -275,8 +214,8 @@ describe("createHostedMcpHttpHandler", () => {
 
   it("accepts a configured browser Origin", async () => {
     const handler = createHostedMcpHttpHandlerBase({
-      resource,
-      validator: validValidator(),
+      resourceUri: resource.resourceUri,
+      accessToken,
       createServer,
       allowedHosts: ["steam.example"],
       allowedOrigins: ["https://client.example"],
@@ -296,15 +235,15 @@ describe("createHostedMcpHttpHandler", () => {
     async (method) => {
       const serverFactory = vi.fn(createServer);
       const handler = createHostedMcpHttpHandler({
-        resource,
-        validator: validValidator(),
+        resourceUri: resource.resourceUri,
+        accessToken,
         createServer: serverFactory,
       });
 
       const response = await handler.handle(
         new Request(resource.resourceUri, {
           method,
-          headers: { authorization: "Bearer synthetic-access-token" },
+          headers: { authorization: `Bearer ${accessToken}` },
         }),
       );
 
@@ -321,11 +260,10 @@ describe("createHostedMcpHttpHandler", () => {
   );
 
   it("binds the handler to the exact canonical resource URI", async () => {
-    const validator = validValidator();
     const serverFactory = vi.fn(createServer);
     const handler = createHostedMcpHttpHandler({
-      resource,
-      validator,
+      resourceUri: resource.resourceUri,
+      accessToken,
       createServer: serverFactory,
     });
 
@@ -334,7 +272,6 @@ describe("createHostedMcpHttpHandler", () => {
     );
 
     expect(response.status).toBe(404);
-    expect(validator.validate).not.toHaveBeenCalled();
     expect(serverFactory).not.toHaveBeenCalled();
   });
 
@@ -354,8 +291,8 @@ describe("createHostedMcpHttpHandler", () => {
     ],
   ])("rejects %s through the MCP transport", async (_name, headers, status) => {
     const handler = createHostedMcpHttpHandler({
-      resource,
-      validator: validValidator(),
+      resourceUri: resource.resourceUri,
+      accessToken,
       createServer,
     });
 
@@ -364,7 +301,7 @@ describe("createHostedMcpHttpHandler", () => {
         method: "POST",
         headers: {
           ...headers,
-          authorization: "Bearer synthetic-access-token",
+          authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           jsonrpc: "2.0",
@@ -380,8 +317,8 @@ describe("createHostedMcpHttpHandler", () => {
 
   it("returns an MCP parse error for malformed JSON", async () => {
     const handler = createHostedMcpHttpHandler({
-      resource,
-      validator: validValidator(),
+      resourceUri: resource.resourceUri,
+      accessToken,
       createServer,
     });
 
@@ -390,7 +327,7 @@ describe("createHostedMcpHttpHandler", () => {
         method: "POST",
         headers: {
           accept: "application/json, text/event-stream",
-          authorization: "Bearer synthetic-access-token",
+          authorization: `Bearer ${accessToken}`,
           "content-type": "application/json",
         },
         body: "not-json",
@@ -405,8 +342,8 @@ describe("createHostedMcpHttpHandler", () => {
 
   it("returns 202 for a notification-only request", async () => {
     const handler = createHostedMcpHttpHandler({
-      resource,
-      validator: validValidator(),
+      resourceUri: resource.resourceUri,
+      accessToken,
       createServer,
     });
 
@@ -415,7 +352,7 @@ describe("createHostedMcpHttpHandler", () => {
         method: "POST",
         headers: {
           accept: "application/json, text/event-stream",
-          authorization: "Bearer synthetic-access-token",
+          authorization: `Bearer ${accessToken}`,
           "content-type": "application/json",
         },
         body: JSON.stringify({
@@ -434,8 +371,8 @@ describe("createHostedMcpHttpHandler", () => {
     const server = createServer();
     const close = vi.spyOn(server, "close");
     const handler = createHostedMcpHttpHandler({
-      resource,
-      validator: validValidator(),
+      resourceUri: resource.resourceUri,
+      accessToken,
       createServer: () => server,
     });
     const request = initializationRequest();
@@ -457,8 +394,8 @@ describe("createHostedMcpHttpHandler", () => {
       markStarted = resolve;
     });
     const handler = createHostedMcpHttpHandler({
-      resource,
-      validator: validValidator(),
+      resourceUri: resource.resourceUri,
+      accessToken,
       createServer: () => {
         const server = createServer();
         server.registerTool(
@@ -489,7 +426,7 @@ describe("createHostedMcpHttpHandler", () => {
         signal: controller.signal,
         headers: {
           accept: "application/json, text/event-stream",
-          authorization: "Bearer synthetic-access-token",
+          authorization: `Bearer ${accessToken}`,
           "content-type": "application/json",
         },
         body: JSON.stringify({
@@ -508,15 +445,16 @@ describe("createHostedMcpHttpHandler", () => {
     expect(handlerSignal?.aborted).toBe(true);
   });
 
-  it("correlates an MCP cancellation notification with active stateless work", async () => {
+  it("does not use the shared bearer token as a cancellation identity", async () => {
+    const controller = new AbortController();
     let handlerSignal: AbortSignal | undefined;
     let markStarted: (() => void) | undefined;
     const started = new Promise<void>((resolve) => {
       markStarted = resolve;
     });
     const handler = createHostedMcpHttpHandler({
-      resource,
-      validator: validValidator(),
+      resourceUri: resource.resourceUri,
+      accessToken,
       maxActiveRequests: 1,
       createServer: () => {
         const server = createServer();
@@ -545,9 +483,10 @@ describe("createHostedMcpHttpHandler", () => {
     const activeCall = handler.handle(
       new Request(resource.resourceUri, {
         method: "POST",
+        signal: controller.signal,
         headers: {
           accept: "application/json, text/event-stream",
-          authorization: "Bearer synthetic-access-token",
+          authorization: `Bearer ${accessToken}`,
           "content-type": "application/json",
         },
         body: JSON.stringify({
@@ -565,7 +504,7 @@ describe("createHostedMcpHttpHandler", () => {
         method: "POST",
         headers: {
           accept: "application/json, text/event-stream",
-          authorization: "Bearer synthetic-access-token",
+          authorization: `Bearer ${accessToken}`,
           "content-type": "application/json",
         },
         body: JSON.stringify({
@@ -576,7 +515,9 @@ describe("createHostedMcpHttpHandler", () => {
       }),
     );
 
-    expect(cancellation.status).toBe(202);
+    expect(cancellation.status).toBe(429);
+    expect(handlerSignal?.aborted).toBe(false);
+    controller.abort();
     await activeCall;
     expect(handlerSignal?.aborted).toBe(true);
   });

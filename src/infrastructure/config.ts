@@ -16,11 +16,7 @@ export interface LocalConfig {
 export interface HostedConfig {
   readonly mode: "hosted";
   readonly steamApiKey: string;
-  readonly oauthIssuer: string;
-  readonly oauthJwksUri: string;
-  readonly oauthIntrospectionUri: string;
-  readonly oauthClientId: string;
-  readonly oauthClientSecret: string;
+  readonly accessToken: string;
   readonly resourceUri: string;
   readonly allowedHosts: readonly string[];
   readonly allowedOrigins: readonly string[];
@@ -42,7 +38,6 @@ const POLICY_ENVIRONMENT_FIELDS = [
   ["MAX_RETRY_ATTEMPTS", "maxRetryAttempts"],
   ["GLOBAL_DAILY_QUOTA", "globalDailyQuota"],
   ["GLOBAL_SAFETY_RESERVE", "globalSafetyReserve"],
-  ["PER_USER_DAILY_QUOTA", "perUserDailyQuota"],
   ["MAX_HOST_CONCURRENCY", "maxHostConcurrency"],
   ["MAX_OPERATION_CONCURRENCY", "maxOperationConcurrency"],
   ["MAX_CONCURRENCY_QUEUE_SIZE", "maxConcurrencyQueueSize"],
@@ -64,6 +59,17 @@ function required(environment: Environment, name: string): string {
     throw new Error(`Missing required configuration: ${name}`);
   }
 
+  return value;
+}
+
+function requiredAccessToken(environment: Environment): string {
+  const value = required(environment, "MCP_ACCESS_TOKEN");
+  if (value.length < 32) {
+    throw new Error("MCP_ACCESS_TOKEN must contain at least 32 characters");
+  }
+  if (!/^[A-Za-z0-9._~+/=-]+$/.test(value)) {
+    throw new Error("MCP_ACCESS_TOKEN contains unsupported characters");
+  }
   return value;
 }
 
@@ -215,14 +221,7 @@ export function parseHostedConfig(environment: Environment): HostedConfig {
   return {
     mode: "hosted",
     steamApiKey: required(environment, "STEAM_API_KEY"),
-    oauthIssuer: requiredHttpsUrl(environment, "OAUTH_ISSUER"),
-    oauthJwksUri: requiredHttpsUrl(environment, "OAUTH_JWKS_URI"),
-    oauthIntrospectionUri: requiredHttpsUrl(
-      environment,
-      "OAUTH_INTROSPECTION_URI",
-    ),
-    oauthClientId: required(environment, "OAUTH_CLIENT_ID"),
-    oauthClientSecret: required(environment, "OAUTH_CLIENT_SECRET"),
+    accessToken: requiredAccessToken(environment),
     resourceUri,
     ...boundary,
     listenHost: parseListenHost(environment),

@@ -75,11 +75,11 @@ responses, prompts, tool arguments, or personal identifiers.
 
 - Unit tests cover pure domain rules and application services.
 - Contract tests cover MCP schemas and scrubbed Steam adapter responses.
-- Integration tests cover process, OAuth, quota, concurrency, and transport
-  boundaries.
+- Integration tests cover process, static bearer authentication, quota,
+  concurrency, and transport boundaries.
 - Live tests probe approved Steam contracts with a dedicated credential.
-- Mutation and fault-injection tests target authorization,
-  OAuth-subject/Steam-identity separation, redaction, quota accounting, and host
+- Mutation and fault-injection tests target authentication,
+  bearer-token/Steam-identity separation, redaction, quota accounting, and host
   enforcement.
 - Release tests cover supported clients, load, shutdown, rollout, and rollback.
 
@@ -88,7 +88,7 @@ coverage must remain at or above 90 percent. High-risk behavior additionally
 requires complete branch coverage and its configured mutation or fault-injection
 checks.
 
-`pnpm mutation` deliberately mutates the authorization, OAuth resource,
+`pnpm mutation` deliberately mutates the bearer authentication,
 identity-separation, and outbound-host policy boundaries. `pnpm test:high-risk`
 is the complementary fault-injection gate for quota accounting, host
 enforcement, redaction, and shutdown cleanup. Declarative schemas and runtime

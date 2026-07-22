@@ -110,6 +110,49 @@ describe("Steam store adapter", () => {
     ).resolves.toEqual([{ appId: 10, name: "Unscored Game" }]);
   });
 
+  it("keeps search pricing when Steam omits discount metadata", async () => {
+    const execute = vi.fn<SteamStoreHttpExecutor>().mockResolvedValue({
+      status: 200,
+      headers: new Headers(),
+      body: new TextEncoder().encode(
+        JSON.stringify({
+          total: 1,
+          items: [
+            {
+              type: "app",
+              name: "Full-price Game",
+              id: 20,
+              price: {
+                currency: "USD",
+                initial: 999,
+                final: 999,
+              },
+            },
+          ],
+        }),
+      ),
+      finalUrl: "https://store.steampowered.com/api/storesearch/",
+    });
+    const adapter = createSteamStoreAdapter({
+      execute,
+      searchEnabled: true,
+      detailsEnabled: true,
+      countryCode: "US",
+      language: "english",
+    });
+
+    await expect(
+      adapter.searchGames("full price", new AbortController().signal),
+    ).resolves.toEqual([
+      {
+        appId: 20,
+        name: "Full-price Game",
+        price: { minorUnits: 999, currency: "USD" },
+        originalPrice: { minorUnits: 999, currency: "USD" },
+      },
+    ]);
+  });
+
   it("normalizes one regional store-detail response", async () => {
     const execute = vi.fn<SteamStoreHttpExecutor>().mockResolvedValue({
       status: 200,

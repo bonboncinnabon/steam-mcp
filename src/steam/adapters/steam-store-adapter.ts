@@ -25,6 +25,10 @@ const moneySchema = z.object({
   discount_percent: z.number().int().min(0).max(100),
 });
 
+const storeSearchMoneySchema = moneySchema.partial({
+  discount_percent: true,
+});
+
 const metascoreSchema = z
   .string()
   .regex(/^\d{1,3}$/)
@@ -39,7 +43,7 @@ const storeSearchSchema = z.object({
         name: z.string().min(1),
         id: z.number().int().positive().max(4_294_967_295),
         tiny_image: z.url().optional(),
-        price: moneySchema.optional(),
+        price: storeSearchMoneySchema.optional(),
         platforms: z
           .object({
             windows: z.boolean(),
@@ -181,7 +185,9 @@ function normalizeSearchCandidate(
             minorUnits: item.price.initial,
             currency: parseCurrencyCode(item.price.currency),
           },
-          discountPercent: item.price.discount_percent,
+          ...(item.price.discount_percent === undefined
+            ? {}
+            : { discountPercent: item.price.discount_percent }),
         }),
     ...(item.platforms === undefined ? {} : { platforms: item.platforms }),
     ...(item.metascore === undefined || item.metascore === ""

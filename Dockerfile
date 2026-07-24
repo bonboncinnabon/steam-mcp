@@ -25,6 +25,6 @@ COPY --from=build --chown=node:node /app/dist ./dist
 USER node
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD ["node", "-e", "const port = process.env.PORT ?? 3000; const host = new URL(process.env.MCP_RESOURCE_URI).host; fetch(`http://127.0.0.1:${port}/livez`, { headers: { host } }).then((response) => { if (!response.ok) process.exit(1); }).catch(() => process.exit(1));"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD ["node", "-e", "const port = process.env.PORT ?? 3000; const host = new URL(process.env.MCP_RESOURCE_URI).host; const request = require('node:http').get({ hostname: '127.0.0.1', port, path: '/livez', headers: { host } }, (response) => { response.resume(); response.on('end', () => process.exit(response.statusCode === 200 ? 0 : 1)); }); request.on('error', () => process.exit(1));"]
 
 CMD ["node", "dist/bin/steam-mcp-hosted.js"]

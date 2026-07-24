@@ -42,6 +42,8 @@ describe("hosted container packaging", () => {
     expect(dockerfile).toContain("HEALTHCHECK");
     expect(dockerfile).toContain("process.env.PORT ?? 3000");
     expect(dockerfile).toContain("new URL(process.env.MCP_RESOURCE_URI).host");
+    expect(dockerfile).toContain("require('node:http').get");
+    expect(dockerfile).not.toContain("fetch(`http://127.0.0.1");
     expect(dockerfile).toContain("headers: { host }");
     expect(dockerfile).toContain("/livez");
     expect(dockerfile).not.toMatch(/\b(?:curl|wget|npm)\b/u);

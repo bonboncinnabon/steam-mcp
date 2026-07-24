@@ -221,10 +221,10 @@
 - [x] 12.5 Document strict TDD contribution rules, fixture scrubbing, live-probe
       safety, test commands, coverage gates, compatibility policy, versioning,
       changelog, operations, rollout, and rollback.
-- [ ] 12.6a Verify the packaged local and self-hosted stdio documentation from
+- [x] 12.6a Verify the packaged local and self-hosted stdio documentation from
       clean supported Node.js environments, including one public Steam tool
       call, without undocumented maintainer steps.
-- [ ] 12.6b Verify the self-hosted remote documentation against a clean
+- [x] 12.6b Verify the self-hosted remote documentation against a clean
       disposable deployment using an out-of-band bearer token and no
       undocumented maintainer steps.
 
@@ -241,7 +241,7 @@
 - [ ] 13.3 Run opt-in Steam live probes with the dedicated credential, review
       best-effort drift, measure observed call costs, and set documented initial
       quota policies while preserving the safety reserve.
-- [ ] 13.4 Verify MCP Inspector and documented remote-client paths that support
+- [x] 13.4 Verify MCP Inspector and documented remote-client paths that support
       a fixed bearer header for initialization, authorization, tool listing,
       representative calls, structured results, errors, and request-abort
       cancellation. Record OAuth-only client paths as unsupported in remote v1.

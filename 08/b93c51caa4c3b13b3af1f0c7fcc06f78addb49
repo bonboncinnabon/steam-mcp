@@ -1,0 +1,23 @@
+Dockerfile
+  s_336c0404d47041::t_c74d529214da6f 28
+test/unit/packaging/container.test.ts
+  s_336c0404d47041::t_a02321c7d581e1 45-46
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_9c69c3cb8ad7e1 224,227,244
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "08b93c51caa4c3b13b3af1f0c7fcc06f78addb49",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

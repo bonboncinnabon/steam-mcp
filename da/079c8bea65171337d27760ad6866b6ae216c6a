@@ -1,0 +1,138 @@
+test/unit/packaging/package-metadata.test.ts
+  s_336c0404d47041::t_6513646ad9223c 84-107
+test/unit/infrastructure/hosted-application.test.ts
+  s_336c0404d47041::t_5b4291a0a09244 120-123,130-158,166-192
+  s_336c0404d47041::t_ff498087f742dc 124-129
+  s_336c0404d47041::t_9304690436dda0 159-165
+src/application/services/steam-get-library.ts
+  s_336c0404d47041::t_84f97ddeadd9ff 95,97
+test/unit/infrastructure/config.test.ts
+  s_336c0404d47041::t_31877ff61bfe46 403-404,407,409
+src/application/services/steam-get-achievements.ts
+  s_336c0404d47041::t_84f97ddeadd9ff 108,110
+openspec/changes/build-steam-mcp-server/proposal.md
+  s_336c0404d47041::t_fdf4427b263be4 12-14,39-40
+docs/hosted-setup.md
+  s_336c0404d47041::t_69928f5066de3a 74,89-90,181,191-195,233-234
+  s_336c0404d47041::t_5fb52007863a74 39-42,45-56,59
+  s_336c0404d47041::t_9304690436dda0 62-68,132-133
+  s_336c0404d47041::t_7b0853f9d57fe1 43-44,57-58
+  s_336c0404d47041::t_0265819168461f 131,134-138
+.github/workflows/release.yml
+  s_336c0404d47041::t_ad60d87bf08053 1,52-57,63-94
+  s_336c0404d47041::t_83626cdb20bbf7 8,15-18,58-62
+openspec/changes/build-steam-mcp-server/specs/steam-user-identity/spec.md
+  s_336c0404d47041::t_fdf4427b263be4 30-32,40,42-43,48-49,53-58
+  s_336c0404d47041::t_b168311cbc9464 59
+openspec/changes/build-steam-mcp-server/specs/hosted-mcp-access/spec.md
+  s_336c0404d47041::t_fdf4427b263be4 74-75,80-92
+  s_336c0404d47041::t_6367ded911c241 76-79
+docs/superpowers/specs/2026-07-20-steam-mcp-design.md
+  s_336c0404d47041::t_69928f5066de3a 106,109-110
+  s_336c0404d47041::t_ac593632df7661 32
+  s_336c0404d47041::t_9304690436dda0 111-112
+test/unit/application/steam-get-wishlist.test.ts
+  s_336c0404d47041::t_af3e80638f4a6f 221
+openspec/changes/build-steam-mcp-server/tasks.md
+  s_336c0404d47041::t_fc995678dc8fc4 117
+  s_336c0404d47041::t_dfb7abb544f031 249
+  s_336c0404d47041::t_5ce5b91979ca4b 259,264
+  s_336c0404d47041::t_087501a1c57bc7 90
+  s_336c0404d47041::t_fdf4427b263be4 91-92,118-119,237
+  s_336c0404d47041::t_3e4fc476984dc9 236
+openspec/changes/build-steam-mcp-server/design.md
+  s_336c0404d47041::t_9304690436dda0 204-207,374-375
+  s_336c0404d47041::t_fdf4427b263be4 31-32,195,372-373
+src/infrastructure/hosted-runtime.ts
+  s_336c0404d47041::t_84f97ddeadd9ff 127
+  s_336c0404d47041::t_856563bb89a52f 27,79-81,125-126
+src/application/services/steam-get-wishlist.ts
+  s_336c0404d47041::t_84f97ddeadd9ff 83,85
+docs/upstream-sources.md
+  s_336c0404d47041::t_9304690436dda0 39-43
+  s_336c0404d47041::t_69928f5066de3a 3,35-38
+docs/testing.md
+  s_336c0404d47041::t_0265819168461f 50-52
+src/infrastructure/config.ts
+  s_336c0404d47041::t_e92d609075ad7c 19,210,222
+openspec/changes/build-steam-mcp-server/specs/local-mcp-access/spec.md
+  s_336c0404d47041::t_fdf4427b263be4 47-48
+docs/adr/0002-static-bearer-authentication.md
+  s_336c0404d47041::t_ac593632df7661 48-49
+src/steam/adapters/steam-wishlist-adapter.ts
+  s_336c0404d47041::t_3dba85c2d5c031 46
+  s_336c0404d47041::t_fb36dabd847830 22-33,161-162,167,171
+openspec/changes/build-steam-mcp-server/specs/steam-player-tools/spec.md
+  s_336c0404d47041::t_fdf4427b263be4 99-105
+test/unit/mcp/tool-contracts.test.ts
+  s_336c0404d47041::t_a94fcc67ae765c 49,54
+test/unit/application/steam-get-player.test.ts
+  s_336c0404d47041::t_af3e80638f4a6f 109,122
+test/unit/application/steam-get-achievements.test.ts
+  s_336c0404d47041::t_af3e80638f4a6f 581
+src/application/services/steam-get-recent-activity.ts
+  s_336c0404d47041::t_84f97ddeadd9ff 64,66
+docs/local-setup.md
+  s_336c0404d47041::t_69928f5066de3a 19
+test/live/steam-contracts.test.ts
+  s_336c0404d47041::t_e15a928a9388c1 23,25-27,33,39,42,50
+test/unit/application/steam-get-recent-activity.test.ts
+  s_336c0404d47041::t_af3e80638f4a6f 215
+docs/operations.md
+  s_336c0404d47041::t_69928f5066de3a 21-22,32-33
+src/application/services/steam-get-friends.ts
+  s_336c0404d47041::t_84f97ddeadd9ff 100,102
+src/application/services/steam-identity-resolver.ts
+  s_336c0404d47041::t_af3e80638f4a6f 85
+  s_336c0404d47041::t_84f97ddeadd9ff 12,17,63-64,68,76
+src/mcp/local-tool-bindings.ts
+  s_336c0404d47041::t_84f97ddeadd9ff 51,63,71,104,113,138,144
+  s_336c0404d47041::t_9304690436dda0 80-83,92-95
+src/infrastructure/local-runtime.ts
+  s_336c0404d47041::t_84f97ddeadd9ff 30
+docs/architecture.md
+  s_336c0404d47041::t_69928f5066de3a 199-200
+docs/tool-reference.md
+  s_336c0404d47041::t_9304690436dda0 22-25,68
+test/unit/application/steam-get-friends.test.ts
+  s_336c0404d47041::t_af3e80638f4a6f 326
+test/unit/application/steam-identity-resolver.test.ts
+  s_336c0404d47041::t_af3e80638f4a6f 100
+  s_336c0404d47041::t_84f97ddeadd9ff 20,78,81,115,130,135,149
+README.md
+  s_336c0404d47041::t_69928f5066de3a 64,106-107
+  s_336c0404d47041::t_5fb52007863a74 55-57
+test/unit/application/steam-get-library.test.ts
+  s_336c0404d47041::t_af3e80638f4a6f 337
+test/support/live-probe.ts
+  s_336c0404d47041::t_9304690436dda0 60
+  s_336c0404d47041::t_ca21799b31762d 22,27,29-33,36-38,44-47,56-59,61
+src/infrastructure/steam-runtime.ts
+  s_336c0404d47041::t_84f97ddeadd9ff 56,169
+test/unit/testing/live-probe.test.ts
+  s_336c0404d47041::t_9304690436dda0 31
+  s_336c0404d47041::t_05fc616be315db 13-14,17-28
+test/unit/mcp/local-tool-bindings.test.ts
+  s_336c0404d47041::t_84f97ddeadd9ff 79,176,230,257-261,275
+src/mcp/tool-contracts.ts
+  s_336c0404d47041::t_af3e80638f4a6f 22
+test/unit/steam/steam-wishlist-adapter.test.ts
+  s_336c0404d47041::t_46d93ae2d9e629 156-210
+  s_336c0404d47041::t_d12e1eacd7b014 98-155
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "da079c8bea65171337d27760ad6866b6ae216c6a",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

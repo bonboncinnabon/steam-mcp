@@ -44,8 +44,8 @@ send redacted diagnostics to stderr.
 
 Local and remote transports SHALL use the same domain services, tool schemas,
 result envelopes, error codes, and source-tier behavior. Transport-specific
-defaulting is limited to local `STEAM_USER`; remote callers supply explicit
-users to subject-oriented tools.
+authorization remains independent from the optional operator-configured
+`STEAM_USER` default used by either transport.
 
 #### Scenario: Equivalent explicit-user call
 

@@ -19,20 +19,32 @@ export interface LiveProbeMetric {
   readonly probe: LiveProbeName;
   readonly outcome: LiveProbeOutcome;
   readonly count: number;
+  readonly observedCalls: number;
 }
 
 export class LiveProbeMetrics {
   readonly #counts = new Map<string, number>();
+  readonly #observedCalls = new Map<string, number>();
 
-  record(probe: LiveProbeName, outcome: LiveProbeOutcome): void {
+  record(
+    probe: LiveProbeName,
+    outcome: LiveProbeOutcome,
+    observedCalls: number,
+  ): void {
     if (
       !LIVE_PROBE_NAMES.includes(probe) ||
-      !LIVE_PROBE_OUTCOMES.includes(outcome)
+      !LIVE_PROBE_OUTCOMES.includes(outcome) ||
+      !Number.isSafeInteger(observedCalls) ||
+      observedCalls < 0
     ) {
       throw new TypeError("Unknown live Steam probe metric dimension");
     }
     const key = `${probe}:${outcome}`;
     this.#counts.set(key, (this.#counts.get(key) ?? 0) + 1);
+    this.#observedCalls.set(
+      key,
+      (this.#observedCalls.get(key) ?? 0) + observedCalls,
+    );
   }
 
   snapshot(): readonly LiveProbeMetric[] {
@@ -41,7 +53,12 @@ export class LiveProbeMetrics {
       for (const outcome of LIVE_PROBE_OUTCOMES) {
         const count = this.#counts.get(`${probe}:${outcome}`);
         if (count !== undefined) {
-          metrics.push({ probe, outcome, count });
+          metrics.push({
+            probe,
+            outcome,
+            count,
+            observedCalls: this.#observedCalls.get(`${probe}:${outcome}`) ?? 0,
+          });
         }
       }
     }

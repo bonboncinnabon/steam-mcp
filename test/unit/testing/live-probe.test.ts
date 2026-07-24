@@ -10,15 +10,25 @@ describe("live probe metrics", () => {
   it("records only fixed probe and outcome dimensions", () => {
     const metrics = new LiveProbeMetrics();
 
-    metrics.record("store_search", "passed");
-    metrics.record("store_search", "drifted");
+    metrics.record("store_search", "passed", 1);
+    metrics.record("store_search", "drifted", 2);
 
     expect(metrics.snapshot()).toEqual([
-      { probe: "store_search", outcome: "passed", count: 1 },
-      { probe: "store_search", outcome: "drifted", count: 1 },
+      {
+        probe: "store_search",
+        outcome: "passed",
+        count: 1,
+        observedCalls: 1,
+      },
+      {
+        probe: "store_search",
+        outcome: "drifted",
+        count: 1,
+        observedCalls: 2,
+      },
     ]);
     expect(() => {
-      metrics.record("unbounded-user-input" as LiveProbeName, "passed");
+      metrics.record("unbounded-user-input" as LiveProbeName, "passed", 1);
     }).toThrow("Unknown live Steam probe metric dimension");
   });
 

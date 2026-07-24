@@ -27,9 +27,9 @@ Community profile URL anywhere a tool accepts an explicit `user` value.
 ### Requirement: Deterministic identity resolution order
 
 Subject-oriented tools SHALL resolve identity from explicit tool input first,
-local `STEAM_USER` in local mode second, and otherwise return
-`IDENTITY_NOT_LINKED`. The remote bearer credential SHALL NOT be treated as a
-Steam identity.
+operator-configured `STEAM_USER` second, and otherwise return
+`IDENTITY_NOT_LINKED`. In remote mode the configured default is instance-wide;
+the remote bearer credential SHALL NOT be treated as a Steam identity.
 
 #### Scenario: Explicit remote identity
 
@@ -37,17 +37,25 @@ Steam identity.
 - **THEN** the system executes the call for that user without reading or writing
   account identity state
 
-#### Scenario: Local default identity
+#### Scenario: Configured default identity
 
-- **WHEN** a local caller omits `user` and configures `STEAM_USER`
+- **WHEN** a local or authorized remote caller omits `user` and the operator
+  configures `STEAM_USER`
 - **THEN** the system executes the call for that configured public user
 
 #### Scenario: Missing identity default
 
-- **WHEN** a remote subject-oriented call omits `user`, or a local call omits it
-  without `STEAM_USER`
+- **WHEN** a subject-oriented call omits `user` and the operator has not
+  configured `STEAM_USER`
 - **THEN** the system returns `IDENTITY_NOT_LINKED` with corrective guidance and
   performs no Steam request
+
+#### Scenario: Shared remote default
+
+- **WHEN** multiple authorized callers omit `user` on one private remote
+  instance with `STEAM_USER` configured
+- **THEN** every caller observes the same operator-configured default without
+  creating, updating, or persisting caller-specific identity state
 
 ### Requirement: Public-data privacy behavior
 

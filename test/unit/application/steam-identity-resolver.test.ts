@@ -17,7 +17,7 @@ describe("Steam identity resolver", () => {
       resolver.resolve(
         {
           explicitUser: "76561198000000001",
-          localDefault: "76561198000000002",
+          configuredDefault: "76561198000000002",
         },
         new AbortController().signal,
       ),
@@ -75,10 +75,10 @@ describe("Steam identity resolver", () => {
     const signal = new AbortController().signal;
 
     await expect(
-      resolver.resolve({ localDefault: "local_vanity" }, signal),
+      resolver.resolve({ configuredDefault: "local_vanity" }, signal),
     ).resolves.toEqual({
       steamId: "76561198000000006",
-      source: "local_default",
+      source: "configured_default",
     });
     expect(resolveVanityName).toHaveBeenCalledExactlyOnceWith(
       "local_vanity",
@@ -97,7 +97,7 @@ describe("Steam identity resolver", () => {
     ).rejects.toMatchObject({
       code: "IDENTITY_NOT_LINKED",
       retryable: false,
-      message: "Provide a Steam user, or configure STEAM_USER for local use",
+      message: "Provide a Steam user, or configure STEAM_USER",
     });
     expect(resolveVanityName).not.toHaveBeenCalled();
   });
@@ -112,7 +112,7 @@ describe("Steam identity resolver", () => {
       resolver.resolve(
         {
           explicitUser: "missing_vanity",
-          localDefault: "76561198000000008",
+          configuredDefault: "76561198000000008",
         },
         new AbortController().signal,
       ),
@@ -127,12 +127,12 @@ describe("Steam identity resolver", () => {
 
     await expect(
       resolver.resolve(
-        { localDefault: "76561198000000010" },
+        { configuredDefault: "76561198000000010" },
         new AbortController().signal,
       ),
     ).resolves.toEqual({
       steamId: "76561198000000010",
-      source: "local_default",
+      source: "configured_default",
     });
     expect(resolveVanityName).not.toHaveBeenCalled();
   });
@@ -146,7 +146,7 @@ describe("Steam identity resolver", () => {
 
     await expect(
       resolver.resolve(
-        { localDefault: "missing_local" },
+        { configuredDefault: "missing_local" },
         new AbortController().signal,
       ),
     ).rejects.toMatchObject({

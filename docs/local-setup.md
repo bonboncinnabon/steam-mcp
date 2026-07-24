@@ -16,7 +16,7 @@ Set these environment variables:
 | Variable        | Required                                | Purpose                                                              |
 | --------------- | --------------------------------------- | -------------------------------------------------------------------- |
 | `STEAM_API_KEY` | For player-oriented Steam Web API calls | Your Steam Web API credential                                        |
-| `STEAM_USER`    | No                                      | Default SteamID64, vanity name, or HTTPS Steam Community profile URL |
+| `STEAM_USER`    | No                                      | Default lookup profile: SteamID64, vanity name, or HTTPS profile URL |
 
 Never commit the API key. If a client stores its MCP environment in a
 configuration file, protect that file as a credential-bearing file.

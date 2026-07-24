@@ -81,4 +81,28 @@ describe("public package metadata", () => {
     expect(workflow).toContain("pnpm package:release");
     expect(workflow).toContain("gh release upload");
   });
+
+  it("publishes an immutable self-hosted container without deploying a service", async () => {
+    const workflow = await readFile(
+      resolve(root, ".github/workflows/release.yml"),
+      "utf8",
+    );
+
+    expect(workflow).toContain("packages: write");
+    expect(workflow).toContain("registry: ghcr.io");
+    expect(workflow).toContain("ghcr.io/${{ github.repository }}");
+    expect(workflow).toContain(
+      "docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9",
+    );
+    expect(workflow).toContain(
+      "docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302",
+    );
+    expect(workflow).toContain(
+      "docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a",
+    );
+    expect(workflow).toContain("push: true");
+    expect(workflow).toContain("provenance: mode=max");
+    expect(workflow).toContain("sbom: true");
+    expect(workflow).not.toMatch(/\b(?:deploy|kubectl|helm|ssh)\b/iu);
+  });
 });

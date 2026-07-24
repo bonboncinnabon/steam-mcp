@@ -96,6 +96,13 @@ ISO currency, and discount data when the best-effort Steam source is available.
 - **THEN** the tool returns the wishlist with `best_effort` included in
   `meta.source_tiers`
 
+#### Scenario: Current purchase-option price shape
+
+- **WHEN** a wishlist item returns `final_price_in_cents` or a null
+  `best_purchase_option`
+- **THEN** the adapter normalizes the structured minor-unit price when present
+  and otherwise preserves the item without inventing price data
+
 #### Scenario: Wishlist source contract drift
 
 - **WHEN** the public Steam wishlist source no longer matches its validated

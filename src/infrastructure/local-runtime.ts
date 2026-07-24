@@ -27,7 +27,7 @@ export function createLocalMcpServer(
     ),
     ...(config.steamUser === undefined
       ? {}
-      : { localDefault: config.steamUser }),
+      : { configuredDefault: config.steamUser }),
   });
 }
 

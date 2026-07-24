@@ -18,8 +18,8 @@ one instance in v1.
 
 ## Configuration and secrets
 
-Local stdio mode reads `STEAM_API_KEY` and may use `STEAM_USER` as its default
-public profile. Self-hosted HTTP mode requires:
+Both modes read `STEAM_API_KEY` and may use `STEAM_USER` as an
+operator-configured default public profile. Self-hosted HTTP mode also requires:
 
 - `STEAM_API_KEY`, supplied by the deployment secret manager;
 - `MCP_ACCESS_TOKEN`, a high-entropy secret of at least 32 characters;
@@ -29,8 +29,8 @@ public profile. Self-hosted HTTP mode requires:
 - optional listener, shutdown, capacity, and best-effort source settings
   documented in [Self-hosted HTTP setup](./hosted-setup.md).
 
-HTTP mode rejects `STEAM_USER`; player-oriented tools require an explicit public
-Steam user. Never infer Steam identity from the bearer token.
+In HTTP mode, `STEAM_USER` is shared by every authorized client. Explicit tool
+input overrides it. Never infer Steam identity from the bearer token.
 
 Store both secrets in the platform secret manager with least-privilege access.
 Do not place them in command arguments, images, logs, metrics, health responses,

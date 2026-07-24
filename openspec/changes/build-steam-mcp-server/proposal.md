@@ -9,8 +9,9 @@ paid identity-provider dependency.
 
 - Add a self-hosted, read-only MCP server over Streamable HTTP protected by one
   operator-configured bearer token.
-- Require an explicit public Steam user for remote subject-oriented calls while
-  retaining optional `STEAM_USER` defaults for local use.
+- Allow an optional operator-configured `STEAM_USER` default in local and
+  private self-hosted modes while keeping explicit public Steam users
+  higher-priority for subject-oriented calls.
 - Add explicit lookup of any public Steam profile using a SteamID64, vanity
   name, or Steam Community profile URL.
 - Add eight curated tools for player profiles, libraries, recent activity,
@@ -35,8 +36,8 @@ paid identity-provider dependency.
 
 - `hosted-mcp-access`: Self-hosted Streamable HTTP access, static bearer-token
   protection, health behavior, and compatible client connectivity.
-- `steam-user-identity`: Explicit Steam user resolution and optional local
-  default identity without remote identity persistence.
+- `steam-user-identity`: Explicit Steam user resolution and an optional
+  operator-configured default without MCP-managed identity persistence.
 - `steam-player-tools`: Player, library, activity, achievement, friend, and
   wishlist tool behavior.
 - `steam-game-tools`: Game search and consolidated game-details behavior.

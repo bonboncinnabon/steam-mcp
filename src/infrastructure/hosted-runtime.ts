@@ -24,6 +24,7 @@ import {
 
 interface HostedMcpServerOptions {
   readonly steamApiKey: string;
+  readonly steamUser?: string;
   readonly policy: ServicePolicy;
   readonly quota: QuotaPort;
   readonly concurrency: ConcurrencyPort;
@@ -75,6 +76,9 @@ export function createHostedApplication(
     createServer: () =>
       createHostedMcpServer({
         steamApiKey: config.steamApiKey,
+        ...(config.steamUser === undefined
+          ? {}
+          : { steamUser: config.steamUser }),
         policy: config.policy,
         quota,
         concurrency,
@@ -118,6 +122,9 @@ export function createHostedMcpServer(
 ): McpServer {
   return createSteamMcpServer({
     steamApiKey: options.steamApiKey,
+    ...(options.steamUser === undefined
+      ? {}
+      : { configuredDefault: options.steamUser }),
     policy: options.policy,
     execute: createHostedSteamExecutor(options),
     ...(options.bestEffortSources === undefined

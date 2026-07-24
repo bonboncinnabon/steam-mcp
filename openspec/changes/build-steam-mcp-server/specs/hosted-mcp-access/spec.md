@@ -71,6 +71,25 @@ deployment time.
 - **THEN** the system executes the call using the operator's Steam credential
   and configured instance quota policy
 
+### Requirement: Optional operator default Steam user
+
+The private remote instance SHALL accept `STEAM_USER` as an optional
+operator-configured public lookup default. This value MUST NOT be derived from
+the bearer token, mutated through MCP, or represented as caller-specific
+identity.
+
+#### Scenario: Hosted default user
+
+- **WHEN** an authorized subject-oriented call omits `user` and the operator
+  configured `STEAM_USER`
+- **THEN** the system uses that shared default while performing no identity
+  persistence
+
+#### Scenario: Explicit hosted user
+
+- **WHEN** an authorized subject-oriented call supplies `user`
+- **THEN** the explicit public user takes precedence over `STEAM_USER`
+
 ### Requirement: Origin and Host enforcement
 
 The system MUST validate HTTP Origin and Host values for remote MCP traffic

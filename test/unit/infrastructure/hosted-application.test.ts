@@ -117,4 +117,77 @@ describe("hosted application composition", () => {
     expect(new Headers(upstreamInit.headers).has("authorization")).toBe(false);
     expect(release).toHaveBeenCalledOnce();
   });
+
+  it("uses the operator-configured default for an omitted hosted user", async () => {
+    const steamId = "76561198000000000";
+    const fetchImpl = vi.fn<typeof fetch>().mockImplementation((input) => {
+      const url =
+        typeof input === "string"
+          ? input
+          : input instanceof URL
+            ? input.href
+            : input.url;
+      const body = url.includes("GetPlayerSummaries")
+        ? {
+            response: {
+              players: [
+                {
+                  steamid: steamId,
+                  communityvisibilitystate: 3,
+                  personaname: "Operator Default",
+                  profileurl: `https://steamcommunity.com/profiles/${steamId}/`,
+                  personastate: 0,
+                },
+              ],
+            },
+          }
+        : {
+            players: [
+              {
+                SteamId: steamId,
+                CommunityBanned: false,
+                VACBanned: false,
+                NumberOfVACBans: 0,
+                DaysSinceLastBan: 0,
+                NumberOfGameBans: 0,
+                EconomyBan: "none",
+              },
+            ],
+          };
+      return Promise.resolve(new Response(JSON.stringify(body)));
+    });
+    const app = createHostedApplication(
+      {
+        ...environment,
+        STEAM_USER: steamId,
+      },
+      { fetchImpl },
+    );
+
+    const response = await app.handler.handle(
+      new Request("https://steam.example/mcp", {
+        method: "POST",
+        headers: {
+          accept: "application/json, text/event-stream",
+          authorization: `Bearer ${accessToken}`,
+          "content-type": "application/json",
+          host: "steam.example",
+        },
+        body: JSON.stringify({
+          jsonrpc: "2.0",
+          id: 2,
+          method: "tools/call",
+          params: { name: "steam_get_player", arguments: {} },
+        }),
+      }),
+    );
+    const body = (await response.json()) as {
+      result?: { structuredContent?: { data?: { steamId?: string } } };
+    };
+
+    expect({
+      steamId: body.result?.structuredContent?.data?.steamId,
+      upstreamCalls: fetchImpl.mock.calls.length,
+    }).toEqual({ steamId, upstreamCalls: 2 });
+  });
 });

@@ -36,19 +36,42 @@ node dist/bin/steam-mcp-hosted.js
 The process listens on plain HTTP. Put it behind a trusted TLS-terminating
 reverse proxy for any traffic that leaves the host.
 
+## Run the published container
+
+Each versioned release publishes a multi-platform image at
+`ghcr.io/abiswas97/steam-mcp`. Pin the immutable digest recorded by the release,
+pass configuration through the platform's secret and environment facilities, and
+publish the container's port 3000 only through the trusted TLS proxy:
+
+```sh
+docker run --rm -p 127.0.0.1:3000:3000 \
+  --env STEAM_API_KEY \
+  --env STEAM_USER \
+  --env MCP_ACCESS_TOKEN \
+  --env MCP_RESOURCE_URI \
+  --env ALLOWED_HOSTS \
+  ghcr.io/abiswas97/steam-mcp@sha256:<release-digest>
+```
+
+Omit `--env STEAM_USER` when no shared default is wanted. The release workflow
+publishes this image and downloadable package artifacts only; it does not deploy
+or operate an MCP endpoint.
+
 ## Required configuration
 
-| Variable           | Purpose                                              |
-| ------------------ | ---------------------------------------------------- |
-| `STEAM_API_KEY`    | Deployment-owned Steam Web API credential            |
-| `MCP_ACCESS_TOKEN` | Shared high-entropy bearer secret, at least 32 chars |
-| `MCP_RESOURCE_URI` | Exact canonical HTTPS MCP endpoint                   |
-| `ALLOWED_HOSTS`    | Comma-separated request `Host` allowlist             |
+| Variable           | Required | Purpose                                               |
+| ------------------ | -------- | ----------------------------------------------------- |
+| `STEAM_API_KEY`    | Yes      | Deployment-owned Steam Web API credential             |
+| `STEAM_USER`       | No       | Shared default SteamID64, vanity name, or profile URL |
+| `MCP_ACCESS_TOKEN` | Yes      | Shared high-entropy bearer secret, at least 32 chars  |
+| `MCP_RESOURCE_URI` | Yes      | Exact canonical HTTPS MCP endpoint                    |
+| `ALLOWED_HOSTS`    | Yes      | Comma-separated request `Host` allowlist              |
 
 Example:
 
 ```sh
 export STEAM_API_KEY="<deployment Steam Web API key>"
+export STEAM_USER="<optional shared default Steam user>"
 export MCP_ACCESS_TOKEN="<random secret of at least 32 characters>"
 export MCP_RESOURCE_URI="https://mcp.example.com/mcp"
 export ALLOWED_HOSTS="mcp.example.com"
@@ -63,8 +86,8 @@ control, URLs, tool arguments, shell history, logs, or client-visible output.
 `MCP_RESOURCE_URI` must be HTTPS, contain no credentials, query, or fragment,
 and have a host present in `ALLOWED_HOSTS`. Entries in `ALLOWED_HOSTS` are host
 values such as `mcp.example.com` or `mcp.example.com:8443`, not URLs or paths.
-`STEAM_USER` is rejected in HTTP mode so every player-oriented tool call must
-supply an explicit public Steam user.
+When configured, `STEAM_USER` is one operator-wide default for every authorized
+client. It is convenience configuration, not a per-client account link.
 
 ## Listener and browser origins
 
@@ -104,6 +127,14 @@ same daily budget; there is no client or user attribution. Counters and queues
 live in one process, reset on restart, and are not coordinated across replicas.
 Run one instance only. Multi-instance or restart-safe quota enforcement requires
 a distributed atomic quota implementation that is outside v1.
+
+The initial policy protects 20,000 of the 80,000 daily cost units as a safety
+reserve. Each outbound operation reserves the worst case of three attempts (one
+request plus two configured retries), even when fewer calls occur. This is
+deliberately conservative because Steam does not publish a quota for every
+approved source. Change these values only after reviewing live `observedCalls`,
+retry behavior, and the per-source costs in
+[the upstream register](./upstream-sources.md); preserve a nonzero reserve.
 
 Startup validates numeric ceilings and cross-field invariants. In particular,
 the safety reserve cannot exceed the global quota, operation concurrency cannot
@@ -147,7 +178,7 @@ shared bearer token is not a safe client identity.
 The bearer token authorizes access to the whole instance. It does not identify a
 client or Steam account and is never mapped to a Steam identity.
 
-These player-oriented tools require a `user` argument in HTTP mode:
+These player-oriented tools accept an optional `user` argument:
 
 - `steam_get_player`
 - `steam_get_library`
@@ -157,9 +188,11 @@ These player-oriented tools require a `user` argument in HTTP mode:
 - `steam_get_wishlist`
 
 `user` accepts a SteamID64, vanity name, or allowlisted Steam Community profile
-URL and may name any public Steam profile. Omitting it returns
-`IDENTITY_NOT_LINKED` without making a Steam request. `steam_search_games` and
-`steam_get_game` do not require a Steam user.
+URL and may name any public Steam profile. An explicit `user` always overrides
+the deployment's optional `STEAM_USER`. If neither is present, the tool returns
+`IDENTITY_NOT_LINKED` without making a Steam request. The bearer token is never
+used as a fallback. `steam_search_games` and `steam_get_game` do not require a
+Steam user.
 
 Steam privacy settings still apply. Authentication never grants access to
 private Steam data.
@@ -197,8 +230,8 @@ use `GET /livez` and `GET /readyz`.
 
 ### A player-oriented tool returns `IDENTITY_NOT_LINKED`
 
-Pass `user` explicitly. The shared bearer token is intentionally unrelated to
-Steam identity, and HTTP mode does not allow a `STEAM_USER` default.
+Pass `user` explicitly or ask the operator to configure the shared `STEAM_USER`
+default. The shared bearer token is intentionally unrelated to Steam identity.
 
 ## Release boundary
 

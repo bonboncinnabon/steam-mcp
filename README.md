@@ -52,14 +52,16 @@ development-from-source instructions, see [Local setup](docs/local-setup.md).
 
 The package also exposes `steam-mcp-hosted`, a portable Node.js executable for
 running a Streamable HTTP server protected by one operator-configured bearer
-token. This repository does not operate a hosted provider, user-account system,
-or public shared service.
+token. Versioned releases also publish the same executable as
+`ghcr.io/abiswas97/steam-mcp`. This repository does not operate a hosted
+provider, user-account system, or public shared service.
 
 Generate a high-entropy token, configure the required Steam, token, resource,
 and Host environment variables, then run the packaged executable:
 
 ```sh
 export STEAM_API_KEY="<deployment Steam Web API key>"
+export STEAM_USER="<optional shared default Steam user>"
 export MCP_ACCESS_TOKEN="<random secret of at least 32 characters>"
 export MCP_RESOURCE_URI="https://mcp.example.com/mcp"
 export ALLOWED_HOSTS="mcp.example.com"
@@ -101,6 +103,8 @@ Additional test commands are documented in [Testing](docs/testing.md).
 - Self-hosted HTTP mode compares each bearer credential with one
   operator-configured secret. It has no users, accounts, OAuth flow, or
   token-to-Steam identity mapping.
+- Either mode may use one operator-configured `STEAM_USER` default. In hosted
+  mode it is shared by every authorized client and is not caller identity.
 - Remote quota and concurrency limits apply to the whole running instance, not
   to individual clients.
 - Local process state is discarded when the server exits.

@@ -87,6 +87,9 @@
 - [x] 5.5 Add opt-in live contract probes using a dedicated test credential,
       automatic fixture-safety checks, and bounded drift metrics; keep the
       probes excluded from default CI.
+- [x] 5.6 TDD the observed wishlist purchase-option contract so
+      `final_price_in_cents` is normalized and a null option preserves the item
+      without price data.
 
 ## 6. Identity Resolution and Player Application Services
 
@@ -111,6 +114,9 @@
 - [x] 6.8 TDD `steam_get_wishlist` for bounded pagination, price and discount
       fields, source-tier metadata, unavailable apps, privacy behavior, and
       best-effort drift.
+- [x] 6.9 TDD optional operator-configured `STEAM_USER` defaulting in local and
+      private hosted modes, with explicit-user precedence, no bearer inference,
+      and no MCP-managed persistence.
 
 ## 7. Game Application Services
 
@@ -227,6 +233,8 @@
 - [x] 12.6b Verify the self-hosted remote documentation against a clean
       disposable deployment using an out-of-band bearer token and no
       undocumented maintainer steps.
+- [x] 12.7 Update public identity and wishlist-source documentation for the
+      shared operator default and observed purchase-option shape.
 
 ## 13. Release Verification and Rollout
 
@@ -238,7 +246,7 @@
       bounded memory, and dependency-failure cleanup and recovery.
 - [x] 13.2b Verify the package and documentation make no multi-instance quota
       safety claim; distributed quota and horizontal scaling remain outside v1.
-- [ ] 13.3 Run opt-in Steam live probes with the dedicated credential, review
+- [x] 13.3 Run opt-in Steam live probes with the dedicated credential, review
       best-effort drift, measure observed call costs, and set documented initial
       quota policies while preserving the safety reserve.
 - [x] 13.4 Verify MCP Inspector and documented remote-client paths that support
@@ -248,11 +256,11 @@
 - [x] 13.5a Execute local deterministic bounded-load, abusive-input, dependency
       outage, graceful-shutdown, and independent best-effort-adapter disablement
       tests.
-- [ ] 13.5b In a disposable self-hosted deployment, execute a version upgrade
+- [x] 13.5b In a disposable self-hosted deployment, execute a version upgrade
       and restore the previous immutable container without a data migration.
 - [ ] 13.6a Publish the release evidence and compatibility matrix with the
       immutable artifact digest, configuration revision, known limitations,
       rollback target, approver, and observation window.
-- [ ] 13.6b Verify the release publishes packages and containers only, operates
+- [x] 13.6b Verify the release publishes packages and containers only, operates
       no shared public endpoint, and requires both Steam and remote bearer
       secrets before accepting remote work.

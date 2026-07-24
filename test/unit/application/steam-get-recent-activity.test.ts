@@ -212,7 +212,7 @@ describe("steam_get_recent_activity application service", () => {
           .mockRejectedValue(
             new SteamIdentityResolutionError(
               "IDENTITY_NOT_LINKED",
-              "Provide a Steam user, or configure STEAM_USER for local use",
+              "Provide a Steam user, or configure STEAM_USER",
             ),
           ),
       },

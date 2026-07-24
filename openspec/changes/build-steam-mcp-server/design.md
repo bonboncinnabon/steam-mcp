@@ -28,8 +28,8 @@ Inspector are target remote surfaces.
   infrastructure implementations.
 - Protect the self-hosted remote endpoint with exact, constant-time comparison
   of one high-entropy bearer token supplied only through deployment secrets.
-- Resolve explicit Steam identities remotely and optional `STEAM_USER` defaults
-  locally without storing account links.
+- Resolve explicit Steam identities before an optional operator-configured
+  `STEAM_USER` default in either delivery mode, without storing account links.
 - Isolate documented and best-effort Steam sources behind typed adapters with
   predictable degradation.
 - Return bounded, versioned, structured results and actionable stable errors.
@@ -192,7 +192,7 @@ discovery, client registration, or account lifecycle endpoints.
 Subject-oriented tools resolve identity in this order:
 
 1. Explicit tool input.
-2. Local `STEAM_USER` in local mode only.
+2. Operator-configured `STEAM_USER`.
 3. `IDENTITY_NOT_LINKED`.
 
 Remote Steam calls use the operator's API key from the deployment secret
@@ -201,8 +201,10 @@ credential never cross those boundaries or appear in tool arguments.
 
 **Rationale:** A static deployment secret is sufficient for personal and
 self-hosted operation, has no provider cost, and keeps the server out of the
-identity business. Public Steam references are tool inputs, not account
-identity.
+identity business. `STEAM_USER` is one instance-wide public lookup default, not
+a caller identity; every bearer holder observes the same default, and explicit
+tool input always wins. Public Steam references are tool inputs or deployment
+configuration, not account identity.
 
 **Alternatives considered:** Managed OAuth adds cost and account lifecycle;
 custom OAuth is unnecessary security-sensitive scope; Steam OpenID linking
@@ -367,9 +369,10 @@ useful level.
   deployment secret, compare it in constant time, redact it everywhere, rotate
   it through the operator's secret manager, and document that one token is not a
   multi-user identity system.
-- **[Remote authentication is confused with Steam identity]** → Require explicit
-  public Steam references remotely and never derive Steam identity from the
-  bearer credential.
+- **[Remote authentication is confused with Steam identity]** → Treat an
+  optional remote `STEAM_USER` only as an operator-wide public lookup default,
+  keep explicit tool input higher priority, and never derive Steam identity from
+  the bearer credential.
 - **[An Internet-exposed endpoint attracts abuse]** → Do not operate a public
   shared v1 service; require bearer protection, quotas, bounded
   input/output/fan-out, and operator-controlled deployment.

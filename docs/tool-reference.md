@@ -19,9 +19,10 @@ Subject-oriented tools accept an optional `user` string in one of these forms:
 - an HTTPS `steamcommunity.com/profiles/{SteamID64}` URL; or
 - an HTTPS `steamcommunity.com/id/{vanity}` URL.
 
-The URL form cannot contain credentials, a query, or a fragment. In local mode,
-omitting `user` uses `STEAM_USER` when configured. In self-hosted HTTP mode
-there is no Steam default or account link, so callers must provide `user`. The
+The URL form cannot contain credentials, a query, or a fragment. In either mode,
+omitting `user` uses the operator-configured `STEAM_USER` when present. An
+explicit `user` always takes precedence. In self-hosted HTTP mode this default
+is shared by every authorized client; it is not a per-client account link. The
 bearer token grants access to the instance and is never mapped to a Steam user.
 Failure to provide either produces `IDENTITY_NOT_LINKED`.
 
@@ -64,7 +65,7 @@ Stable error codes are:
 | Code                         | Meaning                                                                  |
 | ---------------------------- | ------------------------------------------------------------------------ |
 | `INVALID_INPUT`              | Input, bound, or cursor is invalid for this request.                     |
-| `IDENTITY_NOT_LINKED`        | No explicit user and no local default were supplied.                     |
+| `IDENTITY_NOT_LINKED`        | No explicit user or operator-configured default was supplied.            |
 | `PROFILE_PRIVATE`            | Steam does not expose the requested player data publicly.                |
 | `NOT_FOUND`                  | The requested Steam user, app, or data was not found.                    |
 | `STEAM_AUTH_FAILED`          | The Steam API credential is missing or rejected.                         |

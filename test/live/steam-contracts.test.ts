@@ -20,22 +20,26 @@ import {
 const liveEnabled = process.env["STEAM_LIVE_TESTS"] === "1";
 const metrics = new LiveProbeMetrics();
 const publicProbeAppId = parseAppId(620);
+let observedCallCount = 0;
 
-const execute = (request: SteamHttpRequest, signal: AbortSignal) =>
-  executeSteamRequest(request, {
+const execute = (request: SteamHttpRequest, signal: AbortSignal) => {
+  observedCallCount += 1;
+  return executeSteamRequest(request, {
     deadlineMs: 5_000,
     maxResponseBytes: 512_000,
     maxRetryAttempts: 0,
     signal,
   });
+};
 
 async function probe<T>(
   name: LiveProbeName,
   operation: () => Promise<T>,
 ): Promise<T> {
+  const callsBeforeProbe = observedCallCount;
   try {
     const result = await operation();
-    metrics.record(name, "passed");
+    metrics.record(name, "passed", observedCallCount - callsBeforeProbe);
     return result;
   } catch (error) {
     metrics.record(
@@ -43,6 +47,7 @@ async function probe<T>(
       hasErrorCode(error, "BEST_EFFORT_SOURCE_CHANGED")
         ? "drifted"
         : "unavailable",
+      observedCallCount - callsBeforeProbe,
     );
     throw error;
   }

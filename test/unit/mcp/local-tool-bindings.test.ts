@@ -76,7 +76,7 @@ describe("local MCP tool bindings", () => {
     expect(execute).toHaveBeenCalledWith(
       {
         explicitUser: "public_steam_user",
-        localDefault: "local_steam_user",
+        configuredDefault: "local_steam_user",
       },
       signal,
     );
@@ -173,7 +173,7 @@ describe("local MCP tool bindings", () => {
   });
 
   it("maps and renders the remaining subject-oriented tools", async () => {
-    const localDefault = "local_steam_user";
+    const configuredDefault = "local_steam_user";
     const steamId = "76561198000000001";
     const getLibrary = vi
       .fn()
@@ -227,7 +227,7 @@ describe("local MCP tool bindings", () => {
         searchGames: { execute: vi.fn() },
         getGame: { execute: vi.fn() },
       },
-      localDefault,
+      configuredDefault,
     );
     const signal = new AbortController().signal;
 
@@ -254,11 +254,11 @@ describe("local MCP tool bindings", () => {
       getFriends.mock.calls[0]?.[0],
       getWishlist.mock.calls[0]?.[0],
     ]).toEqual([
-      { explicitUser: "ada", localDefault, limit: 2 },
-      { explicitUser: "ada", localDefault, limit: 1 },
-      { explicitUser: "ada", localDefault, appId: 10, limit: 3 },
-      { explicitUser: "ada", localDefault, limit: 2 },
-      { explicitUser: "ada", localDefault, limit: 4 },
+      { explicitUser: "ada", configuredDefault, limit: 2 },
+      { explicitUser: "ada", configuredDefault, limit: 1 },
+      { explicitUser: "ada", configuredDefault, appId: 10, limit: 3 },
+      { explicitUser: "ada", configuredDefault, limit: 2 },
+      { explicitUser: "ada", configuredDefault, limit: 4 },
     ]);
     expect(
       results.map(
@@ -272,7 +272,7 @@ describe("local MCP tool bindings", () => {
       "Steam friends: 2 of 20.",
       "Steam wishlist: 4 of 8 games.",
     ]);
-    expect(JSON.stringify(results)).not.toContain(localDefault);
+    expect(JSON.stringify(results)).not.toContain(configuredDefault);
   });
 
   it("cancels service work when the configured execution deadline elapses", async () => {

@@ -1,6 +1,6 @@
 # Steam upstream source register
 
-Last reviewed: 2026-07-20
+Last reviewed: 2026-07-24
 
 This register is the approval boundary for outbound Steam operations. An
 endpoint is not eligible for an adapter merely because it is Steam-operated or
@@ -32,12 +32,15 @@ stored.
   unsigned `appid`, `priority`, and Unix-seconds `date_added`. Only the
   requested range receives optional `store_item` enrichment with an app ID,
   success/visibility flags, optional name, and optional best purchase option.
-  Price values are decimal strings representing minor units; discounted options
-  may include original minor units, discount percentage, and active discounts.
-  The endpoint still returns all wishlist IDs, so `page_size` bounds enrichment,
-  not response length; the adapter must discard non-page items after validation
-  and retain the shared response-byte ceiling. An exact empty `response` is
-  ambiguous between hidden and empty data and must be treated conservatively as
+  The current best purchase option reports `final_price_in_cents` as a decimal
+  string representing minor units, while the adapter also accepts the earlier
+  `price_in_cents` field for compatibility. `best_purchase_option` may be null;
+  the item remains available without invented price data. Earlier discounted
+  options may include original minor units and discount percentage. The endpoint
+  still returns all wishlist IDs, so `page_size` bounds enrichment, not response
+  length; the adapter must discard non-page items after validation and retain
+  the shared response-byte ceiling. An exact empty `response` is ambiguous
+  between hidden and empty data and must be treated conservatively as
   unavailable/private rather than a known empty wishlist. Currency is omitted
   unless it is provided by the response or a separately controlled
   country-to-currency policy; formatted price strings are never parsed.

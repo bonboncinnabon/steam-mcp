@@ -9,12 +9,12 @@ interface SteamIdentityResolverDependencies {
 
 export interface ResolveSteamIdentityInput {
   readonly explicitUser?: string;
-  readonly localDefault?: string;
+  readonly configuredDefault?: string;
 }
 
 export interface ResolvedSteamIdentity {
   readonly steamId: SteamId64;
-  readonly source: "explicit" | "local_default";
+  readonly source: "explicit" | "configured_default";
 }
 
 export interface SteamIdentityResolver {
@@ -60,12 +60,12 @@ export function createSteamIdentityResolver(
           "The requested Steam user was not found",
         );
       }
-      if (input.localDefault !== undefined) {
-        const reference = parseSteamUserReference(input.localDefault);
+      if (input.configuredDefault !== undefined) {
+        const reference = parseSteamUserReference(input.configuredDefault);
         if (reference.kind === "steam_id") {
           return {
             steamId: reference.steamId,
-            source: "local_default",
+            source: "configured_default",
           };
         }
         const steamId = await dependencies.steamIdentities.resolveVanityName(
@@ -73,7 +73,7 @@ export function createSteamIdentityResolver(
           signal,
         );
         if (steamId !== undefined) {
-          return { steamId, source: "local_default" };
+          return { steamId, source: "configured_default" };
         }
         throw new SteamIdentityResolutionError(
           "NOT_FOUND",
@@ -82,7 +82,7 @@ export function createSteamIdentityResolver(
       }
       throw new SteamIdentityResolutionError(
         "IDENTITY_NOT_LINKED",
-        "Provide a Steam user, or configure STEAM_USER for local use",
+        "Provide a Steam user, or configure STEAM_USER",
       );
     },
   };

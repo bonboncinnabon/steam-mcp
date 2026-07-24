@@ -106,7 +106,7 @@ describe("steam_get_player application service", () => {
           .mockRejectedValue(
             new SteamIdentityResolutionError(
               "IDENTITY_NOT_LINKED",
-              "Provide a Steam user, or configure STEAM_USER for local use",
+              "Provide a Steam user, or configure STEAM_USER",
             ),
           ),
       },
@@ -119,7 +119,7 @@ describe("steam_get_player application service", () => {
       ok: false,
       error: {
         code: "IDENTITY_NOT_LINKED",
-        message: "Provide a Steam user, or configure STEAM_USER for local use",
+        message: "Provide a Steam user, or configure STEAM_USER",
         retryable: false,
       },
     });

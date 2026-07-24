@@ -196,7 +196,8 @@ applies only to those redacted records.
 
 - **The bearer secret grants instance access, not Steam identity.** It carries
   no user subject and does not affect quota attribution. The explicit `user`
-  input identifies public Steam data; no association is created.
+  input identifies public Steam data and overrides any operator-configured
+  `STEAM_USER` default; neither creates a caller association.
 - **Steam API credentials authenticate the application.** HTTP deployments use
   an operator-owned secret; local deployments use `STEAM_API_KEY`. Tokens and
   Steam keys never cross those roles.

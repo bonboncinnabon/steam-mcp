@@ -29,6 +29,7 @@ network listener or MCP access credential is involved.
 The operator runs `steam-mcp-hosted` behind TLS and supplies:
 
 - a deployment-owned `STEAM_API_KEY`;
+- an optional operator-wide `STEAM_USER` default;
 - one high-entropy `MCP_ACCESS_TOKEN`;
 - the canonical HTTPS `MCP_RESOURCE_URI`;
 - allowed Host values and, when needed, browser origins; and
@@ -102,13 +103,13 @@ The token authorizes access to the instance. It has no user subject and is not
 mapped to a Steam identity. Subject-oriented tools resolve `user` in this order:
 
 1. explicit tool input;
-2. local-only `STEAM_USER` default;
+2. operator-configured `STEAM_USER` default;
 3. `IDENTITY_NOT_LINKED` without an upstream request.
 
-HTTP mode rejects `STEAM_USER`, so its player-oriented calls always require an
-explicit public Steam user. The user may be a SteamID64, vanity name, or
-allowlisted Steam Community profile URL and may refer to any public profile.
-Authentication does not reveal private Steam data.
+In HTTP mode the default is shared by every authorized client and never inferred
+from the bearer credential; explicit tool input still wins. The user may be a
+SteamID64, vanity name, or allowlisted Steam Community profile URL and may refer
+to any public profile. Authentication does not reveal private Steam data.
 
 ## 6. HTTP request boundary
 

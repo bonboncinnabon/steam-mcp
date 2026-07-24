@@ -400,14 +400,12 @@ describe("parseHostedConfig", () => {
     ).toThrow("Invalid numeric configuration: MAX_RETRY_ATTEMPTS");
   });
 
-  it("rejects a process-wide Steam user in hosted mode", () => {
-    expect(() =>
+  it("reads an optional operator-wide default Steam user", () => {
+    expect(
       parseHostedConfig({
         ...BASELINE_HOSTED_ENVIRONMENT,
-        STEAM_API_KEY: "synthetic-hosted-value",
-        STEAM_USER: "unsafe-process-default",
-        MCP_RESOURCE_URI: "https://steam.example/mcp",
+        STEAM_USER: "operator-default",
       }),
-    ).toThrow("STEAM_USER is not allowed in hosted mode");
+    ).toMatchObject({ steamUser: "operator-default" });
   });
 });

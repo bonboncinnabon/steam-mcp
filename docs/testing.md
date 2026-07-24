@@ -47,7 +47,9 @@ pnpm test:live
 
 Use a dedicated Steam test account and credential, never a personal account or
 the normal local `STEAM_API_KEY`. The probes retain no raw responses and emit
-only fixed probe/outcome counters. Never paste the resolved key into evidence,
+only fixed probe/outcome counters plus the observed outbound call count for each
+probe. The live executor disables retries, so `observedCalls` is the direct
+adapter call cost for that run. Never paste the resolved key into evidence,
 fixtures, command output, or source control.
 
 ## Evidence template

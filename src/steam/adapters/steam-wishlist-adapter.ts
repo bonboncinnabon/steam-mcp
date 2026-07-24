@@ -19,11 +19,18 @@ const minorUnitsSchema = z
   .regex(/^\d+$/)
   .refine((value) => Number.isSafeInteger(Number(value)));
 
-const purchaseOptionSchema = z.object({
-  price_in_cents: minorUnitsSchema,
-  original_price_in_cents: minorUnitsSchema.optional(),
-  discount_pct: z.number().int().min(0).max(100).optional(),
-});
+const purchaseOptionSchema = z
+  .object({
+    price_in_cents: minorUnitsSchema.optional(),
+    final_price_in_cents: minorUnitsSchema.optional(),
+    original_price_in_cents: minorUnitsSchema.optional(),
+    discount_pct: z.number().int().min(0).max(100).optional(),
+  })
+  .refine(
+    (option) =>
+      option.final_price_in_cents !== undefined ||
+      option.price_in_cents !== undefined,
+  );
 
 const wishlistItemSchema = z
   .object({
@@ -36,7 +43,7 @@ const wishlistItemSchema = z
         success: z.union([z.literal(0), z.literal(1)]),
         visible: z.boolean(),
         name: z.string().optional(),
-        best_purchase_option: purchaseOptionSchema.optional(),
+        best_purchase_option: purchaseOptionSchema.nullish(),
       })
       .optional(),
   })
@@ -151,15 +158,17 @@ function normalizeWishlistItem(
 ): WishlistItem {
   const storeItem = item.store_item;
   const purchaseOption = storeItem?.best_purchase_option;
+  const priceInCents =
+    purchaseOption?.final_price_in_cents ?? purchaseOption?.price_in_cents;
   return {
     appId: parseAppId(item.appid),
     ...(storeItem?.name === undefined ? {} : { name: storeItem.name }),
     available: storeItem?.success === 1 && storeItem.visible,
-    ...(purchaseOption === undefined
+    ...(priceInCents === undefined
       ? {}
       : {
           price: {
-            minorUnits: Number(purchaseOption.price_in_cents),
+            minorUnits: Number(priceInCents),
             currency,
           },
         }),

@@ -46,12 +46,12 @@ describe("Steam MCP tool contracts", () => {
     expect(() => schema.parse({ user: "not a valid reference" })).toThrow();
   });
 
-  it("documents the local-only identity default without suggesting account linking", () => {
+  it("documents the operator-configured identity default without suggesting account linking", () => {
     const description =
       STEAM_TOOL_CONTRACTS.steam_get_player.inputSchema.shape.user.unwrap()
         .description;
 
-    expect(description).toContain("STEAM_USER in local mode");
+    expect(description).toContain("operator-configured STEAM_USER default");
     expect(description).not.toContain("linked");
   });
 

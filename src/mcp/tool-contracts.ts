@@ -19,7 +19,7 @@ const publicUserSchema = z
     "Invalid Steam user reference",
   )
   .describe(
-    "SteamID64, vanity name, or HTTPS steamcommunity.com profile URL; omit to use STEAM_USER in local mode.",
+    "SteamID64, vanity name, or HTTPS steamcommunity.com profile URL; omit to use the operator-configured STEAM_USER default.",
   );
 
 const cursorSchema = z

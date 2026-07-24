@@ -48,7 +48,7 @@ type ToolInput<Name extends SteamToolName> = z.output<
 
 export function createLocalToolBindings(
   services: LocalToolServices,
-  localDefault?: string,
+  configuredDefault?: string,
   executionDeadlineMs?: number,
 ): SteamToolBindings {
   const boundedSignal = (signal: AbortSignal): AbortSignal =>
@@ -60,7 +60,7 @@ export function createLocalToolBindings(
     steam_get_player: createMcpToolHandler({
       execute: (input: ToolInput<"steam_get_player">, signal) =>
         services.getPlayer.execute(
-          mapSubjectInput(input, localDefault),
+          mapSubjectInput(input, configuredDefault),
           boundedSignal(signal),
         ),
       renderSuccess: (data) => `Steam player: ${data.profile.displayName}.`,
@@ -68,7 +68,7 @@ export function createLocalToolBindings(
     steam_get_library: createMcpToolHandler({
       execute: (input: ToolInput<"steam_get_library">, signal) =>
         services.getLibrary.execute(
-          mapSubjectInput(input, localDefault) as SteamGetLibraryInput,
+          mapSubjectInput(input, configuredDefault) as SteamGetLibraryInput,
           boundedSignal(signal),
         ),
       renderSuccess: (data) =>
@@ -77,7 +77,10 @@ export function createLocalToolBindings(
     steam_get_recent_activity: createMcpToolHandler({
       execute: (input: ToolInput<"steam_get_recent_activity">, signal) =>
         services.getRecentActivity.execute(
-          mapSubjectInput(input, localDefault) as SteamGetRecentActivityInput,
+          mapSubjectInput(
+            input,
+            configuredDefault,
+          ) as SteamGetRecentActivityInput,
           boundedSignal(signal),
         ),
       renderSuccess: (data) =>
@@ -86,7 +89,10 @@ export function createLocalToolBindings(
     steam_get_achievements: createMcpToolHandler({
       execute: (input: ToolInput<"steam_get_achievements">, signal) =>
         services.getAchievements.execute(
-          mapSubjectInput(input, localDefault) as SteamGetAchievementsInput,
+          mapSubjectInput(
+            input,
+            configuredDefault,
+          ) as SteamGetAchievementsInput,
           boundedSignal(signal),
         ),
       renderSuccess: (data) =>
@@ -95,7 +101,7 @@ export function createLocalToolBindings(
     steam_get_friends: createMcpToolHandler({
       execute: (input: ToolInput<"steam_get_friends">, signal) =>
         services.getFriends.execute(
-          mapSubjectInput(input, localDefault) as SteamGetFriendsInput,
+          mapSubjectInput(input, configuredDefault) as SteamGetFriendsInput,
           boundedSignal(signal),
         ),
       renderSuccess: (data) =>
@@ -104,7 +110,7 @@ export function createLocalToolBindings(
     steam_get_wishlist: createMcpToolHandler({
       execute: (input: ToolInput<"steam_get_wishlist">, signal) =>
         services.getWishlist.execute(
-          mapSubjectInput(input, localDefault) as SteamGetWishlistInput,
+          mapSubjectInput(input, configuredDefault) as SteamGetWishlistInput,
           boundedSignal(signal),
         ),
       renderSuccess: (data) =>
@@ -129,13 +135,13 @@ export function createLocalToolBindings(
 
 function mapSubjectInput<Input extends { readonly user?: string | undefined }>(
   input: Input,
-  localDefault: string | undefined,
+  configuredDefault: string | undefined,
 ): Omit<Input, "user"> & ResolveSteamIdentityInput {
   const { user, ...serviceInput } = input;
   return {
     ...serviceInput,
     ...(user === undefined ? {} : { explicitUser: user }),
-    ...(localDefault === undefined ? {} : { localDefault }),
+    ...(configuredDefault === undefined ? {} : { configuredDefault }),
   };
 }
 

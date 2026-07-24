@@ -16,6 +16,7 @@ export interface LocalConfig {
 export interface HostedConfig {
   readonly mode: "hosted";
   readonly steamApiKey: string;
+  readonly steamUser?: string;
   readonly accessToken: string;
   readonly resourceUri: string;
   readonly allowedHosts: readonly string[];
@@ -204,12 +205,9 @@ export function parseLocalConfig(environment: Environment): LocalConfig {
 }
 
 export function parseHostedConfig(environment: Environment): HostedConfig {
-  if (optionalNonBlank(environment["STEAM_USER"]) !== undefined) {
-    throw new Error("STEAM_USER is not allowed in hosted mode");
-  }
-
   const boundary = parseHttpBoundaryConfig(environment);
   const resourceUri = requiredHttpsUrl(environment, "MCP_RESOURCE_URI");
+  const steamUser = optionalNonBlank(environment["STEAM_USER"]);
   if (
     !createHttpRequestBoundary(boundary).check(
       new Headers({ host: new URL(resourceUri).host }),
@@ -221,6 +219,7 @@ export function parseHostedConfig(environment: Environment): HostedConfig {
   return {
     mode: "hosted",
     steamApiKey: required(environment, "STEAM_API_KEY"),
+    ...(steamUser === undefined ? {} : { steamUser }),
     accessToken: requiredAccessToken(environment),
     resourceUri,
     ...boundary,

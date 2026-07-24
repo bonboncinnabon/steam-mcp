@@ -92,9 +92,9 @@ export function createSteamGetLibraryService(
         ...(input.explicitUser === undefined
           ? {}
           : { explicitUser: input.explicitUser }),
-        ...(input.localDefault === undefined
+        ...(input.configuredDefault === undefined
           ? {}
-          : { localDefault: input.localDefault }),
+          : { configuredDefault: input.configuredDefault }),
       };
       let identity;
       try {

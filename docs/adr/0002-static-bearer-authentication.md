@@ -45,7 +45,7 @@ available for clients that can launch a local process.
 - Every approved client shares one credential. Rotation invalidates all clients
   at once, and individual clients cannot be revoked or attributed.
 - The token cannot support per-user quotas, ownership, consent, or Steam account
-  linking. Player-oriented tools continue to require an explicit `user` in HTTP
-  mode.
+  linking. Player-oriented tools use explicit `user` input or the optional
+  operator-wide `STEAM_USER` default; the token is never an identity fallback.
 - This model is appropriate only for private operator-controlled deployments.
   Public or multi-tenant service would require a new security design and ADR.

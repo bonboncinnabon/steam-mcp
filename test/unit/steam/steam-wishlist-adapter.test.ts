@@ -95,6 +95,119 @@ describe("Steam wishlist adapter", () => {
     expect(receivedSignal).toBe(signal);
   });
 
+  it("normalizes the current final-price purchase option", async () => {
+    const execute = vi.fn<SteamWishlistHttpExecutor>().mockResolvedValue({
+      status: 200,
+      headers: new Headers(),
+      body: new TextEncoder().encode(
+        JSON.stringify({
+          response: {
+            items: [
+              {
+                appid: 620,
+                priority: 1,
+                date_added: 1_710_000_000,
+                store_item: {
+                  appid: 620,
+                  success: 1,
+                  visible: true,
+                  name: "Portal 2",
+                  best_purchase_option: {
+                    final_price_in_cents: "499",
+                  },
+                },
+              },
+            ],
+          },
+        }),
+      ),
+      finalUrl:
+        "https://api.steampowered.com/IWishlistService/GetWishlistSortedFiltered/v1/",
+    });
+    const adapter = createSteamWishlistAdapter({
+      execute,
+      enabled: true,
+      countryCode: "US",
+      currency: parseCurrencyCode("USD"),
+      language: "english",
+      maxPageSize: 100,
+    });
+
+    await expect(
+      adapter.getWishlist(
+        parseSteamId64("76561198000000000"),
+        { startIndex: 0, pageSize: 20 },
+        new AbortController().signal,
+      ),
+    ).resolves.toEqual({
+      visibility: "public",
+      totalCount: 1,
+      items: [
+        {
+          appId: 620,
+          name: "Portal 2",
+          available: true,
+          price: { minorUnits: 499, currency: "USD" },
+        },
+      ],
+    });
+  });
+
+  it("preserves an available item when its current purchase option is null", async () => {
+    const execute = vi.fn<SteamWishlistHttpExecutor>().mockResolvedValue({
+      status: 200,
+      headers: new Headers(),
+      body: new TextEncoder().encode(
+        JSON.stringify({
+          response: {
+            items: [
+              {
+                appid: 440,
+                priority: 1,
+                date_added: 1_720_000_000,
+                store_item: {
+                  appid: 440,
+                  success: 1,
+                  visible: true,
+                  name: "Team Fortress 2",
+                  best_purchase_option: null,
+                },
+              },
+            ],
+          },
+        }),
+      ),
+      finalUrl:
+        "https://api.steampowered.com/IWishlistService/GetWishlistSortedFiltered/v1/",
+    });
+    const adapter = createSteamWishlistAdapter({
+      execute,
+      enabled: true,
+      countryCode: "US",
+      currency: parseCurrencyCode("USD"),
+      language: "english",
+      maxPageSize: 100,
+    });
+
+    await expect(
+      adapter.getWishlist(
+        parseSteamId64("76561198000000000"),
+        { startIndex: 0, pageSize: 20 },
+        new AbortController().signal,
+      ),
+    ).resolves.toEqual({
+      visibility: "public",
+      totalCount: 1,
+      items: [
+        {
+          appId: 440,
+          name: "Team Fortress 2",
+          available: true,
+        },
+      ],
+    });
+  });
+
   it("maps contract drift to a sanitized best-effort failure", async () => {
     const execute = vi.fn<SteamWishlistHttpExecutor>().mockResolvedValue({
       status: 200,

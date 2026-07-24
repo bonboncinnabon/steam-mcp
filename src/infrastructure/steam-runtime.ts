@@ -53,7 +53,7 @@ interface SteamMcpServerOptions {
   readonly steamApiKey: string;
   readonly policy: ServicePolicy;
   readonly execute: SteamRequestExecutor;
-  readonly localDefault?: string;
+  readonly configuredDefault?: string;
   readonly bestEffortSources?: BestEffortSourcePolicy;
 }
 
@@ -166,7 +166,7 @@ export function createSteamMcpServer(
     server,
     createLocalToolBindings(
       services,
-      options.localDefault,
+      options.configuredDefault,
       options.policy.executionDeadlineMs,
     ),
     createSteamToolContracts({

@@ -92,9 +92,11 @@ export async function publishNpmPackage(options) {
         contentDigest: canonicalArchiveDigest(registryArchive),
       };
     }
+    const lookupOutput = `${result.stdout}\n${result.stderr}`;
     if (
-      result.stderr.includes("ERR_PNPM_FETCH_404") ||
-      result.stderr.includes("404")
+      lookupOutput.includes("ERR_PNPM_FETCH_404") ||
+      lookupOutput.includes("ERR_PNPM_PACKAGE_NOT_FOUND") ||
+      lookupOutput.includes("404")
     ) {
       return undefined;
     }

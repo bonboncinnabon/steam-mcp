@@ -1,3 +1,10 @@
+import { createHash } from "node:crypto";
+import { gunzipSync } from "node:zlib";
+
+export function canonicalArchiveDigest(archive) {
+  return createHash("sha256").update(gunzipSync(archive)).digest("hex");
+}
+
 export function releaseArchiveName(packageName, version) {
   return `${packageName.replace(/^@/u, "").replaceAll("/", "-")}-${version}.tgz`;
 }

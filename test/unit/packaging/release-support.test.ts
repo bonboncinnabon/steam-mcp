@@ -2,11 +2,13 @@ import { createHash } from "node:crypto";
 import { mkdtemp, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { gzipSync } from "node:zlib";
 
 import { describe, expect, it } from "vitest";
 
 import { publishNpmPackage } from "../../../scripts/publish-npm.mjs";
 import {
+  canonicalArchiveDigest,
   npmPublicationAction,
   releaseArchiveName,
 } from "../../../scripts/release-support.mjs";
@@ -31,13 +33,27 @@ describe("release support", () => {
     ).toThrow("Published package integrity does not match the local artifact");
   });
 
+  it("compares package content independently of gzip encoding", () => {
+    const tar = Buffer.from("canonical package tar stream");
+    const fast = gzipSync(tar, { level: 1 });
+    const compact = gzipSync(tar, { level: 9 });
+
+    expect(fast).not.toEqual(compact);
+    expect(canonicalArchiveDigest(fast)).toBe(canonicalArchiveDigest(compact));
+  });
+
   it("publishes a missing exact archive and records verified registry evidence", async () => {
     const directory = await mkdtemp(join(tmpdir(), "steam-mcp-publish-test-"));
     const archive = join(directory, "abiswas97-steam-mcp-0.1.0.tgz");
     const evidence = join(directory, "npm-registry.json");
-    const archiveBytes = Buffer.from("release-candidate");
-    const integrity = `sha512-${createHash("sha512")
+    const tarBytes = Buffer.from("release-candidate");
+    const archiveBytes = gzipSync(tarBytes, { level: 1 });
+    const registryBytes = gzipSync(tarBytes, { level: 9 });
+    const localIntegrity = `sha512-${createHash("sha512")
       .update(archiveBytes)
+      .digest("base64")}`;
+    const registryIntegrity = `sha512-${createHash("sha512")
+      .update(registryBytes)
       .digest("base64")}`;
     await writeFile(
       join(directory, "package.json"),
@@ -59,8 +75,17 @@ describe("release support", () => {
         registryChecks += 1;
         return registryChecks === 1
           ? { status: 1, stdout: "", stderr: "404 Not Found" }
-          : { status: 0, stdout: JSON.stringify(integrity), stderr: "" };
+          : {
+              status: 0,
+              stdout: JSON.stringify({
+                integrity: registryIntegrity,
+                tarball:
+                  "https://registry.npmjs.org/@abiswas97/steam-mcp/-/steam-mcp-0.1.0.tgz",
+              }),
+              stderr: "",
+            };
       },
+      download: () => Promise.resolve(registryBytes),
       wait: () => Promise.resolve(),
     });
 
@@ -74,7 +99,9 @@ describe("release support", () => {
     ]);
     expect(JSON.parse(await readFile(evidence, "utf8"))).toEqual({
       package: "@abiswas97/steam-mcp@0.1.0",
-      integrity,
+      integrity: registryIntegrity,
+      releaseArtifactIntegrity: localIntegrity,
+      canonicalTarSha256: canonicalArchiveDigest(archiveBytes),
     });
   });
 });

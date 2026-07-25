@@ -8,6 +8,7 @@ export interface PublishNpmPackageOptions {
   readonly archiveArgument: string;
   readonly evidenceArgument: string;
   readonly cwd?: string;
+  readonly download?: (url: string) => Promise<Uint8Array>;
   readonly run?: (
     command: string,
     arguments_: readonly string[],

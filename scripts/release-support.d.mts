@@ -1,3 +1,5 @@
+export function canonicalArchiveDigest(archive: Uint8Array): string;
+
 export function releaseArchiveName(
   packageName: string,
   version: string,

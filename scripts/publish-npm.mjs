@@ -4,18 +4,50 @@ import { readFile, writeFile } from "node:fs/promises";
 import { basename, resolve } from "node:path";
 import process from "node:process";
 import { setTimeout as delay } from "node:timers/promises";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, URL } from "node:url";
 
 import {
+  canonicalArchiveDigest,
   npmPublicationAction,
   releaseArchiveName,
 } from "./release-support.mjs";
+
+const MAX_REGISTRY_ARCHIVE_BYTES = 32 * 1024 * 1024;
+
+function archiveIntegrity(archive) {
+  return `sha512-${createHash("sha512").update(archive).digest("base64")}`;
+}
+
+async function downloadRegistryArchive(url) {
+  const parsed = new URL(url);
+  if (
+    parsed.protocol !== "https:" ||
+    parsed.hostname !== "registry.npmjs.org"
+  ) {
+    throw new Error("Registry returned an invalid package tarball URL");
+  }
+  const response = await globalThis.fetch(parsed);
+  const declaredLength = Number(response.headers.get("content-length"));
+  if (
+    !response.ok ||
+    (Number.isFinite(declaredLength) &&
+      declaredLength > MAX_REGISTRY_ARCHIVE_BYTES)
+  ) {
+    throw new Error("Registry package download failed");
+  }
+  const archive = new Uint8Array(await response.arrayBuffer());
+  if (archive.byteLength > MAX_REGISTRY_ARCHIVE_BYTES) {
+    throw new Error("Registry package exceeded the download limit");
+  }
+  return archive;
+}
 
 export async function publishNpmPackage(options) {
   const {
     archiveArgument,
     evidenceArgument,
     cwd = process.cwd(),
+    download = downloadRegistryArchive,
     run = (command, arguments_) =>
       spawnSync(command, arguments_, { encoding: "utf8" }),
     wait = delay,
@@ -30,24 +62,35 @@ export async function publishNpmPackage(options) {
     throw new Error("Package archive name does not match package metadata");
   }
 
-  const localIntegrity = `sha512-${createHash("sha512")
-    .update(await readFile(archive))
-    .digest("base64")}`;
+  const localArchive = await readFile(archive);
+  const localIntegrity = archiveIntegrity(localArchive);
+  const localContentDigest = canonicalArchiveDigest(localArchive);
   const packageVersion = `${manifest.name}@${manifest.version}`;
 
-  const publishedIntegrity = () => {
-    const result = run("pnpm", [
-      "view",
-      packageVersion,
-      "dist.integrity",
-      "--json",
-    ]);
+  const publishedPackage = async () => {
+    const result = run("pnpm", ["view", packageVersion, "dist", "--json"]);
     if (result.status === 0) {
       const parsed = JSON.parse(result.stdout);
-      if (typeof parsed !== "string") {
+      if (
+        typeof parsed !== "object" ||
+        parsed === null ||
+        !("integrity" in parsed) ||
+        typeof parsed.integrity !== "string" ||
+        !("tarball" in parsed) ||
+        typeof parsed.tarball !== "string"
+      ) {
         throw new Error("Registry returned invalid package integrity metadata");
       }
-      return parsed;
+      const registryArchive = await download(parsed.tarball);
+      if (archiveIntegrity(registryArchive) !== parsed.integrity) {
+        throw new Error(
+          "Registry package download failed integrity validation",
+        );
+      }
+      return {
+        integrity: parsed.integrity,
+        contentDigest: canonicalArchiveDigest(registryArchive),
+      };
     }
     if (
       result.stderr.includes("ERR_PNPM_FETCH_404") ||
@@ -58,7 +101,11 @@ export async function publishNpmPackage(options) {
     throw new Error("Registry package lookup failed");
   };
 
-  const action = npmPublicationAction(localIntegrity, publishedIntegrity());
+  const existingPackage = await publishedPackage();
+  const action = npmPublicationAction(
+    localContentDigest,
+    existingPackage?.contentDigest,
+  );
   if (action === "publish") {
     const published = run("npm", [
       "publish",
@@ -72,24 +119,26 @@ export async function publishNpmPackage(options) {
     }
   }
 
-  let registryIntegrity;
+  let registryPackage;
   for (let attempt = 0; attempt < 12; attempt += 1) {
-    registryIntegrity = publishedIntegrity();
-    if (registryIntegrity === localIntegrity) {
+    registryPackage = await publishedPackage();
+    if (registryPackage !== undefined) {
+      npmPublicationAction(localContentDigest, registryPackage.contentDigest);
       break;
     }
     await wait(5_000);
   }
-  if (registryIntegrity === undefined) {
+  if (registryPackage === undefined) {
     throw new Error("Published package was not visible before the deadline");
   }
-  npmPublicationAction(localIntegrity, registryIntegrity);
 
   await writeFile(
     resolve(cwd, evidenceArgument),
     `${JSON.stringify({
       package: packageVersion,
-      integrity: localIntegrity,
+      integrity: registryPackage.integrity,
+      releaseArtifactIntegrity: localIntegrity,
+      canonicalTarSha256: localContentDigest,
     })}\n`,
     { flag: "wx" },
   );

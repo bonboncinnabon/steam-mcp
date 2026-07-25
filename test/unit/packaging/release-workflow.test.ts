@@ -161,7 +161,10 @@ describe("release workflow", () => {
     expect(container).toContain("type=semver,pattern={{version}}");
     expect(container).toContain("type=sha,format=long");
     expect(container).toContain("push: true");
-    expectContainsAll(actions(release), ["actions/download-artifact"]);
+    expectContainsAll(actions(release), [
+      "actions/checkout",
+      "actions/download-artifact",
+    ]);
     expect(normalizedRelease).toContain(
       'gh release create "$GITHUB_REF_NAME" artifacts/* --verify-tag --generate-notes --title "$GITHUB_REF_NAME"',
     );

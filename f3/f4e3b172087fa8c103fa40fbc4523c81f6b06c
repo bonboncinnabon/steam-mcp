@@ -1,0 +1,21 @@
+test/unit/packaging/package-metadata.test.ts
+  s_336c0404d47041::t_1f74c8d07c378a 20
+package.json
+  s_336c0404d47041::t_ef159e3edb6a31 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "f3f4e3b172087fa8c103fa40fbc4523c81f6b06c",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

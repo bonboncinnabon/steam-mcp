@@ -38,7 +38,7 @@ Export your credential in the environment, then start the package executable:
 ```sh
 export STEAM_API_KEY="<your Steam Web API key>"
 export STEAM_USER="<optional SteamID64, vanity name, or profile URL>"
-pnpm dlx steam-mcp-server
+pnpm dlx @abiswas97/steam-mcp
 ```
 
 `STEAM_USER` is optional. It supplies a local default for the six
@@ -50,11 +50,11 @@ development-from-source instructions, see [Local setup](docs/local-setup.md).
 
 ## Self-hosted HTTP quick start
 
-The package also exposes `steam-mcp-hosted`, a portable Node.js executable for
-running a Streamable HTTP server protected by one operator-configured bearer
-token. Versioned releases also publish the same executable as
-`ghcr.io/abiswas97/steam-mcp`. This repository does not operate a hosted
-provider, user-account system, or public shared service.
+The same `steam-mcp` executable starts a Streamable HTTP server when invoked
+with `serve`. The server is protected by one operator-configured bearer token.
+Versioned releases also publish a container at `ghcr.io/abiswas97/steam-mcp`.
+This repository does not operate a hosted provider, user-account system, or
+public shared service.
 
 Generate a high-entropy token, configure the required Steam, token, resource,
 and Host environment variables, then run the packaged executable:
@@ -65,14 +65,14 @@ export STEAM_USER="<optional shared default Steam user>"
 export MCP_ACCESS_TOKEN="<random secret of at least 32 characters>"
 export MCP_RESOURCE_URI="https://mcp.example.com/mcp"
 export ALLOWED_HOSTS="mcp.example.com"
-pnpm dlx --package steam-mcp-server steam-mcp-hosted
+pnpm dlx @abiswas97/steam-mcp serve
 ```
 
-The executable listens on plain HTTP (`0.0.0.0:3000` by default). Production
-deployments must terminate TLS at a trusted reverse proxy and expose the exact
-HTTPS `MCP_RESOURCE_URI`. The initial quota and concurrency implementations are
-process-local, so run exactly one instance until a distributed atomic quota
-adapter exists.
+The executable listens on plain HTTP (`127.0.0.1:3000` by default). Production
+deployments must explicitly configure the listener address, terminate TLS at a
+trusted reverse proxy, and expose the exact HTTPS `MCP_RESOURCE_URI`. The
+initial quota and concurrency implementations are process-local, so run exactly
+one instance until a distributed atomic quota adapter exists.
 
 Remote clients must support configuring a fixed `Authorization: Bearer <token>`
 header. OAuth discovery and interactive login are not part of v1. See

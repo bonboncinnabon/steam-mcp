@@ -6,7 +6,6 @@ import { createSteamDeckAdapter } from "../../src/steam/adapters/steam-deck-adap
 import { createSteamPlayerAdapter } from "../../src/steam/adapters/steam-player-adapter.js";
 import { createSteamReviewAdapter } from "../../src/steam/adapters/steam-review-adapter.js";
 import { createSteamStoreAdapter } from "../../src/steam/adapters/steam-store-adapter.js";
-import { createSteamTagAdapter } from "../../src/steam/adapters/steam-tag-adapter.js";
 import { createSteamWishlistAdapter } from "../../src/steam/adapters/steam-wishlist-adapter.js";
 import { executeSteamRequest } from "../../src/steam/http/steam-http-client.js";
 import type { SteamHttpRequest } from "../../src/steam/http/steam-request.js";
@@ -151,20 +150,5 @@ describe.skipIf(!liveEnabled)("live Steam contracts", () => {
     );
 
     expect(reviews?.totalPositive).toBeGreaterThanOrEqual(0);
-  });
-
-  it("validates StoreBrowse tags and the localized vocabulary", async () => {
-    const adapter = createSteamTagAdapter({
-      execute,
-      enabled: true,
-      countryCode: "US",
-      language: "english",
-    });
-
-    const tags = await probe("tags", () =>
-      adapter.getGameTags(publicProbeAppId, new AbortController().signal),
-    );
-
-    expect(tags?.length).toBeGreaterThan(0);
   });
 });

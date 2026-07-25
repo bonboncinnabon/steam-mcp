@@ -1,4 +1,5 @@
 import { request as nodeRequest, type IncomingHttpHeaders } from "node:http";
+import { connect, type Socket } from "node:net";
 
 import { describe, expect, it, vi } from "vitest";
 
@@ -6,6 +7,7 @@ import { startNodeHttpServer } from "../../../src/transports/node-http.js";
 
 interface ClientRequestOptions {
   readonly body?: string;
+  readonly bodyChunks?: readonly string[];
   readonly headers?: Readonly<Record<string, string>>;
   readonly method?: string;
 }
@@ -37,7 +39,31 @@ function send(
       },
     );
     request.on("error", reject);
+    for (const chunk of options.bodyChunks ?? []) {
+      request.write(chunk);
+    }
     request.end(options.body);
+  });
+}
+
+function openSocket(url: URL): Promise<Socket> {
+  return new Promise((resolve, reject) => {
+    const socket = connect(Number(url.port), url.hostname, () => {
+      socket.off("error", reject);
+      resolve(socket);
+    });
+    socket.once("error", reject);
+  });
+}
+
+function readSocketToClose(socket: Socket): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    socket.on("data", (chunk: Buffer) => chunks.push(chunk));
+    socket.once("error", reject);
+    socket.once("close", () => {
+      resolve(Buffer.concat(chunks).toString("utf8"));
+    });
   });
 }
 
@@ -46,9 +72,12 @@ describe("Node HTTP adapter", () => {
     const handler = { handle: vi.fn().mockResolvedValue(new Response("ok")) };
     const server = await startNodeHttpServer({
       handler,
+      headersTimeoutMs: 15_000,
       hostname: "127.0.0.1",
+      maxRequestBytes: 1_048_576,
       port: 0,
       publicOrigin: new URL("https://steam.example"),
+      requestTimeoutMs: 30_000,
     });
 
     try {
@@ -77,9 +106,12 @@ describe("Node HTTP adapter", () => {
           }),
         ),
       },
+      headersTimeoutMs: 15_000,
       hostname: "127.0.0.1",
+      maxRequestBytes: 1_048_576,
       port: 0,
       publicOrigin: new URL("https://steam.example"),
+      requestTimeoutMs: 30_000,
     });
 
     try {
@@ -117,9 +149,12 @@ describe("Node HTTP adapter", () => {
     });
     const server = await startNodeHttpServer({
       handler: { handle: vi.fn().mockResolvedValue(new Response(body)) },
+      headersTimeoutMs: 15_000,
       hostname: "127.0.0.1",
+      maxRequestBytes: 1_048_576,
       port: 0,
       publicOrigin: new URL("https://steam.example"),
+      requestTimeoutMs: 30_000,
     });
 
     try {
@@ -153,9 +188,12 @@ describe("Node HTTP adapter", () => {
           return Promise.resolve(new Response(null, { status: 204 }));
         },
       },
+      headersTimeoutMs: 15_000,
       hostname: "127.0.0.1",
+      maxRequestBytes: 1_048_576,
       port: 0,
       publicOrigin: new URL("https://steam.example"),
+      requestTimeoutMs: 30_000,
     });
 
     try {
@@ -189,6 +227,128 @@ describe("Node HTTP adapter", () => {
     }
   });
 
+  it("rejects a declared oversized body without invoking the handler", async () => {
+    const handler = {
+      handle: vi.fn().mockResolvedValue(new Response(null, { status: 204 })),
+    };
+    const server = await startNodeHttpServer({
+      handler,
+      headersTimeoutMs: 15_000,
+      hostname: "127.0.0.1",
+      maxRequestBytes: 4,
+      port: 0,
+      publicOrigin: new URL("https://steam.example"),
+      requestTimeoutMs: 30_000,
+    });
+
+    try {
+      const response = await send(server.origin, {
+        body: "12345",
+        headers: { "content-length": "5" },
+        method: "POST",
+      });
+
+      expect({
+        handlerCalls: handler.handle.mock.calls.length,
+        status: response.status,
+      }).toEqual({ handlerCalls: 0, status: 413 });
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("rejects a streamed oversized body without invoking the handler", async () => {
+    const handler = {
+      handle: vi.fn().mockResolvedValue(new Response(null, { status: 204 })),
+    };
+    const server = await startNodeHttpServer({
+      handler,
+      headersTimeoutMs: 15_000,
+      hostname: "127.0.0.1",
+      maxRequestBytes: 4,
+      port: 0,
+      publicOrigin: new URL("https://steam.example"),
+      requestTimeoutMs: 30_000,
+    });
+
+    try {
+      const response = await send(server.origin, {
+        bodyChunks: ["123", "45"],
+        method: "POST",
+      });
+
+      expect({
+        handlerCalls: handler.handle.mock.calls.length,
+        status: response.status,
+      }).toEqual({ handlerCalls: 0, status: 413 });
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("times out incomplete request headers without invoking the handler", async () => {
+    const handler = {
+      handle: vi.fn().mockResolvedValue(new Response(null, { status: 204 })),
+    };
+    const server = await startNodeHttpServer({
+      handler,
+      headersTimeoutMs: 25,
+      hostname: "127.0.0.1",
+      maxRequestBytes: 1_048_576,
+      port: 0,
+      publicOrigin: new URL("https://steam.example"),
+      requestTimeoutMs: 1_000,
+    });
+
+    try {
+      const socket = await openSocket(server.origin);
+      const response = await readSocketToClose(socket);
+
+      expect({
+        handlerCalls: handler.handle.mock.calls.length,
+        statusLine: response.split("\r\n")[0],
+      }).toEqual({
+        handlerCalls: 0,
+        statusLine: "HTTP/1.1 408 Request Timeout",
+      });
+    } finally {
+      await server.close();
+    }
+  });
+
+  it("times out an incomplete request body without invoking the handler", async () => {
+    const handler = {
+      handle: vi.fn().mockResolvedValue(new Response(null, { status: 204 })),
+    };
+    const server = await startNodeHttpServer({
+      handler,
+      headersTimeoutMs: 25,
+      hostname: "127.0.0.1",
+      maxRequestBytes: 1_048_576,
+      port: 0,
+      publicOrigin: new URL("https://steam.example"),
+      requestTimeoutMs: 25,
+    });
+
+    try {
+      const socket = await openSocket(server.origin);
+      socket.write(
+        "POST /mcp HTTP/1.1\r\nHost: localhost\r\nContent-Length: 10\r\n\r\n123",
+      );
+      const response = await readSocketToClose(socket);
+
+      expect({
+        handlerCalls: handler.handle.mock.calls.length,
+        statusLine: response.split("\r\n")[0],
+      }).toEqual({
+        handlerCalls: 0,
+        statusLine: "HTTP/1.1 408 Request Timeout",
+      });
+    } finally {
+      await server.close();
+    }
+  });
+
   it("aborts the web request when the client disconnects", async () => {
     let signal: AbortSignal | undefined;
     const handler = {
@@ -207,9 +367,12 @@ describe("Node HTTP adapter", () => {
     };
     const server = await startNodeHttpServer({
       handler,
+      headersTimeoutMs: 15_000,
       hostname: "127.0.0.1",
+      maxRequestBytes: 1_048_576,
       port: 0,
       publicOrigin: new URL("https://steam.example"),
+      requestTimeoutMs: 30_000,
     });
 
     try {
@@ -232,18 +395,52 @@ describe("Node HTTP adapter", () => {
     }
   });
 
+  it("reports a fixed category when request handling fails", async () => {
+    const diagnostics: string[] = [];
+    const server = await startNodeHttpServer({
+      handler: {
+        handle: vi
+          .fn()
+          .mockRejectedValue(new Error("private request and credential data")),
+      },
+      headersTimeoutMs: 15_000,
+      hostname: "127.0.0.1",
+      maxRequestBytes: 1_048_576,
+      port: 0,
+      publicOrigin: new URL("https://steam.example"),
+      reportDiagnostic: (category) => diagnostics.push(category),
+      requestTimeoutMs: 30_000,
+    });
+
+    try {
+      const response = await send(server.origin);
+
+      expect(response.status).toBe(500);
+      expect(response.body).not.toContain("private request");
+      expect(diagnostics).toEqual(["request_failed"]);
+    } finally {
+      await server.close();
+    }
+  });
+
   it("makes graceful stop and forced close idempotent", async () => {
     const first = await startNodeHttpServer({
       handler: { handle: vi.fn().mockResolvedValue(new Response()) },
+      headersTimeoutMs: 15_000,
       hostname: "127.0.0.1",
+      maxRequestBytes: 1_048_576,
       port: 0,
       publicOrigin: new URL("https://steam.example"),
+      requestTimeoutMs: 30_000,
     });
     const second = await startNodeHttpServer({
       handler: { handle: vi.fn().mockResolvedValue(new Response()) },
+      headersTimeoutMs: 15_000,
       hostname: "127.0.0.1",
+      maxRequestBytes: 1_048_576,
       port: 0,
       publicOrigin: new URL("https://steam.example"),
+      requestTimeoutMs: 30_000,
     });
 
     const firstStop = first.stop();

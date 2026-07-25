@@ -11,8 +11,6 @@ describe("remote HTTP bearer protection", () => {
     const handler = createHostedMcpHttpHandler({
       resourceUri: "https://steam.example/mcp",
       accessToken: "synthetic-remote-access-token-value",
-      allowedHosts: ["steam.example"],
-      allowedOrigins: [],
       createServer,
     });
 

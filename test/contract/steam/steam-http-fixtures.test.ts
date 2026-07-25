@@ -204,9 +204,10 @@ describe("scrubbed Steam HTTP fixtures", () => {
         buildSteamRequest("storeDetails", { appids: "620" }),
         { fetchImpl, deadlineMs: 10, maxResponseBytes: 10_000 },
       );
-      const rejection = expect(execution).rejects.toThrow(
-        "Steam request deadline exceeded",
-      );
+      const rejection = expect(execution).rejects.toMatchObject({
+        code: "UPSTREAM_UNAVAILABLE",
+        retryable: true,
+      });
       await vi.advanceTimersByTimeAsync(10);
 
       await rejection;
@@ -236,7 +237,10 @@ describe("scrubbed Steam HTTP fixtures", () => {
       },
     );
 
-    await expect(execution).rejects.toThrow("Steam request cancelled");
+    await expect(execution).rejects.toMatchObject({
+      code: "UPSTREAM_UNAVAILABLE",
+      retryable: true,
+    });
     await expect(execution).rejects.not.toThrow(
       "synthetic-private-cancel-reason",
     );

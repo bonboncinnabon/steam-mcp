@@ -15,11 +15,12 @@ describe("public package metadata", () => {
   it("defines a public non-placeholder release and supported executable", async () => {
     const manifest = await packageJson();
 
+    expect(manifest["name"]).toBe("@abiswas97/steam-mcp");
     expect(manifest["private"]).not.toBe(true);
     expect(manifest["version"]).toBe("0.1.0");
+    expect(manifest["publishConfig"]).toEqual({ access: "public" });
     expect(manifest["bin"]).toEqual({
       "steam-mcp": "dist/bin/steam-mcp.js",
-      "steam-mcp-hosted": "dist/bin/steam-mcp-hosted.js",
     });
     expect(manifest["engines"]).toEqual({
       node: ">=22.22.0 <23 || >=24.0.0",
@@ -27,16 +28,38 @@ describe("public package metadata", () => {
     expect(manifest["packageManager"]).toBe("pnpm@11.15.1");
   });
 
-  it("pins every production dependency and publishes required files", async () => {
+  it("publishes only runtime artifacts and user-facing documentation without source maps", async () => {
     const manifest = await packageJson();
     const dependencies = manifest["dependencies"] as Record<string, string>;
+    const buildConfig = JSON.parse(
+      await readFile(resolve(root, "tsconfig.build.json"), "utf8"),
+    ) as {
+      compilerOptions?: {
+        declarationMap?: boolean;
+        sourceMap?: boolean;
+      };
+    };
 
     expect(Object.values(dependencies)).not.toContainEqual(
       expect.stringMatching(/^[~^*]/u),
     );
-    expect(manifest["files"]).toEqual(
-      expect.arrayContaining(["dist", "README.md", "LICENSE", "docs"]),
-    );
+    expect(manifest["files"]).toEqual([
+      "dist",
+      "README.md",
+      "LICENSE",
+      "docs/architecture.md",
+      "docs/hosted-setup.md",
+      "docs/local-setup.md",
+      "docs/operations.md",
+      "docs/testing.md",
+      "docs/tool-reference.md",
+      "docs/upstream-sources.md",
+      "docs/adr/0002-static-bearer-authentication.md",
+    ]);
+    expect(buildConfig.compilerOptions).toMatchObject({
+      declarationMap: false,
+      sourceMap: false,
+    });
     await expect(access(resolve(root, "LICENSE"))).resolves.toBeUndefined();
   });
 
@@ -64,45 +87,7 @@ describe("public package metadata", () => {
       resolve(root, "scripts/verify-package.mjs"),
       "utf8",
     );
-    expect(packageVerification).toContain("steam-mcp-hosted");
-  });
-
-  it("pins release provenance and uploads checksummed artifacts", async () => {
-    const workflow = await readFile(
-      resolve(root, ".github/workflows/release.yml"),
-      "utf8",
-    );
-
-    expect(workflow).toContain("id-token: write");
-    expect(workflow).toContain(
-      "actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a",
-    );
-    expect(workflow).toContain("subject-path: artifacts/*");
-    expect(workflow).toContain("pnpm package:release");
-    expect(workflow).toContain("gh release upload");
-  });
-
-  it("publishes an immutable self-hosted container without deploying a service", async () => {
-    const workflow = await readFile(
-      resolve(root, ".github/workflows/release.yml"),
-      "utf8",
-    );
-
-    expect(workflow).toContain("packages: write");
-    expect(workflow).toContain("registry: ghcr.io");
-    expect(workflow).toContain("ghcr.io/${{ github.repository }}");
-    expect(workflow).toContain(
-      "docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9",
-    );
-    expect(workflow).toContain(
-      "docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302",
-    );
-    expect(workflow).toContain(
-      "docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a",
-    );
-    expect(workflow).toContain("push: true");
-    expect(workflow).toContain("provenance: mode=max");
-    expect(workflow).toContain("sbom: true");
-    expect(workflow).not.toMatch(/\b(?:deploy|kubectl|helm|ssh)\b/iu);
+    expect(packageVerification).not.toContain("steam-mcp-hosted");
+    expect(packageVerification).toContain('["serve"]');
   });
 });

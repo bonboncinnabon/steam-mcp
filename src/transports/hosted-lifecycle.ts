@@ -1,4 +1,5 @@
 import type { HttpRequestHandler } from "./health.js";
+import type { ReportHostedDiagnostic } from "./hosted-diagnostics.js";
 
 export interface HostedReadinessControl {
   readonly markNotReady: () => void;
@@ -19,6 +20,7 @@ export interface HostedRequestLifecycleOptions {
   readonly stopHttpAcceptance: () => Promise<void>;
   readonly closeHttp: () => Promise<void>;
   readonly quotaClient?: CloseableResource;
+  readonly reportDiagnostic?: ReportHostedDiagnostic;
 }
 
 function unavailableResponse(): Response {
@@ -42,19 +44,25 @@ function attempt(operation: () => Promise<void>): Promise<void> {
 async function settleCleanup(
   operations: readonly Promise<void>[],
   timeoutMs: number,
-): Promise<void> {
+): Promise<boolean> {
   let cancelDeadline: () => void = () => {
     // Replaced synchronously while constructing the deadline promise.
   };
-  const deadline = new Promise<void>((resolve) => {
-    const timer = setTimeout(resolve, timeoutMs);
+  const deadline = new Promise<boolean>((resolve) => {
+    const timer = setTimeout(() => {
+      resolve(false);
+    }, timeoutMs);
     timer.unref();
     cancelDeadline = () => {
       clearTimeout(timer);
     };
   });
-  await Promise.race([Promise.allSettled(operations), deadline]);
+  const completed = Promise.allSettled(operations).then((results) =>
+    results.every((result) => result.status === "fulfilled"),
+  );
+  const succeeded = await Promise.race([completed, deadline]);
   cancelDeadline();
+  return succeeded;
 }
 
 export function createHostedRequestLifecycle(
@@ -117,7 +125,9 @@ export function createHostedRequestLifecycle(
     if (quotaClient !== undefined) {
       cleanup.push(attempt(quotaClient.close));
     }
-    await settleCleanup(cleanup, options.drainTimeoutMs);
+    if (!(await settleCleanup(cleanup, options.drainTimeoutMs))) {
+      options.reportDiagnostic?.("shutdown_cleanup_failed");
+    }
   }
 
   return {

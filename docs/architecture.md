@@ -36,7 +36,7 @@ static bearer -----|                                  |                    ^
                                                 application ports ----------|
                                                        ^
                                                        |
-                             Steam, quota, concurrency, and telemetry adapters
+                                  Steam, quota, and concurrency adapters
 ```
 
 The modules have these responsibilities:
@@ -54,13 +54,12 @@ The modules have these responsibilities:
 - `src/transports`: local `stdio`, stateless Streamable HTTP, health routing,
   Node HTTP adaptation, and self-hosted shutdown lifecycle.
 - `src/infrastructure`: configuration, static bearer validation, Host and Origin
-  checks, local/HTTP composition, process-local quotas and concurrency, and
-  redacted observability.
+  checks, local/HTTP composition, and process-local quotas and concurrency.
 
-The package exposes two portable Node entry points. `steam-mcp` composes local
-stdio mode; `steam-mcp-hosted` parses self-hosted environment configuration,
-starts the Node HTTP listener, and coordinates `SIGINT`/`SIGTERM` draining.
-Neither entry point changes the application or domain dependency direction.
+The package exposes one portable Node executable. `steam-mcp` composes local
+stdio mode by default; `steam-mcp serve` parses self-hosted environment
+configuration, starts the Node HTTP listener, and coordinates `SIGINT`/`SIGTERM`
+draining. Neither mode changes the application or domain dependency direction.
 
 Application services depend on the `SteamDataPort`, not concrete HTTP clients.
 Composite behavior is implemented in services and never by one MCP tool calling
@@ -78,7 +77,7 @@ path is:
 ```text
 Host/Origin boundary -> canonical resource and method check -> static bearer gate
 -> strict MCP input validation -> quota reservation -> concurrency admission
--> typed Steam adapter -> validated result -> redacted telemetry
+-> typed Steam adapter -> validated result
 ```
 
 The HTTP boundary validates the actual `Host` header against configured hosts.
@@ -131,8 +130,7 @@ Every successful result names one or more source tiers:
 Supported adapters cover vanity resolution, profiles, bans, owned and recent
 games, achievements, friend lists, current-player counts, news, and global
 achievement facts. Best-effort adapters cover wishlist data, store search, store
-details, aggregate reviews, and Steam Deck compatibility. Approved but currently
-unexposed tag adapters do not expand the eight-tool contract.
+details, aggregate reviews, and Steam Deck compatibility.
 
 Best-effort sources are independently switchable at composition time and have
 strict response validation. Contract drift becomes `BEST_EFFORT_SOURCE_CHANGED`,
@@ -175,7 +173,7 @@ counters. Counters reset at UTC-day rollover and process restart. A distributed
 atomic quota implementation is required before horizontal scaling or
 restart-safe enforcement. A broad public rollout is outside v1.
 
-## Data retention and observability
+## Data retention and diagnostics
 
 The MCP server does not durably store client identities, Steam identities, Steam
 payloads, prompts, tool arguments, bearer tokens, Steam credentials, or raw
@@ -184,13 +182,10 @@ concurrency queues. A restart discards it. Remote cancellation comes only from
 aborting the original HTTP request; the shared bearer token is not used as a
 client identity for cross-request MCP cancellation notifications.
 
-Operational events and metrics use allowlisted, bounded fields such as tool
-name, stable result code, source tier, status class, dependency category, and
-duration. User identifiers, even hashed identifiers, are not labels. The
-redaction boundary removes configured secrets, bearer values, Steam-key-shaped
-values, URLs, sensitive object keys, control characters, oversized strings, deep
-structures, and large collections before emission. Deployment-platform retention
-applies only to those redacted records.
+The executable emits only fixed startup, request-failure, and shutdown-cleanup
+diagnostics to stderr. These messages contain no request data, Steam identity,
+URL, bearer value, Steam key, or upstream error cause. Remote MCP and HTTP
+responses remain generic at this boundary.
 
 ## Threat boundaries
 

@@ -177,9 +177,10 @@ describe("executeSteamRequest", () => {
         buildSteamRequest("storeDetails", { appids: "570" }),
         { fetchImpl, deadlineMs: 10, maxResponseBytes: 1_024 },
       );
-      const rejection = expect(execution).rejects.toThrow(
-        "Steam request deadline exceeded",
-      );
+      const rejection = expect(execution).rejects.toMatchObject({
+        code: "UPSTREAM_UNAVAILABLE",
+        retryable: true,
+      });
       await vi.advanceTimersByTimeAsync(10);
 
       await rejection;
@@ -208,7 +209,10 @@ describe("executeSteamRequest", () => {
           signal: controller.signal,
         },
       ),
-    ).rejects.toThrow("Steam request cancelled");
+    ).rejects.toMatchObject({
+      code: "UPSTREAM_UNAVAILABLE",
+      retryable: true,
+    });
   });
 
   it("replaces credential-bearing network failures with a sanitized error", async () => {
@@ -225,7 +229,10 @@ describe("executeSteamRequest", () => {
       { fetchImpl, deadlineMs: 1_000, maxResponseBytes: 1_024 },
     );
 
-    await expect(execution).rejects.toThrow("Steam network request failed");
+    await expect(execution).rejects.toMatchObject({
+      code: "UPSTREAM_UNAVAILABLE",
+      retryable: false,
+    });
     await expect(execution).rejects.not.toThrow("synthetic-secret");
   });
 
@@ -509,9 +516,10 @@ describe("executeSteamRequest", () => {
           random: () => 1,
         },
       );
-      const rejection = expect(execution).rejects.toThrow(
-        "Steam request deadline exceeded",
-      );
+      const rejection = expect(execution).rejects.toMatchObject({
+        code: "UPSTREAM_UNAVAILABLE",
+        retryable: true,
+      });
       await vi.advanceTimersByTimeAsync(10);
 
       await rejection;
@@ -545,9 +553,10 @@ describe("executeSteamRequest", () => {
           random: () => 1,
         },
       );
-      const rejection = expect(execution).rejects.toThrow(
-        "Steam request deadline exceeded",
-      );
+      const rejection = expect(execution).rejects.toMatchObject({
+        code: "UPSTREAM_UNAVAILABLE",
+        retryable: true,
+      });
       void execution.catch(() => {
         settled = true;
       });

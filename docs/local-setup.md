@@ -23,22 +23,22 @@ configuration file, protect that file as a credential-bearing file.
 
 ## Run the packaged server
 
-The package exposes the `steam-mcp` executable for local stdio. The separate
-`steam-mcp-hosted` executable is for static-bearer-protected remote HTTP
-deployments and does not change this local setup. `pnpm dlx` runs local stdio
-without cloning this repository or adding it to another project's dependencies:
+The package exposes one `steam-mcp` executable. With no arguments it runs local
+stdio; the `serve` subcommand selects self-hosted HTTP. `pnpm dlx` runs local
+stdio without cloning this repository or adding it to another project's
+dependencies:
 
 ```sh
 export STEAM_API_KEY="<your Steam Web API key>"
 export STEAM_USER="<optional Steam user>"
-pnpm dlx steam-mcp-server
+pnpm dlx @abiswas97/steam-mcp
 ```
 
 The process intentionally waits for MCP messages on stdin. Starting it directly
 does not display an interactive prompt.
 
-For a version-pinned client configuration, replace `steam-mcp-server` in the
-examples below with `steam-mcp-server@<version>`.
+For a version-pinned client configuration, replace `@abiswas97/steam-mcp` in the
+examples below with `@abiswas97/steam-mcp@<version>`.
 
 ## Codex
 
@@ -50,7 +50,7 @@ contain the resolved secret:
 codex mcp add steam \
   --env STEAM_API_KEY="$STEAM_API_KEY" \
   --env STEAM_USER="$STEAM_USER" \
-  -- pnpm dlx steam-mcp-server
+  -- pnpm dlx @abiswas97/steam-mcp
 ```
 
 Omit the `--env STEAM_USER=...` line when you do not want a default user.
@@ -75,7 +75,7 @@ Open Claude Desktop's MCP configuration and add this server inside the existing
   "mcpServers": {
     "steam": {
       "command": "pnpm",
-      "args": ["dlx", "steam-mcp-server"],
+      "args": ["dlx", "@abiswas97/steam-mcp"],
       "env": {
         "STEAM_API_KEY": "<your Steam Web API key>",
         "STEAM_USER": "<optional Steam user>"
@@ -96,7 +96,7 @@ For any MCP host that accepts the common stdio server descriptor, use:
 ```json
 {
   "command": "pnpm",
-  "args": ["dlx", "steam-mcp-server"],
+  "args": ["dlx", "@abiswas97/steam-mcp"],
   "env": {
     "STEAM_API_KEY": "<your Steam Web API key>",
     "STEAM_USER": "<optional Steam user>"
@@ -123,7 +123,7 @@ environment variables and launch the Inspector CLI:
 export STEAM_API_KEY="<your Steam Web API key>"
 export STEAM_USER="<optional Steam user>"
 pnpm dlx @modelcontextprotocol/inspector --cli \
-  pnpm dlx steam-mcp-server \
+  pnpm dlx @abiswas97/steam-mcp \
   --method tools/list
 ```
 
@@ -142,7 +142,7 @@ The Inspector can also start its browser interface when `--cli` and the method
 arguments are omitted:
 
 ```sh
-pnpm dlx @modelcontextprotocol/inspector pnpm dlx steam-mcp-server
+pnpm dlx @modelcontextprotocol/inspector pnpm dlx @abiswas97/steam-mcp
 ```
 
 ## Develop from source

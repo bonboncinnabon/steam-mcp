@@ -5,12 +5,17 @@ import {
 } from "node:http";
 
 import type { HttpRequestHandler } from "./health.js";
+import type { ReportHostedDiagnostic } from "./hosted-diagnostics.js";
 
 export interface StartNodeHttpServerOptions {
   readonly handler: HttpRequestHandler;
+  readonly headersTimeoutMs: number;
   readonly hostname: string;
+  readonly maxRequestBytes: number;
   readonly port: number;
   readonly publicOrigin: URL;
+  readonly reportDiagnostic?: ReportHostedDiagnostic;
+  readonly requestTimeoutMs: number;
 }
 
 export interface RunningNodeHttpServer {
@@ -35,23 +40,58 @@ function incomingHeaders(rawHeaders: readonly string[]): Headers {
   return headers;
 }
 
-function incomingBody(incoming: IncomingMessage): ReadableStream<Uint8Array> {
-  return new ReadableStream<Uint8Array>({
-    start(controller) {
-      incoming.on("data", (chunk: Buffer) => {
-        controller.enqueue(chunk);
-      });
-      incoming.on("end", () => {
-        controller.close();
-      });
-      incoming.on("error", (error) => {
-        controller.error(error);
-      });
-    },
-    cancel() {
-      incoming.destroy();
-    },
+function hasDeclaredOversizedBody(
+  incoming: IncomingMessage,
+  maxRequestBytes: number,
+): boolean {
+  const contentLength = incoming.headers["content-length"];
+  return contentLength !== undefined && Number(contentLength) > maxRequestBytes;
+}
+
+type IncomingBodyResult =
+  | { readonly kind: "body"; readonly value: Buffer }
+  | { readonly kind: "too_large" };
+
+function readIncomingBody(
+  incoming: IncomingMessage,
+  maxRequestBytes: number,
+): Promise<IncomingBodyResult> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    let receivedBytes = 0;
+    const cleanup = (): void => {
+      incoming.off("data", onData);
+      incoming.off("end", onEnd);
+      incoming.off("error", onError);
+    };
+    const onData = (chunk: Buffer): void => {
+      receivedBytes += chunk.byteLength;
+      if (receivedBytes > maxRequestBytes) {
+        cleanup();
+        incoming.pause();
+        resolve({ kind: "too_large" });
+        return;
+      }
+      chunks.push(chunk);
+    };
+    const onEnd = (): void => {
+      cleanup();
+      resolve({ kind: "body", value: Buffer.concat(chunks, receivedBytes) });
+    };
+    const onError = (error: Error): void => {
+      cleanup();
+      reject(error);
+    };
+    incoming.on("data", onData);
+    incoming.once("end", onEnd);
+    incoming.once("error", onError);
   });
+}
+
+function rejectPayloadTooLarge(outgoing: ServerResponse): void {
+  outgoing.statusCode = 413;
+  outgoing.setHeader("connection", "close");
+  outgoing.end();
 }
 
 function waitForDrain(outgoing: ServerResponse): Promise<boolean> {
@@ -113,57 +153,79 @@ async function writeResponseBody(
 export async function startNodeHttpServer(
   options: StartNodeHttpServerOptions,
 ): Promise<RunningNodeHttpServer> {
-  const server = createServer((incoming, outgoing) => {
-    void (async () => {
-      try {
-        const abortController = new AbortController();
-        incoming.once("aborted", () => {
-          abortController.abort();
-        });
-        outgoing.once("close", () => {
-          if (!outgoing.writableFinished) {
+  const server = createServer(
+    {
+      connectionsCheckingInterval: Math.min(
+        options.headersTimeoutMs,
+        options.requestTimeoutMs,
+      ),
+      headersTimeout: options.headersTimeoutMs,
+      requestTimeout: options.requestTimeoutMs,
+    },
+    (incoming, outgoing) => {
+      void (async () => {
+        try {
+          if (hasDeclaredOversizedBody(incoming, options.maxRequestBytes)) {
+            incoming.pause();
+            rejectPayloadTooLarge(outgoing);
+            return;
+          }
+          const abortController = new AbortController();
+          incoming.once("aborted", () => {
             abortController.abort();
+          });
+          outgoing.once("close", () => {
+            if (!outgoing.writableFinished) {
+              abortController.abort();
+            }
+          });
+          const requestTarget = new URL(
+            incoming.url ?? "/",
+            "http://node.invalid",
+          );
+          const url = new URL(
+            `${requestTarget.pathname}${requestTarget.search}`,
+            options.publicOrigin,
+          );
+          const method = incoming.method ?? "GET";
+          const body =
+            method === "GET" || method === "HEAD"
+              ? undefined
+              : await readIncomingBody(incoming, options.maxRequestBytes);
+          if (body?.kind === "too_large") {
+            rejectPayloadTooLarge(outgoing);
+            return;
           }
-        });
-        const requestTarget = new URL(
-          incoming.url ?? "/",
-          "http://node.invalid",
-        );
-        const url = new URL(
-          `${requestTarget.pathname}${requestTarget.search}`,
-          options.publicOrigin,
-        );
-        const method = incoming.method ?? "GET";
-        const init: RequestInitWithDuplex = {
-          ...(method === "GET" || method === "HEAD"
-            ? {}
-            : { body: incomingBody(incoming) }),
-          duplex: "half",
-          headers: incomingHeaders(incoming.rawHeaders),
-          method,
-          signal: abortController.signal,
-        };
-        const request = new Request(url, init);
-        const response = await options.handler.handle(request);
-        outgoing.statusCode = response.status;
-        for (const [name, value] of response.headers) {
-          if (name !== "set-cookie") {
-            outgoing.setHeader(name, value);
+          const init: RequestInitWithDuplex = {
+            ...(body === undefined ? {} : { body: body.value }),
+            duplex: "half",
+            headers: incomingHeaders(incoming.rawHeaders),
+            method,
+            signal: abortController.signal,
+          };
+          const request = new Request(url, init);
+          const response = await options.handler.handle(request);
+          outgoing.statusCode = response.status;
+          for (const [name, value] of response.headers) {
+            if (name !== "set-cookie") {
+              outgoing.setHeader(name, value);
+            }
           }
+          const cookies = response.headers.getSetCookie();
+          if (cookies.length > 0) {
+            outgoing.setHeader("set-cookie", cookies);
+          }
+          await writeResponseBody(response, outgoing);
+        } catch {
+          options.reportDiagnostic?.("request_failed");
+          if (!outgoing.headersSent) {
+            outgoing.statusCode = 500;
+          }
+          outgoing.end();
         }
-        const cookies = response.headers.getSetCookie();
-        if (cookies.length > 0) {
-          outgoing.setHeader("set-cookie", cookies);
-        }
-        await writeResponseBody(response, outgoing);
-      } catch {
-        if (!outgoing.headersSent) {
-          outgoing.statusCode = 500;
-        }
-        outgoing.end();
-      }
-    })();
-  });
+      })();
+    },
+  );
 
   await new Promise<void>((resolve, reject) => {
     server.once("error", reject);

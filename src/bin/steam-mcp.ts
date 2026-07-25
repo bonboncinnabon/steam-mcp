@@ -1,17 +1,14 @@
 #!/usr/bin/env node
 
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { runSteamMcpCli } from "../cli/steam-mcp-cli.js";
+import { startHostedMode } from "../cli/start-hosted.js";
+import { startStdioMode } from "../cli/start-stdio.js";
 
-import { createLocalMcpServer } from "../infrastructure/local-runtime.js";
-import { startStdioServer } from "../transports/stdio.js";
-
-try {
-  await startStdioServer({
-    server: createLocalMcpServer(process.env),
-    transport: new StdioServerTransport(process.stdin, process.stdout),
-    signals: process,
-  });
-} catch {
-  process.stderr.write("steam-mcp: startup failed; check configuration\n");
-  process.exitCode = 1;
-}
+process.exitCode = await runSteamMcpCli(process.argv.slice(2), {
+  startStdio: () => startStdioMode(process.env),
+  startHttp: () =>
+    startHostedMode(process.env, process, (message) =>
+      process.stderr.write(message),
+    ),
+  writeDiagnostic: (message) => process.stderr.write(message),
+});

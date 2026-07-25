@@ -17,14 +17,8 @@ const resource = {
 } as const;
 const accessToken = "synthetic-remote-access-token-value";
 
-function createHostedMcpHttpHandler(
-  options: Omit<HostedMcpHttpHandlerOptions, "allowedHosts" | "allowedOrigins">,
-) {
-  const handler = createHostedMcpHttpHandlerBase({
-    ...options,
-    allowedHosts: ["steam.example"],
-    allowedOrigins: ["https://client.example"],
-  });
+function createHostedMcpHttpHandler(options: HostedMcpHttpHandlerOptions) {
+  const handler = createHostedMcpHttpHandlerBase(options);
 
   return {
     handle(request: Request) {
@@ -167,67 +161,6 @@ describe("createHostedMcpHttpHandler", () => {
     expect(response.status).toBe(401);
     expect(response.headers.get("www-authenticate")).toBe("Bearer");
     expect(serverFactory).not.toHaveBeenCalled();
-  });
-
-  it.each([
-    ["missing Host", {}, 400],
-    ["disallowed Host", { host: "attacker.example" }, 403],
-    [
-      "untrusted forwarded Host",
-      { host: "attacker.example", "x-forwarded-host": "steam.example" },
-      403,
-    ],
-    [
-      "disallowed Origin",
-      { host: "steam.example", origin: "https://attacker.example" },
-      403,
-    ],
-  ])(
-    "rejects %s before authorization or MCP parsing",
-    async (_name, boundaryHeaders, expectedStatus) => {
-      const serverFactory = vi.fn(createServer);
-      const handler = createHostedMcpHttpHandlerBase({
-        resourceUri: resource.resourceUri,
-        accessToken,
-        createServer: serverFactory,
-        allowedHosts: ["steam.example"],
-        allowedOrigins: ["https://client.example"],
-      });
-
-      const response = await handler.handle(
-        new Request(resource.resourceUri, {
-          method: "POST",
-          headers: {
-            ...boundaryHeaders,
-            authorization: `Bearer ${accessToken}`,
-            "content-type": "application/json",
-          },
-          body: "private malformed body",
-        }),
-      );
-
-      expect(response.status).toBe(expectedStatus);
-      expect(serverFactory).not.toHaveBeenCalled();
-      expect(await response.text()).not.toContain("attacker.example");
-    },
-  );
-
-  it("accepts a configured browser Origin", async () => {
-    const handler = createHostedMcpHttpHandlerBase({
-      resourceUri: resource.resourceUri,
-      accessToken,
-      createServer,
-      allowedHosts: ["steam.example"],
-      allowedOrigins: ["https://client.example"],
-    });
-    const request = initializationRequest();
-    const headers = new Headers(request.headers);
-    headers.set("host", "steam.example");
-    headers.set("origin", "https://client.example");
-
-    const response = await handler.handle(new Request(request, { headers }));
-
-    expect(response.status).toBe(200);
   });
 
   it.each(["GET", "DELETE"])(

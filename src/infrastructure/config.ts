@@ -5,6 +5,7 @@ import {
   type ServicePolicy,
 } from "../domain/service-policy.js";
 import { createHttpRequestBoundary } from "./http-request-boundary.js";
+import type { BestEffortSourcePolicy } from "./steam-runtime.js";
 
 export interface LocalConfig {
   readonly mode: "local";
@@ -23,16 +24,16 @@ export interface HostedConfig {
   readonly allowedOrigins: readonly string[];
   readonly listenHost: string;
   readonly port: number;
+  readonly maxRequestBytes: number;
   readonly shutdownDrainTimeoutMs: number;
-  readonly bestEffortWishlistEnabled: boolean;
-  readonly bestEffortStoreSearchEnabled: boolean;
-  readonly bestEffortStoreDetailsEnabled: boolean;
-  readonly bestEffortDeckCompatibilityEnabled: boolean;
-  readonly bestEffortGameReviewsEnabled: boolean;
+  readonly bestEffortSources: BestEffortSourcePolicy;
   readonly policy: ServicePolicy;
 }
 
 type Environment = Readonly<Record<string, string | undefined>>;
+
+const DEFAULT_MAX_REQUEST_BYTES = 1_048_576;
+const MAX_REQUEST_BYTES_LIMIT = 16_777_216;
 
 const POLICY_ENVIRONMENT_FIELDS = [
   ["UPSTREAM_TIMEOUT_MS", "upstreamTimeoutMs"],
@@ -48,6 +49,14 @@ const POLICY_ENVIRONMENT_FIELDS = [
   ["EXECUTION_DEADLINE_MS", "executionDeadlineMs"],
   ["MAX_OUTPUT_BYTES", "maxOutputBytes"],
 ] as const satisfies readonly (readonly [string, keyof ServicePolicy])[];
+
+const BEST_EFFORT_SOURCE_ENVIRONMENT_FIELDS = {
+  wishlist: "STEAM_BEST_EFFORT_WISHLIST_ENABLED",
+  storeSearch: "STEAM_BEST_EFFORT_STORE_SEARCH_ENABLED",
+  storeDetails: "STEAM_BEST_EFFORT_STORE_DETAILS_ENABLED",
+  deckCompatibility: "STEAM_BEST_EFFORT_DECK_COMPATIBILITY_ENABLED",
+  gameReviews: "STEAM_BEST_EFFORT_GAME_REVIEWS_ENABLED",
+} as const satisfies Readonly<Record<keyof BestEffortSourcePolicy, string>>;
 
 function optionalNonBlank(value: string | undefined): string | undefined {
   return value === undefined || value.trim().length === 0 ? undefined : value;
@@ -126,7 +135,7 @@ function parsePositiveNumericConfiguration(
 function parseListenHost(environment: Environment): string {
   const value = environment["LISTEN_HOST"];
   if (value === undefined) {
-    return "0.0.0.0";
+    return "127.0.0.1";
   }
   if (value.trim().length === 0) {
     throw new Error("Invalid configuration: LISTEN_HOST");
@@ -163,6 +172,26 @@ function parseServicePolicy(environment: Environment): ServicePolicy {
   );
 
   return createServicePolicy(Object.fromEntries(entries));
+}
+
+function parseBestEffortSourcePolicy(
+  environment: Environment,
+): BestEffortSourcePolicy {
+  const parse = (source: keyof BestEffortSourcePolicy): boolean => {
+    const environmentName = BEST_EFFORT_SOURCE_ENVIRONMENT_FIELDS[source];
+    return parseBooleanConfiguration(
+      environmentName,
+      environment[environmentName],
+    );
+  };
+
+  return {
+    wishlist: parse("wishlist"),
+    storeSearch: parse("storeSearch"),
+    storeDetails: parse("storeDetails"),
+    deckCompatibility: parse("deckCompatibility"),
+    gameReviews: parse("gameReviews"),
+  };
 }
 
 function commaSeparated(value: string): readonly string[] {
@@ -225,31 +254,17 @@ export function parseHostedConfig(environment: Environment): HostedConfig {
     ...boundary,
     listenHost: parseListenHost(environment),
     port: parsePort(environment["PORT"] ?? "3000"),
+    maxRequestBytes: parsePositiveNumericConfiguration(
+      "MAX_REQUEST_BYTES",
+      environment["MAX_REQUEST_BYTES"] ?? String(DEFAULT_MAX_REQUEST_BYTES),
+      MAX_REQUEST_BYTES_LIMIT,
+    ),
     shutdownDrainTimeoutMs: parsePositiveNumericConfiguration(
       "SHUTDOWN_DRAIN_TIMEOUT_MS",
       environment["SHUTDOWN_DRAIN_TIMEOUT_MS"] ?? "10000",
       60_000,
     ),
-    bestEffortWishlistEnabled: parseBooleanConfiguration(
-      "STEAM_BEST_EFFORT_WISHLIST_ENABLED",
-      environment["STEAM_BEST_EFFORT_WISHLIST_ENABLED"],
-    ),
-    bestEffortStoreSearchEnabled: parseBooleanConfiguration(
-      "STEAM_BEST_EFFORT_STORE_SEARCH_ENABLED",
-      environment["STEAM_BEST_EFFORT_STORE_SEARCH_ENABLED"],
-    ),
-    bestEffortStoreDetailsEnabled: parseBooleanConfiguration(
-      "STEAM_BEST_EFFORT_STORE_DETAILS_ENABLED",
-      environment["STEAM_BEST_EFFORT_STORE_DETAILS_ENABLED"],
-    ),
-    bestEffortDeckCompatibilityEnabled: parseBooleanConfiguration(
-      "STEAM_BEST_EFFORT_DECK_COMPATIBILITY_ENABLED",
-      environment["STEAM_BEST_EFFORT_DECK_COMPATIBILITY_ENABLED"],
-    ),
-    bestEffortGameReviewsEnabled: parseBooleanConfiguration(
-      "STEAM_BEST_EFFORT_GAME_REVIEWS_ENABLED",
-      environment["STEAM_BEST_EFFORT_GAME_REVIEWS_ENABLED"],
-    ),
+    bestEffortSources: parseBestEffortSourcePolicy(environment),
     policy: parseServicePolicy(environment),
   };
 }

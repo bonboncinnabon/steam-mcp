@@ -167,6 +167,7 @@ describe("createHostedRequestLifecycle", () => {
   });
 
   it("closes every resource even when another close operation fails", async () => {
+    const diagnostics: string[] = [];
     const values = dependencies();
     values.stopHttpAcceptance.mockRejectedValue(
       new Error("private stop error"),
@@ -179,6 +180,7 @@ describe("createHostedRequestLifecycle", () => {
       handler: { handle: vi.fn() },
       drainTimeoutMs: 100,
       quotaClient,
+      reportDiagnostic: (category) => diagnostics.push(category),
       ...values,
     });
 
@@ -187,6 +189,7 @@ describe("createHostedRequestLifecycle", () => {
     expect(values.stopHttpAcceptance).toHaveBeenCalledOnce();
     expect(values.closeHttp).toHaveBeenCalledOnce();
     expect(quotaClient.close).toHaveBeenCalledOnce();
+    expect(diagnostics).toEqual(["shutdown_cleanup_failed"]);
   });
 
   it("contains synchronous cleanup failures", async () => {

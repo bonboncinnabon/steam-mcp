@@ -81,9 +81,9 @@
 - [x] 5.3 TDD best-effort store-search and store-detail adapters with ambiguous
       matches, missing apps, localized money, genres, categories, and bounded
       candidate sets.
-- [x] 5.4 TDD optional Steam Deck, aggregate review, approved tag, and other
-      game-detail facet adapters so each can fail independently and be disabled
-      without affecting supported facets.
+- [x] 5.4 TDD optional Steam Deck, aggregate review, and other game-detail facet
+      adapters so each can fail independently and be disabled without affecting
+      supported facets.
 - [x] 5.5 Add opt-in live contract probes using a dedicated test credential,
       automatic fixture-safety checks, and bounded drift metrics; keep the
       probes excluded from default CI.
@@ -203,7 +203,7 @@
 - [x] 11.6 Add high-risk mutation or fault-injection tests with 100 percent
       branch coverage for bearer and host enforcement, redaction, quota
       accounting, and shutdown cleanup.
-- [x] 11.7 TDD a portable remote Node entry point that composes the static
+- [x] 11.7 TDD the portable `steam-mcp serve` mode that composes the static
       bearer gate, operator-owned Steam adapters, process-local instance quota
       and concurrency enforcement, health routing, and graceful shutdown from
       explicit validated environment configuration. Keep deployment-platform
@@ -211,9 +211,10 @@
 
 ## 12. Packaging and Public Documentation
 
-- [x] 12.1 Produce a reproducible local package with a supported executable
-      command, pinned runtime range, clean install verification, provenance,
-      checksums, and release metadata.
+- [x] 12.1 Produce the reproducible public `@abiswas97/steam-mcp` package with
+      one `steam-mcp` executable, pinned runtime range, clean install
+      verification for default stdio and `serve`, provenance, checksums, and
+      release metadata.
 - [x] 12.2 Document local client setup for Codex, Claude, OpenAI-compatible
       clients, and MCP Inspector using `STEAM_API_KEY` and optional
       `STEAM_USER`, without example secrets.
@@ -227,9 +228,9 @@
 - [x] 12.5 Document strict TDD contribution rules, fixture scrubbing, live-probe
       safety, test commands, coverage gates, compatibility policy, versioning,
       changelog, operations, rollout, and rollback.
-- [x] 12.6a Verify the packaged local and self-hosted stdio documentation from
-      clean supported Node.js environments, including one public Steam tool
-      call, without undocumented maintainer steps.
+- [x] 12.6a Verify the packaged local stdio documentation from clean supported
+      Node.js environments, including one public Steam tool call, without
+      undocumented maintainer steps.
 - [x] 12.6b Verify the self-hosted remote documentation against a clean
       disposable deployment using an out-of-band bearer token and no
       undocumented maintainer steps.
@@ -258,9 +259,10 @@
       tests.
 - [x] 13.5b In a disposable self-hosted deployment, execute a version upgrade
       and restore the previous immutable container without a data migration.
-- [ ] 13.6a Publish the release evidence and compatibility matrix with the
-      immutable artifact digest, configuration revision, known limitations,
-      rollback target, approver, and observation window.
+- [ ] 13.6a Publish and verify the scoped npm version and immutable GHCR digest,
+      then create the GitHub Release last with checksums, compatibility matrix,
+      configuration revision, known limitations, rollback target, approver, and
+      observation window.
 - [x] 13.6b Verify the release publishes packages and containers only, operates
       no shared public endpoint, and requires both Steam and remote bearer
       secrets before accepting remote work.

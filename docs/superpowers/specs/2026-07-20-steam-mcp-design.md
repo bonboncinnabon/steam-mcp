@@ -26,7 +26,7 @@ network listener or MCP access credential is involved.
 
 ### Self-hosted Streamable HTTP
 
-The operator runs `steam-mcp-hosted` behind TLS and supplies:
+The operator runs `steam-mcp serve` behind TLS and supplies:
 
 - a deployment-owned `STEAM_API_KEY`;
 - an optional operator-wide `STEAM_USER` default;
@@ -77,7 +77,7 @@ static bearer -----|                         |                  ^
                                        application ports --------|
                                               ^
                                               |
-                         Steam, quota, concurrency, telemetry adapters
+                              Steam, quota, concurrency adapters
 ```
 
 - `domain` owns validated values, normalized data, result envelopes, and policy.
@@ -87,7 +87,7 @@ static bearer -----|                         |                  ^
 - `mcp` owns schemas, annotations, registration, and safe result conversion.
 - `transports` owns stdio, Streamable HTTP, health, and shutdown behavior.
 - `infrastructure` owns composition, configuration, bearer validation, request
-  boundaries, quota, concurrency, and safe observability.
+  boundaries, quota, and concurrency.
 
 Application services depend on ports, not MCP transports or HTTP clients.
 Composite tools coordinate adapters through services and never call other MCP
@@ -118,7 +118,7 @@ The remote request path is:
 ```text
 Host/Origin check -> exact URL and POST check -> bearer gate
 -> MCP validation -> instance quota -> concurrency admission
--> Steam adapter -> normalized result -> redacted telemetry
+-> Steam adapter -> normalized result
 ```
 
 The server validates the actual `Host` header and never lets `Forwarded` or
@@ -217,15 +217,15 @@ does not replace a live compatibility check against the exact client version.
 
 ## 12. Release and operations
 
-The package must include both executables, documentation, source register,
-license, changelog, and verified package contents. Release evidence includes
-frozen dependency installation, format, lint, type checks, tests, coverage,
-configured mutation checks, audit, build, artifact provenance, and opt-in live
-Steam probes with dedicated credentials.
+The public `@abiswas97/steam-mcp` package must include the single `steam-mcp`
+executable, user documentation, source register, license, and verified package
+contents. Release evidence includes frozen dependency installation, format,
+lint, type checks, tests, coverage, configured mutation checks, audit, build,
+artifact provenance, and opt-in live Steam probes with dedicated credentials.
 
 Remote deployment remains private and operator-controlled. Before exposure,
 verify TLS, fixed-header client support, invalid-token rejection, Host/Origin
-policy, all tools, quota behavior, sanitized telemetry, graceful shutdown, and
+policy, all tools, quota behavior, sanitized diagnostics, graceful shutdown, and
 rollback. Credential rotation updates the server and every approved client and
 must prove the old token is rejected without printing either secret.
 

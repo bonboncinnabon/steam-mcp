@@ -18,11 +18,11 @@ with the v1 remote transport.
 
 ## Run the executable
 
-The package exposes `steam-mcp-hosted` in addition to the local `steam-mcp`
-stdio executable:
+The package exposes one `steam-mcp` executable. The `serve` subcommand selects
+self-hosted Streamable HTTP instead of the default stdio transport:
 
 ```sh
-pnpm dlx --package steam-mcp-server steam-mcp-hosted
+pnpm dlx @abiswas97/steam-mcp serve
 ```
 
 From a source checkout:
@@ -30,7 +30,7 @@ From a source checkout:
 ```sh
 pnpm install --frozen-lockfile
 pnpm build
-node dist/bin/steam-mcp-hosted.js
+node dist/bin/steam-mcp.js serve
 ```
 
 The process listens on plain HTTP. Put it behind a trusted TLS-terminating
@@ -75,7 +75,7 @@ export STEAM_USER="<optional shared default Steam user>"
 export MCP_ACCESS_TOKEN="<random secret of at least 32 characters>"
 export MCP_RESOURCE_URI="https://mcp.example.com/mcp"
 export ALLOWED_HOSTS="mcp.example.com"
-pnpm dlx --package steam-mcp-server steam-mcp-hosted
+pnpm dlx @abiswas97/steam-mcp serve
 ```
 
 Generate `MCP_ACCESS_TOKEN` with a cryptographically secure secret generator.
@@ -91,19 +91,26 @@ client. It is convenience configuration, not a per-client account link.
 
 ## Listener and browser origins
 
-| Variable                    | Default   | Behavior                                                        |
-| --------------------------- | --------- | --------------------------------------------------------------- |
-| `ALLOWED_ORIGINS`           | empty     | Comma-separated HTTPS browser origins; origin-less clients work |
-| `LISTEN_HOST`               | `0.0.0.0` | Node HTTP bind host                                             |
-| `PORT`                      | `3000`    | Node HTTP bind port, from 1 through 65535                       |
-| `SHUTDOWN_DRAIN_TIMEOUT_MS` | `10000`   | Drain deadline in milliseconds, maximum 60000                   |
+| Variable                    | Default     | Behavior                                                        |
+| --------------------------- | ----------- | --------------------------------------------------------------- |
+| `ALLOWED_ORIGINS`           | empty       | Comma-separated HTTPS browser origins; origin-less clients work |
+| `LISTEN_HOST`               | `127.0.0.1` | Node HTTP bind host                                             |
+| `PORT`                      | `3000`      | Node HTTP bind port, from 1 through 65535                       |
+| `MAX_REQUEST_BYTES`         | `1048576`   | Maximum inbound MCP request body, up to 16777216 bytes          |
+| `SHUTDOWN_DRAIN_TIMEOUT_MS` | `10000`     | Drain deadline in milliseconds, maximum 60000                   |
 
 An empty `ALLOWED_ORIGINS` permits clients that omit `Origin` and rejects every
 request that includes it. Each configured origin must be an exact HTTPS origin.
+Set `LISTEN_HOST=0.0.0.0` only when the process must accept traffic from outside
+its host or container network. The published container sets that value
+explicitly.
 
 Terminate TLS at a trusted proxy or load balancer, preserve the original public
 `Host`, and forward the exact MCP path plus `/livez` and `/readyz`. The server
 does not trust `Forwarded` or `X-Forwarded-Host` to override a rejected `Host`.
+Reject bodies above `MAX_REQUEST_BYTES` and bound unauthenticated connections
+and request rates at that edge before forwarding traffic. The application body
+limit is a final safety net, not a replacement for edge admission control.
 
 ## Quota, concurrency, and execution policy
 
@@ -240,7 +247,7 @@ authorized clients. Do not advertise a project-operated provider, hosted
 account, public endpoint, or shared multi-tenant service. Before exposing an
 instance, verify fixed-header support with the exact target client,
 invalid-token rejection, Host/Origin policy, TLS, all eight tools, instance
-quota behavior, redacted telemetry, graceful shutdown, and rollback.
+quota behavior, sanitized diagnostics, graceful shutdown, and rollback.
 
 See [ADR 0002](./adr/0002-static-bearer-authentication.md) for the decision and
 [Operations](./operations.md) for the runbook.

@@ -143,9 +143,3 @@ export interface DeckCompatibility {
   readonly category: "unknown" | "unsupported" | "playable" | "verified";
   readonly summary?: string;
 }
-
-export interface GameTag {
-  readonly tagId: number;
-  readonly weight: number;
-  readonly name?: string;
-}

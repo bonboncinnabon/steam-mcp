@@ -88,14 +88,17 @@ describe("parseHostedConfig", () => {
       resourceUri: "https://steam.example/mcp",
       allowedHosts: ["steam.example", "steam.example:8443"],
       allowedOrigins: ["https://chatgpt.com", "https://claude.ai"],
-      listenHost: "0.0.0.0",
+      listenHost: "127.0.0.1",
       port: 3000,
+      maxRequestBytes: 1_048_576,
       shutdownDrainTimeoutMs: 10_000,
-      bestEffortWishlistEnabled: true,
-      bestEffortStoreSearchEnabled: true,
-      bestEffortStoreDetailsEnabled: true,
-      bestEffortDeckCompatibilityEnabled: true,
-      bestEffortGameReviewsEnabled: true,
+      bestEffortSources: {
+        wishlist: true,
+        storeSearch: true,
+        storeDetails: true,
+        deckCompatibility: true,
+        gameReviews: true,
+      },
       policy: BASELINE_SERVICE_POLICY,
     });
   });
@@ -230,13 +233,7 @@ describe("parseHostedConfig", () => {
       STEAM_BEST_EFFORT_GAME_REVIEWS_ENABLED: "false",
     });
 
-    expect({
-      wishlist: config.bestEffortWishlistEnabled,
-      storeSearch: config.bestEffortStoreSearchEnabled,
-      storeDetails: config.bestEffortStoreDetailsEnabled,
-      deckCompatibility: config.bestEffortDeckCompatibilityEnabled,
-      gameReviews: config.bestEffortGameReviewsEnabled,
-    }).toEqual({
+    expect(config.bestEffortSources).toEqual({
       wishlist: false,
       storeSearch: false,
       storeDetails: false,
@@ -328,20 +325,45 @@ describe("parseHostedConfig", () => {
       ...BASELINE_HOSTED_ENVIRONMENT,
       LISTEN_HOST: "::",
       PORT: "8443",
+      MAX_REQUEST_BYTES: "2097152",
       SHUTDOWN_DRAIN_TIMEOUT_MS: "25000",
     });
 
     expect({
       listenHost: config.listenHost,
       port: config.port,
+      maxRequestBytes: config.maxRequestBytes,
       shutdownDrainTimeoutMs: config.shutdownDrainTimeoutMs,
       allowedOrigins: config.allowedOrigins,
     }).toEqual({
       listenHost: "::",
       port: 8443,
+      maxRequestBytes: 2_097_152,
       shutdownDrainTimeoutMs: 25_000,
       allowedOrigins: [],
     });
+  });
+
+  it("rejects request body limits outside the supported range", () => {
+    const messages = ["0", "16777217", "999999999999999999999999"].map(
+      (maxRequestBytes) => {
+        try {
+          parseHostedConfig({
+            ...BASELINE_HOSTED_ENVIRONMENT,
+            MAX_REQUEST_BYTES: maxRequestBytes,
+          });
+          return "no error";
+        } catch (error) {
+          return error instanceof Error ? error.message : "unknown error";
+        }
+      },
+    );
+
+    expect(messages).toEqual([
+      "Invalid numeric configuration: MAX_REQUEST_BYTES",
+      "Invalid numeric configuration: MAX_REQUEST_BYTES",
+      "Invalid numeric configuration: MAX_REQUEST_BYTES",
+    ]);
   });
 
   it("uses the baseline service policy when overrides are absent", () => {

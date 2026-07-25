@@ -22,8 +22,8 @@ paid identity-provider dependency.
   labeled best-effort Steam-operated public endpoints.
 - Add instance-wide quota enforcement, concurrency limits, retry policy,
   source-drift detection, and redacted observability.
-- Add local and self-hosted `stdio` operation using `STEAM_API_KEY` and optional
-  `STEAM_USER` configuration.
+- Publish one public `@abiswas97/steam-mcp` package whose `steam-mcp` executable
+  uses stdio by default and starts self-hosted HTTP with `serve`.
 - Add strict data-minimization boundaries, operational runbooks, and
   cross-client compatibility checks without creating an MCP account system.
 - Enforce strict one-test-at-a-time Red-Green-Refactor development and
@@ -44,8 +44,8 @@ paid identity-provider dependency.
 - `steam-upstream-reliability`: Steam credential handling, source-tier
   classification, host restrictions, quotas, concurrency, retries, partial
   results, and stable errors.
-- `local-mcp-access`: Local and self-hosted `stdio` execution using
-  environment-provided Steam configuration.
+- `local-mcp-access`: Local `stdio` execution using environment-provided Steam
+  configuration.
 - `security-privacy-operations`: Data minimization, secret redaction,
   observability, deployment safety, and release quality gates.
 

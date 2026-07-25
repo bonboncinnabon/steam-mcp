@@ -51,7 +51,7 @@ labels such as tool name, stable error code, source tier, and HTTP status class.
 
 ### Requirement: Validated startup configuration
 
-Remote and local entry points MUST validate required configuration, types,
+Remote and local executable modes MUST validate required configuration, types,
 bounds, and incompatible combinations before accepting work.
 
 #### Scenario: Invalid quota configuration

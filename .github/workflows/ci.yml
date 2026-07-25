@@ -15,14 +15,16 @@ concurrency:
 
 jobs:
   container-build:
-    name: Hosted container build
+    name: Hosted container build and health smoke
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - name: Check out repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Build hosted container
-        run: docker build --tag steam-mcp-hosted:ci .
+        run: docker build --tag steam-mcp:ci .
+      - name: Run built container health smoke
+        run: node scripts/smoke-container.mjs steam-mcp:ci
 
   quality:
     name: Quality (Node ${{ matrix.node }})
@@ -58,6 +60,9 @@ jobs:
         run: pnpm test:coverage
       - name: Build
         run: pnpm build
+      - name: Run Inspector conformance
+        if: matrix.node == '22.22.0'
+        run: pnpm test:inspector
 
   dependency-audit:
     name: Dependency audit

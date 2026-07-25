@@ -60,7 +60,7 @@ export function createLocalToolBindings(
     steam_get_player: createMcpToolHandler({
       execute: (input: ToolInput<"steam_get_player">, signal) =>
         services.getPlayer.execute(
-          mapSubjectInput(input, configuredDefault),
+          localSubjectInputMappers.steam_get_player(input, configuredDefault),
           boundedSignal(signal),
         ),
       renderSuccess: (data) => `Steam player: ${data.profile.displayName}.`,
@@ -68,7 +68,7 @@ export function createLocalToolBindings(
     steam_get_library: createMcpToolHandler({
       execute: (input: ToolInput<"steam_get_library">, signal) =>
         services.getLibrary.execute(
-          mapSubjectInput(input, configuredDefault) as SteamGetLibraryInput,
+          localSubjectInputMappers.steam_get_library(input, configuredDefault),
           boundedSignal(signal),
         ),
       renderSuccess: (data) =>
@@ -77,10 +77,10 @@ export function createLocalToolBindings(
     steam_get_recent_activity: createMcpToolHandler({
       execute: (input: ToolInput<"steam_get_recent_activity">, signal) =>
         services.getRecentActivity.execute(
-          mapSubjectInput(
+          localSubjectInputMappers.steam_get_recent_activity(
             input,
             configuredDefault,
-          ) as SteamGetRecentActivityInput,
+          ),
           boundedSignal(signal),
         ),
       renderSuccess: (data) =>
@@ -89,10 +89,10 @@ export function createLocalToolBindings(
     steam_get_achievements: createMcpToolHandler({
       execute: (input: ToolInput<"steam_get_achievements">, signal) =>
         services.getAchievements.execute(
-          mapSubjectInput(
+          localSubjectInputMappers.steam_get_achievements(
             input,
             configuredDefault,
-          ) as SteamGetAchievementsInput,
+          ),
           boundedSignal(signal),
         ),
       renderSuccess: (data) =>
@@ -101,7 +101,7 @@ export function createLocalToolBindings(
     steam_get_friends: createMcpToolHandler({
       execute: (input: ToolInput<"steam_get_friends">, signal) =>
         services.getFriends.execute(
-          mapSubjectInput(input, configuredDefault) as SteamGetFriendsInput,
+          localSubjectInputMappers.steam_get_friends(input, configuredDefault),
           boundedSignal(signal),
         ),
       renderSuccess: (data) =>
@@ -110,7 +110,7 @@ export function createLocalToolBindings(
     steam_get_wishlist: createMcpToolHandler({
       execute: (input: ToolInput<"steam_get_wishlist">, signal) =>
         services.getWishlist.execute(
-          mapSubjectInput(input, configuredDefault) as SteamGetWishlistInput,
+          localSubjectInputMappers.steam_get_wishlist(input, configuredDefault),
           boundedSignal(signal),
         ),
       renderSuccess: (data) =>
@@ -133,17 +133,80 @@ export function createLocalToolBindings(
   };
 }
 
-function mapSubjectInput<Input extends { readonly user?: string | undefined }>(
-  input: Input,
+function mapIdentityInput(
+  user: string | undefined,
   configuredDefault: string | undefined,
-): Omit<Input, "user"> & ResolveSteamIdentityInput {
-  const { user, ...serviceInput } = input;
+): ResolveSteamIdentityInput {
   return {
-    ...serviceInput,
     ...(user === undefined ? {} : { explicitUser: user }),
     ...(configuredDefault === undefined ? {} : { configuredDefault }),
   };
 }
+
+export const localSubjectInputMappers = {
+  steam_get_player(
+    input: ToolInput<"steam_get_player">,
+    configuredDefault: string | undefined,
+  ): ResolveSteamIdentityInput {
+    return mapIdentityInput(input.user, configuredDefault);
+  },
+  steam_get_library(
+    input: ToolInput<"steam_get_library">,
+    configuredDefault: string | undefined,
+  ): SteamGetLibraryInput {
+    return {
+      limit: input.limit,
+      played: input.played,
+      sortBy: input.sortBy,
+      sortDirection: input.sortDirection,
+      ...(input.cursor === undefined ? {} : { cursor: input.cursor }),
+      ...(input.query === undefined ? {} : { query: input.query }),
+      ...mapIdentityInput(input.user, configuredDefault),
+    };
+  },
+  steam_get_recent_activity(
+    input: ToolInput<"steam_get_recent_activity">,
+    configuredDefault: string | undefined,
+  ): SteamGetRecentActivityInput {
+    return {
+      limit: input.limit,
+      ...mapIdentityInput(input.user, configuredDefault),
+    };
+  },
+  steam_get_achievements(
+    input: ToolInput<"steam_get_achievements">,
+    configuredDefault: string | undefined,
+  ): SteamGetAchievementsInput {
+    return {
+      appId: input.appId,
+      limit: input.limit,
+      state: input.state,
+      ...(input.cursor === undefined ? {} : { cursor: input.cursor }),
+      ...mapIdentityInput(input.user, configuredDefault),
+    };
+  },
+  steam_get_friends(
+    input: ToolInput<"steam_get_friends">,
+    configuredDefault: string | undefined,
+  ): SteamGetFriendsInput {
+    return {
+      limit: input.limit,
+      includePresence: input.includePresence,
+      ...(input.cursor === undefined ? {} : { cursor: input.cursor }),
+      ...mapIdentityInput(input.user, configuredDefault),
+    };
+  },
+  steam_get_wishlist(
+    input: ToolInput<"steam_get_wishlist">,
+    configuredDefault: string | undefined,
+  ): SteamGetWishlistInput {
+    return {
+      limit: input.limit,
+      ...(input.cursor === undefined ? {} : { cursor: input.cursor }),
+      ...mapIdentityInput(input.user, configuredDefault),
+    };
+  },
+};
 
 function formatCount(count: number, noun: string): string {
   return `${String(count)} ${noun}${count === 1 ? "" : "s"}`;

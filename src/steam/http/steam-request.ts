@@ -1,7 +1,6 @@
 import { URL } from "node:url";
 
 import type { AppId } from "../../domain/app-id.js";
-import { assertSteamStorefrontPolicy } from "../storefront-policy.js";
 
 export const STEAM_HOST_ALLOWLIST = [
   "api.steampowered.com",
@@ -83,10 +82,6 @@ const STEAM_ENDPOINTS = {
     host: "store.steampowered.com",
     path: "/saleaction/ajaxgetdeckappcompatibilityreport",
   },
-  getStoreTags: {
-    host: "api.steampowered.com",
-    path: "/IStoreBrowseService/GetItems/v1/",
-  },
 } as const satisfies Readonly<Record<string, EndpointDefinition>>;
 
 type SteamEndpoint = keyof typeof STEAM_ENDPOINTS;
@@ -145,7 +140,6 @@ interface SteamEndpointQueries {
     filters: string;
   }>;
   readonly deckCompatibility: Readonly<{ nAppID: string }>;
-  readonly getStoreTags: Readonly<{ input_json: string }>;
 }
 
 export interface SteamHttpRequest {
@@ -157,7 +151,7 @@ export interface SteamHttpRequest {
   readonly acceptedErrorStatuses?: readonly number[];
 }
 
-export type SteamOperation = SteamEndpoint | "appReviews" | "tagVocabulary";
+export type SteamOperation = SteamEndpoint | "appReviews";
 
 export function buildSteamRequest<E extends SteamEndpoint>(
   endpoint: E,
@@ -200,23 +194,6 @@ export function buildSteamAppReviewsRequest(appId: AppId): SteamHttpRequest {
 
   return {
     operation: "appReviews",
-    url: url.href,
-    method: "GET",
-    headers: { accept: "application/json" },
-    redirect: "manual",
-  };
-}
-
-export function buildSteamTagVocabularyRequest(
-  language: string,
-): SteamHttpRequest {
-  assertSteamStorefrontPolicy("US", language);
-  const url = new URL(
-    `/tagdata/populartags/${language}`,
-    "https://store.steampowered.com",
-  );
-  return {
-    operation: "tagVocabulary",
     url: url.href,
     method: "GET",
     headers: { accept: "application/json" },

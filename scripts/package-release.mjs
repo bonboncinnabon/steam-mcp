@@ -5,12 +5,14 @@ import process from "node:process";
 import { fileURLToPath, URL } from "node:url";
 import { spawn } from "node:child_process";
 
+import { releaseArchiveName } from "./release-support.mjs";
+
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const artifacts = resolve(root, "artifacts");
 const manifest = JSON.parse(
   await readFile(resolve(root, "package.json"), "utf8"),
 );
-const archiveName = `${manifest.name}-${manifest.version}.tgz`;
+const archiveName = releaseArchiveName(manifest.name, manifest.version);
 const archive = resolve(artifacts, archiveName);
 const checksum = `${archive}.sha256`;
 const packageManager = process.platform === "win32" ? "pnpm.cmd" : "pnpm";

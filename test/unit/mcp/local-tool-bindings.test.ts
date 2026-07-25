@@ -1,10 +1,95 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import { failure, success } from "../../../src/domain/result.js";
+import type { SteamGetAchievementsInput } from "../../../src/application/services/steam-get-achievements.js";
+import type { SteamGetFriendsInput } from "../../../src/application/services/steam-get-friends.js";
+import type { SteamGetLibraryInput } from "../../../src/application/services/steam-get-library.js";
+import type { SteamGetRecentActivityInput } from "../../../src/application/services/steam-get-recent-activity.js";
+import type { SteamGetWishlistInput } from "../../../src/application/services/steam-get-wishlist.js";
 import type { SteamSearchGamesInput } from "../../../src/application/services/steam-search-games.js";
-import { createLocalToolBindings } from "../../../src/mcp/local-tool-bindings.js";
+import type { ResolveSteamIdentityInput } from "../../../src/application/services/steam-identity-resolver.js";
+import {
+  createLocalToolBindings,
+  localSubjectInputMappers,
+} from "../../../src/mcp/local-tool-bindings.js";
 
 describe("local MCP tool bindings", () => {
+  it("maps each public subject input to its exact service input", () => {
+    const configuredDefault = "local_steam_user";
+    const player = localSubjectInputMappers.steam_get_player(
+      { user: "ada" },
+      configuredDefault,
+    );
+    const library = localSubjectInputMappers.steam_get_library(
+      {
+        user: "ada",
+        limit: 2,
+        query: "portal",
+        played: "all",
+        sortBy: "name",
+        sortDirection: "asc",
+      },
+      configuredDefault,
+    );
+    const recentActivity = localSubjectInputMappers.steam_get_recent_activity(
+      { user: "ada", limit: 3 },
+      configuredDefault,
+    );
+    const achievements = localSubjectInputMappers.steam_get_achievements(
+      { user: "ada", appId: 400, limit: 4, state: "unlocked" },
+      configuredDefault,
+    );
+    const friends = localSubjectInputMappers.steam_get_friends(
+      { user: "ada", limit: 5, includePresence: true },
+      configuredDefault,
+    );
+    const wishlist = localSubjectInputMappers.steam_get_wishlist(
+      { user: "ada", limit: 6 },
+      configuredDefault,
+    );
+
+    expectTypeOf(player).toEqualTypeOf<ResolveSteamIdentityInput>();
+    expectTypeOf(library).toEqualTypeOf<SteamGetLibraryInput>();
+    expectTypeOf(recentActivity).toEqualTypeOf<SteamGetRecentActivityInput>();
+    expectTypeOf(achievements).toEqualTypeOf<SteamGetAchievementsInput>();
+    expectTypeOf(friends).toEqualTypeOf<SteamGetFriendsInput>();
+    expectTypeOf(wishlist).toEqualTypeOf<SteamGetWishlistInput>();
+    expect([
+      player,
+      library,
+      recentActivity,
+      achievements,
+      friends,
+      wishlist,
+    ]).toEqual([
+      { explicitUser: "ada", configuredDefault },
+      {
+        explicitUser: "ada",
+        configuredDefault,
+        limit: 2,
+        query: "portal",
+        played: "all",
+        sortBy: "name",
+        sortDirection: "asc",
+      },
+      { explicitUser: "ada", configuredDefault, limit: 3 },
+      {
+        explicitUser: "ada",
+        configuredDefault,
+        appId: 400,
+        limit: 4,
+        state: "unlocked",
+      },
+      {
+        explicitUser: "ada",
+        configuredDefault,
+        limit: 5,
+        includePresence: true,
+      },
+      { explicitUser: "ada", configuredDefault, limit: 6 },
+    ]);
+  });
+
   it("creates bindings for the complete public tool surface", () => {
     const execute = vi.fn();
 

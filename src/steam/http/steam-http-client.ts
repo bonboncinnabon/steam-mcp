@@ -110,13 +110,17 @@ export async function executeSteamRequest(
   } catch (error) {
     if (deadlineController.signal.aborted) {
       // Abort reasons may contain caller or credential data and must not be retained.
-      // eslint-disable-next-line preserve-caught-error
-      throw new Error("Steam request deadline exceeded");
+      throw new SteamUpstreamError({
+        code: "UPSTREAM_UNAVAILABLE",
+        retryable: true,
+      });
     }
     if (options.signal?.aborted === true) {
       // Abort reasons may contain caller or credential data and must not be retained.
-      // eslint-disable-next-line preserve-caught-error
-      throw new Error("Steam request cancelled");
+      throw new SteamUpstreamError({
+        code: "UPSTREAM_UNAVAILABLE",
+        retryable: true,
+      });
     }
     if (
       error instanceof SteamHttpPolicyError ||
@@ -125,8 +129,10 @@ export async function executeSteamRequest(
       throw error;
     }
     // Upstream errors may embed credential-bearing URLs and must not be retained.
-    // eslint-disable-next-line preserve-caught-error
-    throw new Error("Steam network request failed");
+    throw new SteamUpstreamError({
+      code: "UPSTREAM_UNAVAILABLE",
+      retryable: false,
+    });
   } finally {
     clearTimeout(deadlineTimer);
   }

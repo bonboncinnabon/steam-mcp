@@ -115,27 +115,6 @@ stored.
 - **Drift risks:** undocumented endpoint and wrapper, optional localized detail
   items, and empty results for unknown apps.
 
-### Store tags and tag vocabulary
-
-- **Status:** approved as a bounded JSON composite; app-page HTML is not used.
-- **App-tag request:**
-  `https://api.steampowered.com/IStoreBrowseService/GetItems/v1/?input_json={encoded-json}`
-  with one app ID, controlled language/country context, and fixed
-  `include_tag_count=20` data request.
-- **Vocabulary request:**
-  `https://store.steampowered.com/tagdata/populartags/{language}`.
-- **Observed contract:** the app item exposes at most twenty `{ tagid, weight }`
-  records. The vocabulary is an array of `{ tagid, name }`. Tags are joined by
-  numeric ID; missing names remain unavailable and are never guessed.
-- **Data classification:** public catalog taxonomy.
-- **Cost:** one app call plus a vocabulary call only on cache miss.
-- **Cache:** one-hour public app-tag cache and twenty-four-hour vocabulary
-  cache.
-- **Disable switch:** `STEAM_BEST_EFFORT_STORE_TAGS_ENABLED` disables both
-  halves of the composite facet.
-- **Drift risks:** undocumented message schema, vocabulary localization, tag
-  weight semantics, and renamed or removed tag IDs.
-
 ### Aggregate reviews
 
 - **Status:** approved as an independently optional best-effort facet. Valve
@@ -164,9 +143,6 @@ stored.
 - **Unenriched wishlist operation:** `IWishlistService/GetWishlist/v1` remains a
   live-probe candidate but is not the primary adapter because it is unpaginated,
   returns IDs only, and cannot satisfy the price/availability contract.
-- **Per-app community tag HTML scraping:** Steam app-page HTML is large,
-  localized, age-gated, and unstable. Only the approved bounded StoreBrowse JSON
-  IDs joined to the Steam vocabulary may supply app tags.
 - **Separate deal sources:** no additional source is necessary while validated
   regional `price_overview` supplies current price and discount facts.
 - **Non-Steam sources:** ProtonDB, SteamDB, third-party recommendation services,

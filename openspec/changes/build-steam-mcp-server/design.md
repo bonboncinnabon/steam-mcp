@@ -103,7 +103,8 @@ The core modules are:
 - `mcp`: tool definitions, schemas, annotations, text rendering, and service
   invocation.
 - `identity`: explicit and local-default identity resolution.
-- `transports`: independent `stdio` and Streamable HTTP entry points.
+- `transports`: independent `stdio` and Streamable HTTP runners selected by one
+  executable.
 - `infrastructure`: configuration, quota, authentication, and observability
   adapters.
 
@@ -298,10 +299,11 @@ is not added to a new implementation.
 
 ### 9. Keep local behavior equivalent but credential acquisition different
 
-The `stdio` entry point constructs the same services and tool registry using
-environment configuration and no persistence infrastructure. Process-local
+The `steam-mcp` executable selects stdio with no arguments and Streamable HTTP
+with `serve`. Its stdio runner constructs the same services and tool registry
+using environment configuration and no persistence infrastructure. Process-local
 adapters are added only when a tool behavior actually consumes their ports. It
-writes only MCP protocol messages to stdout and sends redacted diagnostics to
+writes only MCP protocol messages to stdout and sends sanitized diagnostics to
 stderr. Missing key or identity configuration becomes an actionable tool or
 startup error according to whether the enabled tools require it.
 
@@ -407,8 +409,9 @@ than replacement of an existing service:
    shutdown without account or Steam-identity persistence.
 6. Verify supported bearer-header clients plus quota and rollback behavior in a
    clean self-hosted deployment.
-7. Release local and self-hosted packaging. Do not operate a shared public v1
-   endpoint.
+7. Verify the `@abiswas97/steam-mcp` tarball through both executable modes,
+   publish npm and the immutable GHCR image, then create the GitHub Release
+   last. Do not operate a shared public v1 endpoint.
 
 Rollback restores the previous versioned container. A best-effort adapter can be
 disabled independently without rolling back the entire MCP service.

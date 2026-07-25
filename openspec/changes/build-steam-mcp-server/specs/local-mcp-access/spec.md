@@ -2,8 +2,8 @@
 
 ### Requirement: Local stdio transport
 
-The system SHALL expose the same eight tool contracts through an MCP `stdio`
-entry point for local and self-hosted use.
+The `@abiswas97/steam-mcp` package SHALL expose the same eight tool contracts
+through the `steam-mcp` executable's default `stdio` mode for local use.
 
 #### Scenario: Local MCP initialization
 

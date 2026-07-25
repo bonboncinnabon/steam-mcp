@@ -1,9 +1,12 @@
 {
-  "name": "steam-mcp-server",
+  "name": "@abiswas97/steam-mcp",
   "version": "0.1.0",
   "description": "A remote-first, read-only Steam MCP server with local stdio support.",
   "type": "module",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/abiswas97/steam-mcp.git"
@@ -25,11 +28,17 @@
     "dist",
     "README.md",
     "LICENSE",
-    "docs"
+    "docs/architecture.md",
+    "docs/hosted-setup.md",
+    "docs/local-setup.md",
+    "docs/operations.md",
+    "docs/testing.md",
+    "docs/tool-reference.md",
+    "docs/upstream-sources.md",
+    "docs/adr/0002-static-bearer-authentication.md"
   ],
   "bin": {
-    "steam-mcp": "dist/bin/steam-mcp.js",
-    "steam-mcp-hosted": "dist/bin/steam-mcp-hosted.js"
+    "steam-mcp": "dist/bin/steam-mcp.js"
   },
   "scripts": {
     "build": "node scripts/clean-dist.mjs && tsc -p tsconfig.build.json",
@@ -64,7 +73,6 @@
     "@vitest/coverage-v8": "4.1.10",
     "eslint": "10.7.0",
     "prettier": "3.9.5",
-    "tsx": "4.23.1",
     "typescript": "6.0.3",
     "typescript-eslint": "8.64.0",
     "vitest": "4.1.10"

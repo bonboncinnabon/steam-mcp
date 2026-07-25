@@ -70,8 +70,6 @@ export function createHostedApplication(
   const mcp = createHostedMcpHttpHandler({
     resourceUri: config.resourceUri,
     accessToken: config.accessToken,
-    allowedHosts: config.allowedHosts,
-    allowedOrigins: config.allowedOrigins,
     maxActiveRequests: config.policy.maxConcurrencyQueueSize,
     createServer: () =>
       createHostedMcpServer({
@@ -82,13 +80,7 @@ export function createHostedApplication(
         policy: config.policy,
         quota,
         concurrency,
-        bestEffortSources: {
-          wishlist: config.bestEffortWishlistEnabled,
-          storeSearch: config.bestEffortStoreSearchEnabled,
-          storeDetails: config.bestEffortStoreDetailsEnabled,
-          deckCompatibility: config.bestEffortDeckCompatibilityEnabled,
-          gameReviews: config.bestEffortGameReviewsEnabled,
-        },
+        bestEffortSources: config.bestEffortSources,
         fetchImpl,
       }),
   });

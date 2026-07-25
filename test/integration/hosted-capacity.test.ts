@@ -212,6 +212,6 @@ describe("hosted capacity integration", () => {
 
     await expect(
       Promise.all([toolErrorCode(failed), toolErrorCode(recovered)]),
-    ).resolves.toEqual(["INTERNAL_ERROR", undefined]);
+    ).resolves.toEqual(["UPSTREAM_UNAVAILABLE", undefined]);
   });
 });

@@ -1,9 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import {
-  withConcurrencyLease,
-  type ConcurrencyLease,
-} from "../../../src/application/ports/concurrency.js";
+import { type ConcurrencyLease } from "../../../src/application/ports/concurrency.js";
 import {
   createInMemoryConcurrency,
   type ConcurrencyAcquireError,
@@ -257,29 +254,6 @@ describe("in-memory concurrency", () => {
         AbortSignal.timeout(5),
       ),
     ).rejects.toMatchObject({ kind: "cancelled" });
-  });
-
-  it("releases capacity when guarded work fails", async () => {
-    const concurrency = createInMemoryConcurrency({
-      maxHostConcurrency: 1,
-      maxOperationConcurrency: 1,
-      maxQueueSize: 1,
-    });
-    const signal = new AbortController().signal;
-
-    await expect(
-      withConcurrencyLease(
-        concurrency,
-        "api.steampowered.com",
-        "get-player",
-        signal,
-        () => Promise.reject(new Error("synthetic work failure")),
-      ),
-    ).rejects.toThrow("synthetic work failure");
-
-    await expectLease(
-      concurrency.acquire("api.steampowered.com", "get-player", signal),
-    );
   });
 
   it("does not let a blocked waiter consume the other concurrency dimension", async () => {

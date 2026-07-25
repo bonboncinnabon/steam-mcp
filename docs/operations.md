@@ -41,13 +41,15 @@ traces, or incident notes. Never print a credential to test it.
 Start the portable HTTP executable with:
 
 ```sh
-pnpm dlx --package steam-mcp-server steam-mcp-hosted
+pnpm dlx @abiswas97/steam-mcp serve
 ```
 
 The executable serves plain HTTP. Terminate TLS at a trusted reverse proxy or
 load balancer, preserve the original public `Host`, and forward the exact MCP
 route plus `/livez` and `/readyz`. Do not rely on `Forwarded` or
-`X-Forwarded-Host`; the application validates the actual `Host` header.
+`X-Forwarded-Host`; the application validates the actual `Host` header. Reject
+bodies above `MAX_REQUEST_BYTES` and bound unauthenticated connections and
+request rates at the edge before forwarding traffic to the Node process.
 
 Keep the deployment at one instance. A distributed atomic quota adapter is
 required before multiple replicas or restart-safe quota enforcement. A public
@@ -76,22 +78,22 @@ Set the platform termination grace period longer than
 
 ## Monitoring and privacy
 
-Monitor bounded dimensions only: tool name, stable result code, source tier,
-HTTP status class, approved best-effort adapter name, authentication rejection
-reason, quota rejection reason, dependency, and shutdown phase. Useful signals
+The executable writes only fixed, sanitized startup, hosted-request, and
+shutdown-cleanup failure messages to stderr. Health endpoints and reverse-proxy
+HTTP status counts provide the remaining operational signals. Useful signals
 include:
 
 - bearer rejection rate;
 - instance reserve exhaustion;
 - queue saturation, concurrency rejection, and tool latency;
-- `BEST_EFFORT_SOURCE_CHANGED` by approved adapter;
+- `BEST_EFFORT_SOURCE_CHANGED` responses;
 - Steam authentication, rate-limit, timeout, and availability failures;
 - readiness transitions and shutdown deadline exhaustion.
 
-Do not use raw or hashed user identifiers as log or metric labels. Do not record
+Do not add raw or hashed user identifiers as log or metric labels. Do not record
 request bodies, prompts, tool arguments, bearer tokens, Steam keys, SteamIDs,
-raw upstream responses, or credential-bearing URLs. Treat a redaction failure as
-a security incident: restrict log access, stop affected emission, rotate exposed
+raw upstream responses, or credential-bearing URLs. Treat accidental emission as
+a security incident: restrict access, stop the affected output, rotate exposed
 credentials, and preserve only sanitized evidence.
 
 ## Failure response
@@ -192,6 +194,6 @@ on the operator's regular credential schedule:
 
 For a code or configuration regression, route traffic back to a verified
 immutable artifact, restore its matching configuration, and recheck health,
-bearer rejection, all eight tools, instance quota accounting, and redacted
-telemetry. Rollback never means weakening bearer authentication, Host/Origin
+bearer rejection, all eight tools, instance quota accounting, and sanitized
+diagnostics. Rollback never means weakening bearer authentication, Host/Origin
 validation, quota reserves, redaction, or Steam privacy controls.

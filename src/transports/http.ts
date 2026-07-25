@@ -2,15 +2,11 @@ import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 
 import {
-  createHttpRequestBoundary,
-  type HttpRequestBoundaryOptions,
-} from "../infrastructure/http-request-boundary.js";
-import {
   createRemoteBearerGate,
   type RemoteBearerGate,
 } from "../infrastructure/remote-bearer-gate.js";
 
-export interface HostedMcpHttpHandlerOptions extends HttpRequestBoundaryOptions {
+export interface HostedMcpHttpHandlerOptions {
   readonly resourceUri: string;
   readonly accessToken: string;
   readonly createServer: () => McpServer;
@@ -135,21 +131,11 @@ export function createHostedMcpHttpHandler(
   ) {
     throw new RangeError("maxActiveRequests is outside the supported range");
   }
-  const requestBoundary = createHttpRequestBoundary(options);
   const gate = createRemoteBearerGate({ accessToken: options.accessToken });
   let inFlightRequests = 0;
 
   return {
     async handle(request) {
-      const boundaryDecision = requestBoundary.check(request.headers);
-      if (!boundaryDecision.allowed) {
-        return jsonRpcError(
-          boundaryDecision.reason === "malformed_host" ? 400 : 403,
-          -32_000,
-          "Request boundary rejected",
-        );
-      }
-
       if (request.url !== options.resourceUri) {
         return jsonRpcError(404, -32_001, "Not found");
       }

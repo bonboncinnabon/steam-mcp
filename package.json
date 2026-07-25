@@ -1,6 +1,6 @@
 {
   "name": "@abiswas97/steam-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A remote-first, read-only Steam MCP server with local stdio support.",
   "type": "module",
   "license": "MIT",

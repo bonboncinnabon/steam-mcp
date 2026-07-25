@@ -17,7 +17,7 @@ describe("public package metadata", () => {
 
     expect(manifest["name"]).toBe("@abiswas97/steam-mcp");
     expect(manifest["private"]).not.toBe(true);
-    expect(manifest["version"]).toBe("0.1.0");
+    expect(manifest["version"]).toBe("0.1.1");
     expect(manifest["publishConfig"]).toEqual({ access: "public" });
     expect(manifest["bin"]).toEqual({
       "steam-mcp": "dist/bin/steam-mcp.js",

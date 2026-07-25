@@ -1,0 +1,40 @@
+src/application/services/steam-get-recent-activity.ts
+  s_336c0404d47041::t_e48a5694a56bcb 14,81,105,107,109-110
+  s_336c0404d47041::t_497cac8ef3b34a 106,108,125-128
+  s_8e40f362997121::t_2baca733955cb3 129-130
+src/mcp/tool-contracts.ts
+  s_336c0404d47041::t_e0d9fcc89e312f 324
+docs/tool-reference.md
+  s_336c0404d47041::t_e0d9fcc89e312f 187-189,213,215
+README.md
+  s_336c0404d47041::t_e0d9fcc89e312f 17
+test/unit/application/steam-get-recent-activity.test.ts
+  s_336c0404d47041::t_d5d5301c99b789 8,10-35,41,66-79,94
+  s_336c0404d47041::t_f0fd75cd16938a 139,177,204,206-212,239,243,254,266,292,308,320
+  s_336c0404d47041::t_5e95c21131f359 97-129
+  s_8e40f362997121::t_18dc2dc65d205b 95-96
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.16",
+  "base_commit_sha": "c392e604aad43e09012050191f4b1646113bdb52",
+  "prompts": {},
+  "sessions": {
+    "s_336c0404d47041": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f7e2e-c1a0-7e91-bd9b-cd233a2eaa51",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    },
+    "s_8e40f362997121": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019f993a-9018-7522-b9d7-b1c432c329a6",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "Avi <avishek.biswas.1997@gmail.com>"
+    }
+  }
+}

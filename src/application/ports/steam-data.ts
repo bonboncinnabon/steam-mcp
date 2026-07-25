@@ -35,10 +35,6 @@ export interface SteamDataPort {
     steamId: SteamId64,
     signal: AbortSignal,
   ): Promise<PlayerDataCollection<OwnedGame>>;
-  getRecentGames(
-    steamId: SteamId64,
-    signal: AbortSignal,
-  ): Promise<PlayerDataCollection<OwnedGame>>;
   getPlayerAchievements(
     steamId: SteamId64,
     appId: AppId,

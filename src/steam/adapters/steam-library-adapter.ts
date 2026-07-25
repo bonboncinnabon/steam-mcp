@@ -38,20 +38,6 @@ const ownedGamesSchema = z.object({
   ]),
 });
 
-const recentGamesSchema = z.object({
-  response: z.union([
-    z
-      .object({
-        total_count: uint32Schema,
-        games: z.array(gameSchema).max(100).optional(),
-      })
-      .refine(
-        (response) => response.total_count >= (response.games?.length ?? 0),
-      ),
-    z.object({}).strict(),
-  ]),
-});
-
 export type SteamLibraryHttpExecutor = (
   request: SteamHttpRequest,
   signal: AbortSignal,
@@ -80,28 +66,6 @@ export function createSteamLibraryAdapter(options: SteamLibraryAdapterOptions) {
       );
       const parsed = parseSteamResponse(response.body, ownedGamesSchema);
       if (!("game_count" in parsed.response)) {
-        return { visibility: "private", items: [] };
-      }
-      return {
-        visibility: "public",
-        items: (parsed.response.games ?? []).map(normalizeGame),
-      };
-    },
-    async getRecentGames(
-      steamId: SteamId64,
-      signal: AbortSignal,
-    ): Promise<PlayerDataCollection<OwnedGame>> {
-      const response = await options.execute(
-        buildSteamRequest("getRecentlyPlayedGames", {
-          key: options.apiKey,
-          steamid: steamId,
-          count: "100",
-          format: "json",
-        }),
-        signal,
-      );
-      const parsed = parseSteamResponse(response.body, recentGamesSchema);
-      if (!("total_count" in parsed.response)) {
         return { visibility: "private", items: [] };
       }
       return {

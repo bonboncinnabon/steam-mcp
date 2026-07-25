@@ -14,7 +14,7 @@ accounts, or provide recommendation and player-analysis tools.
 | --------------------------- | ---------------------------------------------------------------------- |
 | `steam_get_player`          | Profile, visibility, presence, current game, and ban-summary facts     |
 | `steam_get_library`         | Filtered, sorted, cursor-paginated game library and recorded playtime  |
-| `steam_get_recent_activity` | Recently played games and available current activity                   |
+| `steam_get_recent_activity` | Most recently launched games and available current activity            |
 | `steam_get_achievements`    | Cursor-paginated achievement progress for one player and app           |
 | `steam_get_friends`         | Cursor-paginated friends with optional bounded profile enrichment      |
 | `steam_get_wishlist`        | Cursor-paginated wishlist with availability, price, and discount facts |

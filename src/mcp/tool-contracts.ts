@@ -321,7 +321,7 @@ export function createSteamToolContracts(policy: SteamToolContractPolicy) {
     ),
     steam_get_recent_activity: defineContract(
       "Get recent Steam activity",
-      "Get a bounded list of recently played Steam games and the player's available current activity.",
+      "Get the player's most recently launched Steam games in newest-first order plus available current activity.",
       input.recentActivity,
       recentActivityOutputSchema,
     ),

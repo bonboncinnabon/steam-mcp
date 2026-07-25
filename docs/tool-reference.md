@@ -184,8 +184,9 @@ deterministic pages. Source tier: `supported`. A hidden library returns
 
 ## `steam_get_recent_activity`
 
-Gets a bounded recent-games list and current activity. It is intentionally not
-cursor-paginated.
+Gets a bounded list of played games ordered by their latest recorded launch
+time, newest first, plus current activity. Never-played library entries are
+excluded. It is intentionally not cursor-paginated.
 
 Input:
 
@@ -209,9 +210,9 @@ Output data:
 }
 ```
 
-Source tier: `supported`. If the recent-games source succeeds but profile
+Source tier: `supported`. If the owned-games source succeeds but profile
 presence fails, the tool returns `currentActivity.status: "unavailable"` with
-`meta.partial: true`. A hidden recent-games list returns `PROFILE_PRIVATE`.
+`meta.partial: true`. A hidden game library returns `PROFILE_PRIVATE`.
 
 ## `steam_get_achievements`
 

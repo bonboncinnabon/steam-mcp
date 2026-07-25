@@ -37,10 +37,6 @@ const STEAM_ENDPOINTS = {
     host: "api.steampowered.com",
     path: "/IPlayerService/GetOwnedGames/v0001/",
   },
-  getRecentlyPlayedGames: {
-    host: "api.steampowered.com",
-    path: "/IPlayerService/GetRecentlyPlayedGames/v0001/",
-  },
   getPlayerAchievements: {
     host: "api.steampowered.com",
     path: "/ISteamUserStats/GetPlayerAchievements/v1/",
@@ -96,12 +92,6 @@ interface SteamEndpointQueries {
     steamid: string;
     include_appinfo: "1";
     include_played_free_games: "1";
-    format: "json";
-  }>;
-  readonly getRecentlyPlayedGames: Readonly<{
-    key: string;
-    steamid: string;
-    count: string;
     format: "json";
   }>;
   readonly getPlayerAchievements: Readonly<{

@@ -11,7 +11,7 @@ import { SteamIdentityResolutionError } from "./steam-identity-resolver.js";
 
 interface SteamGetRecentActivityDependencies {
   readonly identityResolver: SteamIdentityResolver;
-  readonly steamData: Pick<SteamDataPort, "getRecentGames" | "getPlayers">;
+  readonly steamData: Pick<SteamDataPort, "getOwnedGames" | "getPlayers">;
   readonly maxItems: number;
 }
 
@@ -78,7 +78,7 @@ export function createSteamGetRecentActivityService(
         throw error;
       }
       const [recentResult, profileResult] = await Promise.allSettled([
-        dependencies.steamData.getRecentGames(identity.steamId, signal),
+        dependencies.steamData.getOwnedGames(identity.steamId, signal),
         dependencies.steamData.getPlayers([identity.steamId], signal),
       ]);
       if (recentResult.status === "rejected") {
@@ -102,7 +102,12 @@ export function createSteamGetRecentActivityService(
       return success<SteamRecentActivity>(
         {
           steamId: identity.steamId,
-          recentGames: recentResult.value.items.slice(0, input.limit),
+          recentGames: recentResult.value.items
+            .filter(hasLastPlayedAt)
+            .toSorted((left, right) =>
+              right.lastPlayedAt.localeCompare(left.lastPlayedAt),
+            )
+            .slice(0, input.limit),
           currentActivity,
         },
         ["supported"],
@@ -115,6 +120,12 @@ export function createSteamGetRecentActivityService(
       );
     },
   };
+}
+
+function hasLastPlayedAt(
+  game: OwnedGame,
+): game is OwnedGame & { readonly lastPlayedAt: string } {
+  return game.lastPlayedAt !== undefined;
 }
 
 function normalizeCurrentActivity(

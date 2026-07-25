@@ -5,21 +5,40 @@ import { createSteamGetRecentActivityService } from "../../../src/application/se
 import { SteamIdentityResolutionError } from "../../../src/application/services/steam-identity-resolver.js";
 
 describe("steam_get_recent_activity application service", () => {
-  it("returns bounded recent games with available current activity", async () => {
+  it("matches Steam's most-recently-played ordering from owned games", async () => {
     const steamId = parseSteamId64("76561198000000000");
+    const getOwnedGames = vi.fn().mockResolvedValue({
+      visibility: "public",
+      items: [
+        {
+          appId: 2623190,
+          name: "The Elder Scrolls IV: Oblivion Remastered",
+          playtimeMinutes: 620,
+          recentPlaytimeMinutes: 425,
+          lastPlayedAt: "2026-07-17T10:51:21.000Z",
+        },
+        {
+          appId: 289070,
+          name: "Sid Meier's Civilization VI",
+          playtimeMinutes: 6690,
+          recentPlaytimeMinutes: 14,
+          lastPlayedAt: "2026-07-20T15:48:12.000Z",
+        },
+        {
+          appId: 2680010,
+          name: "The First Berserker: Khazan",
+          playtimeMinutes: 388,
+          recentPlaytimeMinutes: 5,
+          lastPlayedAt: "2026-07-19T10:56:57.000Z",
+        },
+      ],
+    });
     const service = createSteamGetRecentActivityService({
       identityResolver: {
         resolve: vi.fn().mockResolvedValue({ steamId, source: "explicit" }),
       },
       steamData: {
-        getRecentGames: vi.fn().mockResolvedValue({
-          visibility: "public",
-          items: [
-            { appId: 1, name: "One", playtimeMinutes: 100 },
-            { appId: 2, name: "Two", playtimeMinutes: 200 },
-            { appId: 3, name: "Three", playtimeMinutes: 300 },
-          ],
-        }),
+        getOwnedGames,
         getPlayers: vi.fn().mockResolvedValue([
           {
             steamId,
@@ -44,8 +63,20 @@ describe("steam_get_recent_activity application service", () => {
       data: {
         steamId,
         recentGames: [
-          { appId: 1, name: "One", playtimeMinutes: 100 },
-          { appId: 2, name: "Two", playtimeMinutes: 200 },
+          {
+            appId: 289070,
+            name: "Sid Meier's Civilization VI",
+            playtimeMinutes: 6690,
+            recentPlaytimeMinutes: 14,
+            lastPlayedAt: "2026-07-20T15:48:12.000Z",
+          },
+          {
+            appId: 2680010,
+            name: "The First Berserker: Khazan",
+            playtimeMinutes: 388,
+            recentPlaytimeMinutes: 5,
+            lastPlayedAt: "2026-07-19T10:56:57.000Z",
+          },
         ],
         currentActivity: {
           status: "playing",
@@ -60,6 +91,42 @@ describe("steam_get_recent_activity application service", () => {
         warnings: [],
       },
     });
+    expect(getOwnedGames).toHaveBeenCalledOnce();
+  });
+
+  it("excludes owned games that have never been played", async () => {
+    const steamId = parseSteamId64("76561198000000000");
+    const service = createSteamGetRecentActivityService({
+      identityResolver: {
+        resolve: vi.fn().mockResolvedValue({ steamId, source: "explicit" }),
+      },
+      steamData: {
+        getOwnedGames: vi.fn().mockResolvedValue({
+          visibility: "public",
+          items: [
+            { appId: 1, name: "Never Played", playtimeMinutes: 0 },
+            {
+              appId: 2,
+              name: "Played",
+              playtimeMinutes: 10,
+              lastPlayedAt: "2026-07-20T00:00:00.000Z",
+            },
+          ],
+        }),
+        getPlayers: vi.fn().mockResolvedValue([]),
+      },
+      maxItems: 20,
+    });
+
+    const result = await service.execute(
+      { explicitUser: steamId, limit: 20 },
+      new AbortController().signal,
+    );
+
+    expect(result).toMatchObject({
+      ok: true,
+      data: { recentGames: [{ appId: 2 }] },
+    });
   });
 
   it("preserves a public empty recent collection and not-playing state", async () => {
@@ -69,7 +136,7 @@ describe("steam_get_recent_activity application service", () => {
         resolve: vi.fn().mockResolvedValue({ steamId, source: "explicit" }),
       },
       steamData: {
-        getRecentGames: vi.fn().mockResolvedValue({
+        getOwnedGames: vi.fn().mockResolvedValue({
           visibility: "public",
           items: [],
         }),
@@ -107,7 +174,7 @@ describe("steam_get_recent_activity application service", () => {
         resolve: vi.fn().mockResolvedValue({ steamId, source: "explicit" }),
       },
       steamData: {
-        getRecentGames: vi.fn().mockResolvedValue({
+        getOwnedGames: vi.fn().mockResolvedValue({
           visibility: "private",
           items: [],
         }),
@@ -134,9 +201,15 @@ describe("steam_get_recent_activity application service", () => {
         resolve: vi.fn().mockResolvedValue({ steamId, source: "explicit" }),
       },
       steamData: {
-        getRecentGames: vi.fn().mockResolvedValue({
+        getOwnedGames: vi.fn().mockResolvedValue({
           visibility: "public",
-          items: [{ appId: 1, playtimeMinutes: 10 }],
+          items: [
+            {
+              appId: 1,
+              playtimeMinutes: 10,
+              lastPlayedAt: "2026-07-20T00:00:00.000Z",
+            },
+          ],
         }),
         getPlayers: vi.fn().mockRejectedValue(new Error("profile unavailable")),
       },
@@ -163,11 +236,11 @@ describe("steam_get_recent_activity application service", () => {
 
   it("rejects an invalid limit before identity or Steam work", async () => {
     const resolve = vi.fn();
-    const getRecentGames = vi.fn();
+    const getOwnedGames = vi.fn();
     const getPlayers = vi.fn();
     const service = createSteamGetRecentActivityService({
       identityResolver: { resolve },
-      steamData: { getRecentGames, getPlayers },
+      steamData: { getOwnedGames, getPlayers },
       maxItems: 20,
     });
 
@@ -178,7 +251,7 @@ describe("steam_get_recent_activity application service", () => {
       error: { code: "INVALID_INPUT", retryable: false },
     });
     expect(resolve).not.toHaveBeenCalled();
-    expect(getRecentGames).not.toHaveBeenCalled();
+    expect(getOwnedGames).not.toHaveBeenCalled();
     expect(getPlayers).not.toHaveBeenCalled();
   });
 
@@ -190,7 +263,7 @@ describe("steam_get_recent_activity application service", () => {
         resolve: vi.fn().mockResolvedValue({ steamId, source: "explicit" }),
       },
       steamData: {
-        getRecentGames: vi.fn().mockRejectedValue(requiredFailure),
+        getOwnedGames: vi.fn().mockRejectedValue(requiredFailure),
         getPlayers: vi.fn().mockResolvedValue([]),
       },
       maxItems: 20,
@@ -216,7 +289,7 @@ describe("steam_get_recent_activity application service", () => {
             ),
           ),
       },
-      steamData: { getRecentGames: vi.fn(), getPlayers: vi.fn() },
+      steamData: { getOwnedGames: vi.fn(), getPlayers: vi.fn() },
       maxItems: 20,
     });
 
@@ -232,7 +305,7 @@ describe("steam_get_recent_activity application service", () => {
     expect(() =>
       createSteamGetRecentActivityService({
         identityResolver: { resolve: vi.fn() },
-        steamData: { getRecentGames: vi.fn(), getPlayers: vi.fn() },
+        steamData: { getOwnedGames: vi.fn(), getPlayers: vi.fn() },
         maxItems: 0,
       }),
     ).toThrow("Recent activity maximum must be positive");
@@ -244,7 +317,7 @@ describe("steam_get_recent_activity application service", () => {
       identityResolver: {
         resolve: vi.fn().mockRejectedValue(dependencyFailure),
       },
-      steamData: { getRecentGames: vi.fn(), getPlayers: vi.fn() },
+      steamData: { getOwnedGames: vi.fn(), getPlayers: vi.fn() },
       maxItems: 20,
     });
 

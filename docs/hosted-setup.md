@@ -39,9 +39,10 @@ reverse proxy for any traffic that leaves the host.
 ## Run the published container
 
 Each versioned release publishes a multi-platform image at
-`ghcr.io/abiswas97/steam-mcp`. Pin the immutable digest recorded by the release,
-pass configuration through the platform's secret and environment facilities, and
-publish the container's port 3000 only through the trusted TLS proxy:
+`ghcr.io/bonboncinnabon/steam-mcp`. Pin the immutable digest recorded by the
+release, pass configuration through the platform's secret and environment
+facilities, and publish the container's port 3000 only through the trusted TLS
+proxy:
 
 ```sh
 docker run --rm -p 127.0.0.1:3000:3000 \
@@ -50,7 +51,7 @@ docker run --rm -p 127.0.0.1:3000:3000 \
   --env MCP_ACCESS_TOKEN \
   --env MCP_RESOURCE_URI \
   --env ALLOWED_HOSTS \
-  ghcr.io/abiswas97/steam-mcp@sha256:<release-digest>
+  ghcr.io/bonboncinnabon/steam-mcp@sha256:<release-digest>
 ```
 
 Omit `--env STEAM_USER` when no shared default is wanted. The release workflow

@@ -52,9 +52,9 @@ development-from-source instructions, see [Local setup](docs/local-setup.md).
 
 The same `steam-mcp` executable starts a Streamable HTTP server when invoked
 with `serve`. The server is protected by one operator-configured bearer token.
-Versioned releases also publish a container at `ghcr.io/abiswas97/steam-mcp`.
-This repository does not operate a hosted provider, user-account system, or
-public shared service.
+Versioned releases also publish a container at
+`ghcr.io/bonboncinnabon/steam-mcp`. This repository does not operate a hosted
+provider, user-account system, or public shared service.
 
 Generate a high-entropy token, configure the required Steam, token, resource,
 and Host environment variables, then run the packaged executable:

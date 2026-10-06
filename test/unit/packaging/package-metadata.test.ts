@@ -68,13 +68,13 @@ describe("public package metadata", () => {
 
     expect(manifest["repository"]).toEqual({
       type: "git",
-      url: "git+https://github.com/abiswas97/steam-mcp.git",
+      url: "git+https://github.com/bonboncinnabon/steam-mcp.git",
     });
     expect(manifest["bugs"]).toEqual({
-      url: "https://github.com/abiswas97/steam-mcp/issues",
+      url: "https://github.com/bonboncinnabon/steam-mcp/issues",
     });
     expect(manifest["homepage"]).toBe(
-      "https://github.com/abiswas97/steam-mcp#readme",
+      "https://github.com/bonboncinnabon/steam-mcp#readme",
     );
     expect(manifest["scripts"]).toMatchObject({
       build: "node scripts/clean-dist.mjs && tsc -p tsconfig.build.json",
